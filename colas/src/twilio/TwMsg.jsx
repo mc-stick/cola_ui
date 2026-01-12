@@ -1,6 +1,6 @@
 export const SendTwilioSms = async (msg, to) => {
-  const services = import.meta.env.VITE_SERVICE_API;
-  //console.log('sending..1 ')
+  const services = import.meta.env.VITE_API_URL;
+  console.log('sending..1 ', services)
   try {
     const response = await fetch(`${services}/msg`, {
       method: "POST",

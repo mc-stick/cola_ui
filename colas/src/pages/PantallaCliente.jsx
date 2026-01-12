@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import API from "../services/api";
 import { Phone, CreditCard, User, ArrowLeft, Check, X } from "lucide-react";
 import Logo from "../components/Logo";
+import { SendTwilioSms } from "../twilio/TwMsg";
 
 function PantallaCliente() {
   const [paso, setPaso] = useState(1);
@@ -10,21 +11,19 @@ function PantallaCliente() {
   const [servicios, setServicios] = useState([]);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [ticketGenerado, setTicketGenerado] = useState(null);
-   const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState(null);
 
-   useEffect(() => {
-      const cargarDatos = async () => {
-        try {
-          const [configData] = await Promise.all([
-            API.getConfiguracion(),
-          ]);
-          setConfig(configData);
-        } catch (error) {
-          console.error("Error cargando datos:", error);
-        }
-      };
-      cargarDatos();
-    }, []);
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const [configData] = await Promise.all([API.getConfiguracion()]);
+        setConfig(configData);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+    cargarDatos();
+  }, []);
 
   useEffect(() => {
     cargarServicios();
@@ -48,10 +47,29 @@ function PantallaCliente() {
     }
   };
 
+  const PREFIJOS_RD = ["809", "829", "849"];
+
+  const esTelefonoRDValido = (valor) => {
+    if (valor.length !== 10) return false;
+    return PREFIJOS_RD.some((prefijo) => valor.startsWith(prefijo));
+  };
+
   const handleAgregarDigito = (digito) => {
-    if (identificacion.length < 10) {
-      setIdentificacion(identificacion + digito);
-    }
+     console.log("printing ide", tipoId)
+    setIdentificacion((prev) => {
+      // IDENTIFICACIÓN: máximo 8 dígitos
+      if (tipoId === "identificacion" && prev.length >= 8) {
+       
+        return prev;
+      }
+
+      // TELÉFONO: máximo 10 dígitos
+      if (tipoId === "telefono" && prev.length >= 10) {
+        return prev;
+      }
+
+      return prev + digito;
+    });
   };
 
   const handleBorrar = () => {
@@ -59,9 +77,21 @@ function PantallaCliente() {
   };
 
   const handleConfirmarId = () => {
-    if (identificacion.length > 0) {
-      setPaso(3);
+    if (tipoId === "identificacion") {
+      if (identificacion.length !== 8) {
+        alert("La identificación debe tener 8 dígitos.");
+        return;
+      }
     }
+
+    if (tipoId === "telefono") {
+      if (!esTelefonoRDValido(identificacion)) {
+        alert("Ingrese un número de teléfono válido.");
+        return;
+      }
+    }
+
+    setPaso(3);
   };
 
   const handleSeleccionarServicio = async (servicio) => {
@@ -78,7 +108,8 @@ function PantallaCliente() {
       setPaso(4);
 
       if (tipoId === "telefono") {
-        console.log("Enviar SMS al:", identificacion);
+        //console.log("Enviar SMS al:", identificacion);
+        SendTwilioSms("mensaje a enviar",identificacion);
       } else {
         await imprimirTicket(ticket);
       }
@@ -89,18 +120,19 @@ function PantallaCliente() {
   };
 
   const imprimirTicket = async (ticket) => {
-    try {
-      await fetch("http://localhost:8080/imprimir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketNumber: ticket.numero,
-          message: servicioSeleccionado?.nombre,
-        }),
-      });
-    } catch (error) {
-      console.error("Error al imprimir:", error);
-    }
+    console.log("imprimir")
+    // try {
+    //   await fetch("http://localhost:8080/imprimir", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       ticketNumber: ticket.numero,
+    //       message: servicioSeleccionado?.nombre,
+    //     }),
+    //   });
+    // } catch (error) {
+    //   console.error("Error al imprimir:", error);
+    // }
   };
 
   const handleReiniciar = () => {
@@ -115,7 +147,6 @@ function PantallaCliente() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg">
         <div className="max-w-7xl mx-auto">
-          
           <h1 className="text-4xl font-bold flex items-center gap-3">
             {config?.logo_url && (
               <img
@@ -139,8 +170,7 @@ function PantallaCliente() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <button
                 onClick={() => handleTipoId("telefono")}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
-              >
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
                 <div className="bg-blue-600 w-20 h-20 rounded-full flex items-center justify-center mb-4 mx-auto">
                   <Phone className="w-10 h-10 text-white" />
                 </div>
@@ -151,9 +181,8 @@ function PantallaCliente() {
               </button>
 
               <button
-                onClick={() => handleTipoId("id")}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
-              >
+                onClick={() => handleTipoId("identificacion")}
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
                 <div className="bg-green-600 w-20 h-20 rounded-full flex items-center justify-center mb-4 mx-auto">
                   <CreditCard className="w-10 h-10 text-white" />
                 </div>
@@ -165,8 +194,7 @@ function PantallaCliente() {
 
               <button
                 onClick={() => handleTipoId("sin_id")}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"
-              >
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300">
                 <div className="bg-purple-600 w-20 h-20 rounded-full flex items-center justify-center mb-4 mx-auto">
                   <User className="w-10 h-10 text-white" />
                 </div>
@@ -183,7 +211,7 @@ function PantallaCliente() {
         {paso === 2 && (
           <div className="animation-fade-in">
             <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-              Ingresa tu {tipoId === "telefono" ? "teléfono" : "identificación"}
+              Ingresa tu {tipoId === "telefono" ? "teléfono" : "Matrícula"}
             </h2>
 
             <div className="bg-white p-8 rounded-2xl shadow-lg mb-6">
@@ -196,28 +224,28 @@ function PantallaCliente() {
                   <button
                     key={num}
                     onClick={() => handleAgregarDigito(num.toString())}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
-                  >
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors">
                     {num}
                   </button>
                 ))}
                 <button
                   onClick={handleBorrar}
-                  className="bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-6 rounded-xl transition-colors flex items-center justify-center"
-                >
+                  className="bg-red-600 hover:bg-red-700 text-white text-2xl font-bold py-6 rounded-xl transition-colors flex items-center justify-center">
                   <X className="w-8 h-8" />
                 </button>
                 <button
                   onClick={() => handleAgregarDigito("0")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
-                >
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors">
                   0
                 </button>
                 <button
                   onClick={handleConfirmarId}
-                  disabled={identificacion.length === 0}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-2xl font-bold py-6 rounded-xl transition-colors flex items-center justify-center"
-                >
+                  disabled={
+                    tipoId === "identificacion"
+                      ? identificacion.length !== 8
+                      : !esTelefonoRDValido(identificacion)
+                  }
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-2xl font-bold py-6 rounded-xl transition-colors flex items-center justify-center">
                   <Check className="w-8 h-8" />
                 </button>
               </div>
@@ -225,8 +253,7 @@ function PantallaCliente() {
 
             <button
               onClick={() => setPaso(1)}
-              className="flex items-center gap-2 text-blue-700 hover:text-blue-900 font-semibold text-lg"
-            >
+              className="flex items-center gap-2 text-blue-700 hover:text-blue-900 font-semibold text-lg">
               <ArrowLeft className="w-5 h-5" />
               Volver
             </button>
@@ -246,12 +273,10 @@ function PantallaCliente() {
                   key={servicio.id}
                   onClick={() => handleSeleccionarServicio(servicio)}
                   className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 text-left border-t-8"
-                  style={{ borderTopColor: servicio.color }}
-                >
+                  style={{ borderTopColor: servicio.color }}>
                   <div
                     className="text-5xl font-extrabold mb-4"
-                    style={{ color: servicio.color }}
-                  >
+                    style={{ color: servicio.color }}>
                     {servicio.codigo}
                   </div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -267,8 +292,7 @@ function PantallaCliente() {
 
             <button
               onClick={() => setPaso(tipoId === "sin_id" ? 1 : 2)}
-              className="flex items-center gap-2 text-blue-700 hover:text-blue-900 font-semibold text-lg"
-            >
+              className="flex items-center gap-2 text-blue-700 hover:text-blue-900 font-semibold text-lg">
               <ArrowLeft className="w-5 h-5" />
               Volver
             </button>
@@ -290,8 +314,7 @@ function PantallaCliente() {
               <div className="mb-8">
                 <div
                   className="text-7xl font-extrabold mb-4"
-                  style={{ color: servicioSeleccionado?.color }}
-                >
+                  style={{ color: servicioSeleccionado?.color }}>
                   {ticketGenerado?.numero}
                 </div>
                 <div className="text-2xl text-gray-700 mb-4">
@@ -305,17 +328,16 @@ function PantallaCliente() {
                   </p>
                 ) : (
                   <p className="text-gray-600 text-lg">
-                    Por favor, espera tu turno
+                    Por favor, retira tu ticket y espera a ser llamado.
                   </p>
                 )}
               </div>
 
               <button
                 onClick={handleReiniciar}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-xl font-bold text-xl transition-colors"
-              >
-                {tipoId === "telefono"? "Aceptar":"Imprimir"}
-                
+                className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-xl font-bold text-xl transition-colors">
+                {/* {tipoId === "telefono" ? "Aceptar" : "Imprimir"} */}
+                Aceptar
               </button>
             </div>
           </div>
