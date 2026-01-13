@@ -1,227 +1,480 @@
 const API_URL = import.meta.env.VITE_API_URL;
+const API_PRINT = import.meta.env.VITE_API_PRINT;
 
 class API {
+  // ============================================
+  // CONFIGURACIÓN
+  // ============================================
   async getConfiguracion() {
-    const response = await fetch(`${API_URL}/configuracion`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/configuracion`);
+      if (!response.ok) throw new Error('Error al obtener configuración');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getConfiguracion:', error);
+      throw error;
+    }
   }
   
   async updateConfiguracion(id, data) {
-    const response = await fetch(`${API_URL}/configuracion/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/configuracion/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al actualizar configuración');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en updateConfiguracion:', error);
+      throw error;
+    }
   }
   
- // Medios - Métodos actualizados
-async getMedios() {
-  const response = await fetch(`${API_URL}/medios`);
-  if (!response.ok) {
-    throw new Error('Error al obtener medios');
+  // ============================================
+  // MEDIOS
+  // ============================================
+  async getMedios() {
+    try {
+      const response = await fetch(`${API_URL}/medios`);
+      if (!response.ok) throw new Error('Error al obtener medios');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getMedios:', error);
+      throw error;
+    }
   }
-  return response.json();
-}
 
-async getMedio(id) {
-  const response = await fetch(`${API_URL}/medios/${id}`);
-  if (!response.ok) {
-    throw new Error('Error al obtener medio');
+  async getMedio(id) {
+    try {
+      const response = await fetch(`${API_URL}/medios/${id}`);
+      if (!response.ok) throw new Error('Error al obtener medio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getMedio:', error);
+      throw error;
+    }
   }
-  return response.json();
-}
 
-async createMedio(data) {
-  console.log('📤 Enviando medio al servidor...');
-  
-  const response = await fetch(`${API_URL}/medios`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Error al crear medio');
+  async createMedio(data) {
+    try {
+      console.log('📤 Enviando medio al servidor...');
+      
+      const response = await fetch(`${API_URL}/medios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al crear medio');
+      }
+      
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en createMedio:', error);
+      throw error;
+    }
   }
-  
-  return response.json();
-}
 
-async updateMedio(id, data) {
-  const response = await fetch(`${API_URL}/medios/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Error al actualizar medio');
+  async updateMedio(id, data) {
+    try {
+      const response = await fetch(`${API_URL}/medios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Error al actualizar medio');
+      }
+      
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en updateMedio:', error);
+      throw error;
+    }
   }
-  
-  return response.json();
-}
 
-async deleteMedio(id) {
-  const response = await fetch(`${API_URL}/medios/${id}`, {
-    method: 'DELETE'
-  });
-  
-  if (!response.ok) {
-    throw new Error('Error al eliminar medio');
+  async deleteMedio(id) {
+    try {
+      const response = await fetch(`${API_URL}/medios/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Error al eliminar medio');
+      
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en deleteMedio:', error);
+      throw error;
+    }
   }
   
-  return response.json();
-}
-  
+  // ============================================
+  // SERVICIOS
+  // ============================================
   async getServicios() {
-    const response = await fetch(`${API_URL}/servicios`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/servicios`);
+      if (!response.ok) throw new Error('Error al obtener servicios');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getServicios:', error);
+      throw error;
+    }
   }
   
   async createServicio(data) {
-    const response = await fetch(`${API_URL}/servicios`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/servicios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al crear servicio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en createServicio:', error);
+      throw error;
+    }
   }
   
   async updateServicio(id, data) {
-    const response = await fetch(`${API_URL}/servicios/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/servicios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al actualizar servicio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en updateServicio:', error);
+      throw error;
+    }
   }
   
   async deleteServicio(id) {
-    const response = await fetch(`${API_URL}/servicios/${id}`, {
-      method: 'DELETE'
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/servicios/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Error al eliminar servicio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en deleteServicio:', error);
+      throw error;
+    }
   }
   
+  // ============================================
+  // PUESTOS
+  // ============================================
   async getPuestos() {
-    const response = await fetch(`${API_URL}/puestos`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/puestos`);
+      if (!response.ok) throw new Error('Error al obtener puestos');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getPuestos:', error);
+      throw error;
+    }
   }
   
   async createPuesto(data) {
-    const response = await fetch(`${API_URL}/puestos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/puestos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al crear puesto');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en createPuesto:', error);
+      throw error;
+    }
   }
   
   async updatePuesto(id, data) {
-    const response = await fetch(`${API_URL}/puestos/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/puestos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al actualizar puesto');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en updatePuesto:', error);
+      throw error;
+    }
   }
   
+  // ============================================
+  // USUARIOS Y AUTENTICACIÓN
+  // ============================================
   async login(username, password) {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en login');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      throw error;
+    }
   }
   
   async getUsuarios() {
-    const response = await fetch(`${API_URL}/usuarios`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/usuarios`);
+      if (!response.ok) throw new Error('Error al obtener usuarios');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getUsuarios:', error);
+      throw error;
+    }
   }
   
   async createUsuario(data) {
-    const response = await fetch(`${API_URL}/usuarios`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/usuarios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al crear usuario');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en createUsuario:', error);
+      throw error;
+    }
   }
   
   async updateUsuario(id, data) {
-    const response = await fetch(`${API_URL}/usuarios/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/usuarios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al actualizar usuario');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en updateUsuario:', error);
+      throw error;
+    }
   }
   
+  // ============================================
+  // OPERADOR-SERVICIOS
+  // ============================================
+  async getOperadorServicios(usuarioId) {
+    try {
+      const response = await fetch(`${API_URL}/operadores/${usuarioId}/servicios`);
+      if (!response.ok) throw new Error('Error al obtener servicios del operador');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getOperadorServicios:', error);
+      throw error;
+    }
+  }
+
+  async asignarServicioOperador(usuarioId, servicioId) {
+    try {
+      const response = await fetch(`${API_URL}/operadores/${usuarioId}/servicios/${servicioId}`, {
+        method: 'POST'
+      });
+      if (!response.ok) throw new Error('Error al asignar servicio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en asignarServicioOperador:', error);
+      throw error;
+    }
+  }
+
+  async desasignarServicioOperador(usuarioId, servicioId) {
+    try {
+      const response = await fetch(`${API_URL}/operadores/${usuarioId}/servicios/${servicioId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Error al desasignar servicio');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en desasignarServicioOperador:', error);
+      throw error;
+    }
+  }
+
+  async getOperadoresConServicios() {
+    try {
+      const response = await fetch(`${API_URL}/operadores-servicios`);
+      if (!response.ok) throw new Error('Error al obtener operadores con servicios');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getOperadoresConServicios:', error);
+      throw error;
+    }
+  }
+  
+  // ============================================
+  // TICKETS
+  // ============================================
   async createTicket(data) {
-    const response = await fetch(`${API_URL}/tickets`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Error al crear ticket');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en createTicket:', error);
+      throw error;
+    }
   }
   
   async getTicketsEspera() {
-    const response = await fetch(`${API_URL}/tickets/espera`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/espera`);
+      if (!response.ok) throw new Error('Error al obtener tickets en espera');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getTicketsEspera:', error);
+      throw error;
+    }
   }
   
   async getTicketsLlamados() {
-    const response = await fetch(`${API_URL}/tickets/llamados`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/llamados`);
+      if (!response.ok) throw new Error('Error al obtener tickets llamados');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getTicketsLlamados:', error);
+      throw error;
+    }
   }
   
   async getTicketsByOperador(usuarioId) {
-    const response = await fetch(`${API_URL}/tickets/operador/${usuarioId}`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/operador/${usuarioId}`);
+      if (!response.ok) throw new Error('Error al obtener tickets del operador');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getTicketsByOperador:', error);
+      throw error;
+    }
   }
   
   async llamarTicket(id, usuarioId, puestoId) {
-    const response = await fetch(`${API_URL}/tickets/${id}/llamar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usuario_id: usuarioId, puesto_id: puestoId })
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/llamar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario_id: usuarioId, puesto_id: puestoId })
+      });
+      if (!response.ok) throw new Error('Error al llamar ticket');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en llamarTicket:', error);
+      throw error;
+    }
   }
   
   async atenderTicket(id, usuarioId) {
-    const response = await fetch(`${API_URL}/tickets/${id}/atender`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usuario_id: usuarioId })
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/atender`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario_id: usuarioId })
+      });
+      if (!response.ok) throw new Error('Error al atender ticket');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en atenderTicket:', error);
+      throw error;
+    }
   }
   
   async finalizarTicket(id, usuarioId, estado) {
-    const response = await fetch(`${API_URL}/tickets/${id}/finalizar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usuario_id: usuarioId, estado })
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/finalizar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario_id: usuarioId, estado })
+      });
+      if (!response.ok) throw new Error('Error al finalizar ticket');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en finalizarTicket:', error);
+      throw error;
+    }
   }
   
+  // ============================================
+  // HISTORIAL Y ESTADÍSTICAS
+  // ============================================
   async getHistorial(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_URL}/historial?${queryString}`);
-    return response.json();
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_URL}/historial?${queryString}`);
+      if (!response.ok) throw new Error('Error al obtener historial');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getHistorial:', error);
+      throw error;
+    }
   }
   
   async getEstadisticas(fecha = null) {
-    const queryString = fecha ? `?fecha=${fecha}` : '';
-    const response = await fetch(`${API_URL}/estadisticas${queryString}`);
-    return response.json();
+    try {
+      const queryString = fecha ? `?fecha=${fecha}` : '';
+      const response = await fetch(`${API_URL}/estadisticas${queryString}`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en getEstadisticas:', error);
+      throw error;
+    }
+  }
+
+  // ============================================
+  // SERVICIO DE IMPRESIÓN
+  // ============================================
+  async PrintTicket(ticket, servicio) {
+    try {
+      console.log('🖨️  Enviando ticket a imprimir:', ticket.numero);
+      
+      const response = await fetch(`${API_PRINT}/print`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket, servicio })
+      });
+      
+      if (!response.ok) throw new Error('Error al imprimir ticket');
+      
+      console.log('✅ Ticket impreso correctamente');
+      return response.json();
+    } catch (error) {
+      console.error('❌ Error en PrintTicket:', error);
+      // No lanzar error para que el ticket se cree aunque falle la impresión
+      return { success: false, error: error.message };
+    }
   }
 }
 

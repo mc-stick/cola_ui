@@ -8,9 +8,10 @@ const {msgtw} = require('./twilio/apiTwi.js');
 const app = express();
 const PORT = process.env.PORT || 4001;
 
+// Aumentar límite para base64
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use('/api/msg', msgtw);
 
@@ -24,12 +25,25 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+// Test de conexión
+pool.getConnection()
+  .then(conn => {
+    ('✅ Conectado a la base de datos');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('❌ Error conectando a la base de datos:', err.message);
+  });
+
+// ============================================
 // RUTAS DE CONFIGURACIÓN
+// ============================================
 app.get('/api/configuracion', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM configuracion LIMIT 1');
     res.json(rows[0] || {});
   } catch (error) {
+    console.error('❌ Error obteniendo configuración:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -44,20 +58,20 @@ app.put('/api/configuracion/:id', async (req, res) => {
       [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, id]
     );
     
+    ('✅ Configuración actualizada');
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error actualizando configuración:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // ============================================
-// RUTAS DE MEDIOS - ACTUALIZADO
+// RUTAS DE MEDIOS
 // ============================================
-
-// Obtener medios activos
 app.get('/api/medios', async (req, res) => {
   try {
-    console.log('📋 Consultando medios activos...');
+    ('📋 Consultando medios activos...');
     
     const [rows] = await pool.query(
       `SELECT 
@@ -75,8 +89,7 @@ app.get('/api/medios', async (req, res) => {
        ORDER BY orden, created_at`
     );
     
-    console.log(`✅ Medios encontrados: ${rows.length}`);
-    
+    (`✅ Medios encontrados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
     console.error('❌ Error obteniendo medios:', error);
@@ -84,163 +97,6 @@ app.get('/api/medios', async (req, res) => {
   }
 });
 
-// Crear nuevo medio
-app.post('/api/medios', async (req, res) => {
-  try {
-    const { tipo, url, nombre, orden, es_local, tamano_kb } = req.body;
-    
-    // Validaciones
-    if (!tipo || !url || !nombre) {
-      return res.status(400).json({ 
-        error: 'Faltan campos requeridos: tipo, url, nombre' 
-      });
-    }
-
-    // Validar tipo
-    if (!['imagen', 'video'].includes(tipo)) {
-      return res.status(400).json({ 
-        error: 'Tipo inválido. Debe ser: imagen o video' 
-      });
-    }
-
-    // Log para debug
-    const urlLength = url.length;
-    const urlPreview = url.substring(0, 100);
-    const isBase64 = url.startsWith('data:');
-    
-    console.log('📥 Recibiendo medio:', {
-      tipo,
-      nombre,
-      es_local: es_local || false,
-      tamano_kb: tamano_kb || 0,
-      url_length: urlLength,
-      is_base64: isBase64,
-      url_preview: urlPreview + '...'
-    });
-
-    // Validar URL
-    if (isBase64) {
-      // Es base64 - validar formato
-      if (tipo === 'imagen' && !url.startsWith('data:image/')) {
-        return res.status(400).json({ 
-          error: 'Base64 inválido para imagen' 
-        });
-      }
-      if (tipo === 'video' && !url.startsWith('data:video/')) {
-        return res.status(400).json({ 
-          error: 'Base64 inválido para video' 
-        });
-      }
-    } else {
-      // Es URL - validar formato básico
-      try {
-        new URL(url);
-      } catch (e) {
-        return res.status(400).json({ 
-          error: 'URL inválida' 
-        });
-      }
-    }
-
-    // Insertar en la base de datos
-    const [result] = await pool.query(
-      `INSERT INTO medios 
-       (tipo, url, nombre, orden, es_local, tamano_kb) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        tipo, 
-        url, 
-        nombre, 
-        orden || 0,
-        es_local || isBase64,
-        tamano_kb || Math.round(urlLength / 1024)
-      ]
-    );
-    
-    console.log('✅ Medio guardado:', {
-      id: result.insertId,
-      nombre,
-      url_length: urlLength
-    });
-    
-    res.json({ 
-      id: result.insertId, 
-      success: true,
-      message: 'Medio guardado correctamente'
-    });
-    
-  } catch (error) {
-    console.error('❌ Error guardando medio:', error);
-    
-    // Error específico de MySQL
-    if (error.code === 'ER_DATA_TOO_LONG') {
-      return res.status(400).json({ 
-        error: 'El archivo es demasiado grande para almacenar' 
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Error al guardar medio: ' + error.message 
-    });
-  }
-});
-
-// Actualizar medio
-app.put('/api/medios/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { tipo, url, nombre, orden, activo, es_local, tamano_kb } = req.body;
-    
-    console.log('📝 Actualizando medio:', id);
-    
-    await pool.query(
-      `UPDATE medios 
-       SET tipo = ?, 
-           url = ?, 
-           nombre = ?, 
-           orden = ?, 
-           activo = ?,
-           es_local = ?,
-           tamano_kb = ?
-       WHERE id = ?`,
-      [tipo, url, nombre, orden, activo, es_local, tamano_kb, id]
-    );
-    
-    console.log('✅ Medio actualizado:', id);
-    
-    res.json({ success: true });
-  } catch (error) {
-    console.error('❌ Error actualizando medio:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Eliminar medio (soft delete)
-app.delete('/api/medios/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    console.log('🗑️  Eliminando medio:', id);
-    
-    // Soft delete - solo desactivar
-    await pool.query(
-      'UPDATE medios SET activo = FALSE WHERE id = ?',
-      [id]
-    );
-    
-    // O hard delete si prefieres:
-    // await pool.query('DELETE FROM medios WHERE id = ?', [id]);
-    
-    console.log('✅ Medio eliminado:', id);
-    
-    res.json({ success: true });
-  } catch (error) {
-    console.error('❌ Error eliminando medio:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Endpoint para obtener información de un medio específico
 app.get('/api/medios/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -272,14 +128,137 @@ app.get('/api/medios/:id', async (req, res) => {
   }
 });
 
-// Endpoint para reordenar medios
+app.post('/api/medios', async (req, res) => {
+  try {
+    const { tipo, url, nombre, orden, es_local, tamano_kb } = req.body;
+    
+    if (!tipo || !url || !nombre) {
+      return res.status(400).json({ 
+        error: 'Faltan campos requeridos: tipo, url, nombre' 
+      });
+    }
+
+    if (!['imagen', 'video'].includes(tipo)) {
+      return res.status(400).json({ 
+        error: 'Tipo inválido. Debe ser: imagen o video' 
+      });
+    }
+
+    const urlLength = url.length;
+    const isBase64 = url.startsWith('data:');
+    
+    ('📥 Recibiendo medio:', {
+      tipo,
+      nombre,
+      es_local: es_local || isBase64,
+      tamano_kb: tamano_kb || Math.round(urlLength / 1024),
+      url_length: urlLength,
+      is_base64: isBase64
+    });
+
+    if (isBase64) {
+      if (tipo === 'imagen' && !url.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'Base64 inválido para imagen' });
+      }
+      if (tipo === 'video' && !url.startsWith('data:video/')) {
+        return res.status(400).json({ error: 'Base64 inválido para video' });
+      }
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO medios 
+       (tipo, url, nombre, orden, es_local, tamano_kb) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        tipo, 
+        url, 
+        nombre, 
+        orden || 0,
+        es_local || isBase64,
+        tamano_kb || Math.round(urlLength / 1024)
+      ]
+    );
+    
+    ('✅ Medio guardado:', {
+      id: result.insertId,
+      nombre,
+      url_length: urlLength
+    });
+    
+    res.json({ 
+      id: result.insertId, 
+      success: true,
+      message: 'Medio guardado correctamente'
+    });
+    
+  } catch (error) {
+    console.error('❌ Error guardando medio:', error);
+    
+    if (error.code === 'ER_DATA_TOO_LONG') {
+      return res.status(400).json({ 
+        error: 'El archivo es demasiado grande para almacenar' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Error al guardar medio: ' + error.message 
+    });
+  }
+});
+
+app.put('/api/medios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tipo, url, nombre, orden, activo, es_local, tamano_kb } = req.body;
+    
+    ('📝 Actualizando medio:', id);
+    
+    await pool.query(
+      `UPDATE medios 
+       SET tipo = ?, 
+           url = ?, 
+           nombre = ?, 
+           orden = ?, 
+           activo = ?,
+           es_local = ?,
+           tamano_kb = ?
+       WHERE id = ?`,
+      [tipo, url, nombre, orden, activo, es_local, tamano_kb, id]
+    );
+    
+    ('✅ Medio actualizado:', id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error actualizando medio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/medios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    ('🗑️  Eliminando medio:', id);
+    
+    await pool.query(
+      'UPDATE medios SET activo = FALSE WHERE id = ?',
+      [id]
+    );
+    
+    ('✅ Medio eliminado:', id);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error eliminando medio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/medios/reorder', async (req, res) => {
   try {
-    const { medios } = req.body; // Array de {id, orden}
+    const { medios } = req.body;
     
-    console.log('🔄 Reordenando medios...');
+    ('🔄 Reordenando medios...');
     
-    // Actualizar el orden de cada medio
     for (const medio of medios) {
       await pool.query(
         'UPDATE medios SET orden = ? WHERE id = ?',
@@ -287,8 +266,7 @@ app.post('/api/medios/reorder', async (req, res) => {
       );
     }
     
-    console.log('✅ Medios reordenados');
-    
+    ('✅ Medios reordenados');
     res.json({ success: true });
   } catch (error) {
     console.error('❌ Error reordenando medios:', error);
@@ -296,7 +274,9 @@ app.post('/api/medios/reorder', async (req, res) => {
   }
 });
 
+// ============================================
 // RUTAS DE SERVICIOS
+// ============================================
 app.get('/api/servicios', async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -304,6 +284,7 @@ app.get('/api/servicios', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo servicios:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -315,8 +296,10 @@ app.post('/api/servicios', async (req, res) => {
       'INSERT INTO servicios (nombre, descripcion, codigo, color, tiempo_promedio) VALUES (?, ?, ?, ?, ?)',
       [nombre, descripcion, codigo, color, tiempo_promedio]
     );
+    ('✅ Servicio creado:', result.insertId);
     res.json({ id: result.insertId, success: true });
   } catch (error) {
+    console.error('❌ Error creando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -329,8 +312,10 @@ app.put('/api/servicios/:id', async (req, res) => {
       'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, tiempo_promedio = ?, activo = ? WHERE id = ?',
       [nombre, descripcion, color, tiempo_promedio, activo, id]
     );
+    ('✅ Servicio actualizado:', id);
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error actualizando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -338,13 +323,17 @@ app.put('/api/servicios/:id', async (req, res) => {
 app.delete('/api/servicios/:id', async (req, res) => {
   try {
     await pool.query('UPDATE servicios SET activo = FALSE WHERE id = ?', [req.params.id]);
+    ('✅ Servicio eliminado:', req.params.id);
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error eliminando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ============================================
 // RUTAS DE PUESTOS
+// ============================================
 app.get('/api/puestos', async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -352,6 +341,7 @@ app.get('/api/puestos', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo puestos:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -363,8 +353,10 @@ app.post('/api/puestos', async (req, res) => {
       'INSERT INTO puestos (numero, nombre) VALUES (?, ?)',
       [numero, nombre]
     );
+    ('✅ Puesto creado:', result.insertId);
     res.json({ id: result.insertId, success: true });
   } catch (error) {
+    console.error('❌ Error creando puesto:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -377,14 +369,17 @@ app.put('/api/puestos/:id', async (req, res) => {
       'UPDATE puestos SET numero = ?, nombre = ?, activo = ? WHERE id = ?',
       [numero, nombre, activo, id]
     );
+    ('✅ Puesto actualizado:', id);
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error actualizando puesto:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ============================================
 // RUTAS DE USUARIOS
-// Login - CORREGIDO
+// ============================================
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -403,7 +398,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = rows[0];
     delete user.password;
     
-    console.log('✅ Login exitoso:', {
+    ('✅ Login exitoso:', {
       usuario: user.nombre,
       rol: user.rol,
       puesto: user.puesto_numero || 'Sin puesto'
@@ -411,6 +406,7 @@ app.post('/api/auth/login', async (req, res) => {
     
     res.json({ user, success: true });
   } catch (error) {
+    console.error('❌ Error en login:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -423,6 +419,7 @@ app.get('/api/usuarios', async (req, res) => {
     rows.forEach(user => delete user.password);
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo usuarios:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -434,8 +431,10 @@ app.post('/api/usuarios', async (req, res) => {
       'INSERT INTO usuarios (nombre, username, password, rol, puesto_id) VALUES (?, ?, ?, ?, ?)',
       [nombre, username, password, rol, puesto_id || null]
     );
+    ('✅ Usuario creado:', result.insertId);
     res.json({ id: result.insertId, success: true });
   } catch (error) {
+    console.error('❌ Error creando usuario:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -457,13 +456,125 @@ app.put('/api/usuarios/:id', async (req, res) => {
     params.push(id);
     
     await pool.query(query, params);
+    ('✅ Usuario actualizado:', id);
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error actualizando usuario:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ============================================
+// RUTAS DE OPERADOR-SERVICIOS
+// ============================================
+app.get('/api/operadores/:usuario_id/servicios', async (req, res) => {
+  try {
+    const { usuario_id } = req.params;
+    
+    ('📋 Consultando servicios del operador:', usuario_id);
+    
+    const [rows] = await pool.query(
+      `SELECT s.*, 
+              IF(os.id IS NOT NULL, TRUE, FALSE) as asignado,
+              os.id as asignacion_id
+       FROM servicios s
+       LEFT JOIN operador_servicios os 
+         ON s.id = os.servicio_id 
+         AND os.usuario_id = ? 
+         AND os.activo = TRUE
+       WHERE s.activo = TRUE
+       ORDER BY s.nombre`,
+      [usuario_id]
+    );
+    
+    (`✅ Servicios encontrados: ${rows.length}`);
+    res.json(rows);
+  } catch (error) {
+    console.error('❌ Error obteniendo servicios del operador:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/operadores/:usuario_id/servicios/:servicio_id', async (req, res) => {
+  try {
+    const { usuario_id, servicio_id } = req.params;
+    
+    ('➕ Asignando servicio:', { usuario_id, servicio_id });
+    
+    await pool.query(
+      `INSERT INTO operador_servicios (usuario_id, servicio_id) 
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE activo = TRUE`,
+      [usuario_id, servicio_id]
+    );
+    
+    ('✅ Servicio asignado');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error asignando servicio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/operadores/:usuario_id/servicios/:servicio_id', async (req, res) => {
+  try {
+    const { usuario_id, servicio_id } = req.params;
+    
+    ('➖ Desasignando servicio:', { usuario_id, servicio_id });
+    
+    await pool.query(
+      'DELETE FROM operador_servicios WHERE usuario_id = ? AND servicio_id = ?',
+      [usuario_id, servicio_id]
+    );
+    
+    ('✅ Servicio desasignado');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('❌ Error desasignando servicio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/operadores-servicios', async (req, res) => {
+  try {
+    ('📋 Consultando operadores con servicios...');
+    
+    const [operadores] = await pool.query(
+      `SELECT DISTINCT
+        u.id,
+        u.nombre,
+        u.username,
+        u.puesto_id,
+        p.numero as puesto_numero
+       FROM usuarios u
+       LEFT JOIN puestos p ON u.puesto_id = p.id
+       WHERE u.rol = 'operador' AND u.activo = TRUE
+       ORDER BY u.nombre`
+    );
+    
+    for (let operador of operadores) {
+      const [servicios] = await pool.query(
+        `SELECT s.id, s.nombre, s.codigo, s.color
+         FROM operador_servicios os
+         JOIN servicios s ON os.servicio_id = s.id
+         WHERE os.usuario_id = ? AND os.activo = TRUE AND s.activo = TRUE
+         ORDER BY s.nombre`,
+        [operador.id]
+      );
+      operador.servicios = servicios;
+    }
+    
+    (`✅ Operadores encontrados: ${operadores.length}`);
+    res.json(operadores);
+  } catch (error) {
+    console.error('❌ Error obteniendo operadores con servicios:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
 // RUTAS DE TICKETS
+// ============================================
 app.post('/api/tickets', async (req, res) => {
   try {
     const { servicio_id, tipo_identificacion, identificacion } = req.body;
@@ -485,12 +596,15 @@ app.post('/api/tickets', async (req, res) => {
       [insertResult.insertId, 'creado']
     );
     
+    ('✅ Ticket creado:', numero);
+    
     res.json({ 
       id: insertResult.insertId,
       numero,
       success: true 
     });
   } catch (error) {
+    console.error('❌ Error creando ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -502,61 +616,45 @@ app.get('/api/tickets/espera', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo tickets en espera:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/tickets/llamados', async (req, res) => {
   try {
+    ('📞 Consultando tickets llamados...');
+    
     const [rows] = await pool.query(
-      'SELECT * FROM vista_tickets WHERE estado IN ("llamado", "en_atencion") ORDER BY llamado_at DESC LIMIT 5'
+      `SELECT * FROM vista_tickets 
+       WHERE estado IN ('llamado', 'en_atencion') 
+       ORDER BY llamado_at DESC 
+       LIMIT 5`
     );
+    
+    (`✅ Tickets llamados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo tickets llamados:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// En server.js - Este endpoint debe estar así
 app.get('/api/tickets/operador/:usuario_id', async (req, res) => {
   try {
     const { usuario_id } = req.params;
     
-    console.log('📋 Consultando tickets del operador ID:', usuario_id);
+    ('📋 Consultando tickets del operador:', usuario_id);
     
     const [rows] = await pool.query(
-      `SELECT 
-        id,
-        numero,
-        servicio_id,
-        tipo_identificacion,
-        identificacion,
-        estado,
-        usuario_id,
-        puesto_id,
-        llamado_veces,
-        created_at,
-        llamado_at,
-        servicio_nombre,
-        servicio_codigo,
-        servicio_color,
-        puesto_numero,
-        puesto_nombre,
-        operador_nombre
-       FROM vista_tickets 
+      `SELECT * FROM vista_tickets 
        WHERE usuario_id = ?
        AND estado NOT IN ('atendido', 'no_presentado', 'cancelado') 
        ORDER BY created_at DESC`,
       [usuario_id]
     );
     
-    console.log(`📋 Tickets encontrados para operador ${usuario_id}:`, rows.length);
-    if (rows.length > 0) {
-      rows.forEach(t => {
-        console.log(`   🎫 ${t.numero} - Estado: ${t.estado} - Servicio: ${t.servicio_nombre}`);
-      });
-    }
-    
+    (`✅ Tickets encontrados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
     console.error('❌ Error obteniendo tickets del operador:', error);
@@ -569,13 +667,17 @@ app.post('/api/tickets/:id/llamar', async (req, res) => {
     const { id } = req.params;
     const { usuario_id, puesto_id } = req.body;
     
+    ('📞 Llamando ticket:', { id, usuario_id, puesto_id });
+    
     await pool.query(
       'CALL llamar_ticket(?, ?, ?)',
       [id, usuario_id, puesto_id]
     );
     
+    ('✅ Ticket llamado');
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error llamando ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -586,8 +688,10 @@ app.post('/api/tickets/:id/atender', async (req, res) => {
     const { usuario_id } = req.body;
     
     await pool.query('CALL atender_ticket(?, ?)', [id, usuario_id]);
+    ('✅ Ticket en atención');
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error atendiendo ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -602,13 +706,17 @@ app.post('/api/tickets/:id/finalizar', async (req, res) => {
       [id, usuario_id, estado]
     );
     
+    ('✅ Ticket finalizado:', estado);
     res.json({ success: true });
   } catch (error) {
+    console.error('❌ Error finalizando ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// RUTAS DE HISTORIAL Y ESTADÍSTICAS
+// ============================================
+// HISTORIAL Y ESTADÍSTICAS
+// ============================================
 app.get('/api/historial', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin, servicio_id } = req.query;
@@ -644,6 +752,83 @@ app.get('/api/historial', async (req, res) => {
     const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error obteniendo historial:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// En backend/server.js - REEMPLAZAR el endpoint de historial
+
+app.get('/api/historial', async (req, res) => {
+  try {
+    const { fecha_inicio, fecha_fin, servicio_id, estado, limit } = req.query;
+    
+    let query = `
+      SELECT 
+        t.id,
+        t.numero,
+        t.tipo_identificacion,
+        t.identificacion,
+        t.estado,
+        t.llamado_veces,
+        t.created_at,
+        t.llamado_at,
+        t.atendido_at,
+        s.nombre as servicio_nombre,
+        s.codigo as servicio_codigo,
+        s.color as servicio_color,
+        u.nombre as operador_nombre,
+        p.numero as puesto_numero,
+        TIMESTAMPDIFF(MINUTE, t.created_at, t.llamado_at) as tiempo_espera_minutos,
+        TIMESTAMPDIFF(MINUTE, t.llamado_at, t.atendido_at) as tiempo_atencion_minutos,
+        TIMESTAMPDIFF(MINUTE, t.created_at, t.atendido_at) as tiempo_total_minutos
+      FROM tickets t
+      LEFT JOIN servicios s ON t.servicio_id = s.id
+      LEFT JOIN usuarios u ON t.usuario_id = u.id
+      LEFT JOIN puestos p ON t.puesto_id = p.id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    if (fecha_inicio) {
+      query += ' AND DATE(t.created_at) >= ?';
+      params.push(fecha_inicio);
+    }
+    
+    if (fecha_fin) {
+      query += ' AND DATE(t.created_at) <= ?';
+      params.push(fecha_fin);
+    }
+    
+    if (servicio_id) {
+      query += ' AND t.servicio_id = ?';
+      params.push(servicio_id);
+    }
+    
+    if (estado) {
+      query += ' AND t.estado = ?';
+      params.push(estado);
+    }
+    
+    query += ' ORDER BY t.created_at DESC';
+    
+    if (limit) {
+      query += ' LIMIT ?';
+      params.push(parseInt(limit));
+    } else {
+      query += ' LIMIT 500'; // Límite por defecto
+    }
+    
+    console.log('📋 Consultando historial...');
+    
+    const [rows] = await pool.query(query, params);
+    
+    console.log(`✅ Historial encontrado: ${rows.length} tickets`);
+    
+    res.json(rows);
+  } catch (error) {
+    console.error('❌ Error obteniendo historial:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -667,29 +852,32 @@ app.get('/api/estadisticas', async (req, res) => {
       tiempo_promedio: 0
     });
   } catch (error) {
+    console.error('❌ Error obteniendo estadísticas:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ============================================
 // WEBSOCKET
+// ============================================
 const WebSocket = require('ws');
 const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('╔════════════════════════════════════════╗');
-  console.log('║   🎫 SISTEMA DE GESTIÓN DE COLAS      ║');
-  console.log('╚════════════════════════════════════════╝');
-  console.log('');
-  console.log(`🌐 Servidor: http://localhost:${PORT}`);
-  console.log(`📊 Base de datos: ${process.env.DB_NAME || 'gestion_colas'}`);
-  console.log('');
+  ('');
+  ('╔════════════════════════════════════════╗');
+  ('║   🎫 SISTEMA DE GESTIÓN DE COLAS      ║');
+  ('╚════════════════════════════════════════╝');
+  ('');
+  (`🌐 Servidor: http://localhost:${PORT}`);
+  (`📊 Base de datos: ${process.env.DB_NAME || 'gestion_colas'}`);
+  ('');
 });
 
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
-  console.log('✅ Cliente WebSocket conectado');
+  ('✅ Cliente WebSocket conectado');
   ws.on('close', () => {
-    console.log('❌ Cliente WebSocket desconectado');
+    ('❌ Cliente WebSocket desconectado');
   });
 });
 
@@ -702,7 +890,7 @@ global.notificarCambio = (tipo, data) => {
 };
 
 process.on('SIGINT', () => {
-  console.log('\n👋 Cerrando servidor...');
+  ('\n👋 Cerrando servidor...');
   server.close(() => {
     pool.end();
     process.exit(0);

@@ -111,7 +111,7 @@ function PantallaCliente() {
         //console.log("Enviar SMS al:", identificacion);
         SendTwilioSms("mensaje a enviar",identificacion);
       } else {
-        await imprimirTicket(ticket);
+        await imprimirTicket(ticket, servicio.nombre);
       }
     } catch (error) {
       console.error("Error creando ticket:", error);
@@ -119,21 +119,25 @@ function PantallaCliente() {
     }
   };
 
-  const imprimirTicket = async (ticket) => {
-    console.log("imprimir")
-    // try {
-    //   await fetch("http://localhost:8080/imprimir", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({
-    //       ticketNumber: ticket.numero,
-    //       message: servicioSeleccionado?.nombre,
-    //     }),
-    //   });
-    // } catch (error) {
-    //   console.error("Error al imprimir:", error);
-    // }
+  const imprimirTicket = async (ticket,service) => {
+    console.log("imprimir", ticket)
+    try {
+      //await API.PrintTicket(ticket, service);
+    } catch (error) {
+      console.error("Error al imprimir:", error);
+    }
   };
+
+    const handleGuardarConfiguracion = async () => {
+      try {
+        await API.updateConfiguracion(configuracion.id, configuracion);
+        alert("Configuración guardada.");
+        cargarDatos();
+      } catch (error) {
+        console.error("Error guardando configuración:", error);
+        alert("Error al guardar la configuración");
+      }
+    };
 
   const handleReiniciar = () => {
     setPaso(1);
