@@ -18,11 +18,8 @@ function PantallaOperador() {
     try {
       const result = await API.login(username, password);
       if (result.success) {
-        
         const servicios = await API.getOperadorServicios(result.user.id);
-        const asignados = servicios
-          .filter((s) => s.asignado)
-          .map((s) => s.id);
+        const asignados = servicios.filter((s) => s.asignado).map((s) => s.id);
 
         setServiciosAsignados(asignados);
         setUsuario(result.user);
@@ -36,24 +33,21 @@ function PantallaOperador() {
     setLoading(false);
   };
 
-
   useEffect(() => {
     if (!usuario || serviciosAsignados.length === 0) return;
-    
+
     cargarTickets();
     const interval = setInterval(cargarTickets, 3000);
     return () => clearInterval(interval);
-  }, [usuario, serviciosAsignados]); 
+  }, [usuario, serviciosAsignados]);
 
   const cargarTickets = async () => {
     try {
-      
       const todosTickets = await API.getTicketsEspera();
       const ticketsFiltrados = todosTickets.filter((ticket) => {
         const incluido = serviciosAsignados.includes(ticket.servicio_id);
         return incluido;
       });
-
 
       setTicketsEspera(ticketsFiltrados);
 
@@ -63,8 +57,6 @@ function PantallaOperador() {
       );
 
       setTicketActual(ticketEnAtencion || null);
-
-     
     } catch (error) {
       console.error("Error cargando tickets:", error);
     }
@@ -138,6 +130,20 @@ function PantallaOperador() {
     }
   };
 
+  function tiempoTranscurrido(fecha) {
+    const diffMs = Date.now() - new Date(fecha).getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 1) return "justo ahora";
+    if (diffMin < 60) return `hace ${diffMin} min`;
+
+    const diffHoras = Math.floor(diffMin / 60);
+    if (diffHoras < 24) return `hace ${diffHoras} h`;
+
+    const diffDias = Math.floor(diffHoras / 24);
+    return `hace ${diffDias} días`;
+  }
+
   if (!usuario) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center p-8">
@@ -184,8 +190,7 @@ function PantallaOperador() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors"
-            >
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors">
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
@@ -229,8 +234,7 @@ function PantallaOperador() {
               setTicketsEspera([]);
               setServiciosAsignados([]);
             }}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition-colors">
             <LogOut className="w-5 h-5" />
             Cerrar Sesión
           </button>
@@ -250,8 +254,7 @@ function PantallaOperador() {
               <div className="text-center">
                 <div
                   className="text-7xl font-extrabold mb-4 animate-pulse"
-                  style={{ color: ticketActual.servicio_color || "#1E40AF" }}
-                >
+                  style={{ color: ticketActual.servicio_color || "#1E40AF" }}>
                   {ticketActual.numero}
                 </div>
                 <div className="text-2xl text-gray-700 mb-2 font-semibold">
@@ -270,22 +273,19 @@ function PantallaOperador() {
                 <div className="grid grid-cols-1 gap-3 mt-8">
                   <button
                     onClick={handleReLlamar}
-                    className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
-                  >
+                    className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
                     <PhoneCall className="w-6 h-6" />
                     Llamar de Nuevo
                   </button>
                   <button
                     onClick={handleAtendido}
-                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
-                  >
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
                     <Check className="w-6 h-6" />
                     Atendido
                   </button>
                   <button
                     onClick={handleNoPresento}
-                    className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
-                  >
+                    className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
                     <X className="w-6 h-6" />
                     No se Presentó
                   </button>
@@ -332,8 +332,7 @@ function PantallaOperador() {
                 attend === true ||
                 serviciosAsignados.length === 0
               }
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-bold text-xl mb-6 transition-all transform hover:scale-105 active:scale-95 disabled:transform-none shadow-lg"
-            >
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-bold text-xl mb-6 transition-all transform hover:scale-105 active:scale-95 disabled:transform-none shadow-lg">
               {serviciosAsignados.length === 0
                 ? "Sin servicios asignados"
                 : ticketsEspera.length === 0
@@ -350,16 +349,14 @@ function PantallaOperador() {
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border-l-4"
                   style={{
                     borderLeftColor: ticket.servicio_color || "#1E40AF",
-                  }}
-                >
+                  }}>
                   <div className="flex items-center gap-4">
                     <div className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
                       {index + 1}
                     </div>
                     <span
                       className="text-2xl font-bold"
-                      style={{ color: ticket.servicio_color || "#1E40AF" }}
-                    >
+                      style={{ color: ticket.servicio_color || "#1E40AF" }}>
                       {ticket.numero}
                     </span>
                   </div>
@@ -368,13 +365,7 @@ function PantallaOperador() {
                       {ticket.servicio_nombre}
                     </div>
                     <div className="text-sm text-indigo-600">
-                      {Math.floor(
-                        (Date.now() - new Date(ticket.created_at)) / 60000
-                      ) < 1
-                        ? "justo ahora"
-                        : `hace ${Math.floor(
-                            (Date.now() - new Date(ticket.created_at)) / 60000
-                          )} min`}
+                      {tiempoTranscurrido(ticket.created_at)}
                     </div>
                   </div>
                 </div>

@@ -12,6 +12,7 @@ function PantallaAnuncios() {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [ticketNuevo, setTicketNuevo] = useState(null);
+  const [ticketEspera, setTicketEspera] = useState([]);
 
   const [showSpeaker, setShowSpeaker] = useState(true);
 
@@ -75,6 +76,7 @@ function PantallaAnuncios() {
     const cargarTickets = async () => {
       try {
         const tickets = await API.getTicketsLlamados();
+        const esperaTickets = await API.getTicketsEspera();
 
         // Detectar nuevo ticket llamado
         if (tickets.length > 0 && ticketsAnteriores.length > 0) {
@@ -83,22 +85,12 @@ function PantallaAnuncios() {
           );
 
           if (nuevoTicket) {
-            // Log en consola
-            console.log("TICKET LLAMADO EN PANTALLA:", {
-              numero: nuevoTicket.numero,
-              servicio: nuevoTicket.servicio_nombre,
-              puesto: nuevoTicket.puesto_numero,
-              hora: new Date().toLocaleTimeString("es-ES"),
-            });
-
-            // Mostrar animación
             setTicketNuevo(nuevoTicket);
 
             // Reproducir sonido (opcional)
             // const audio = new Audio('/notification.mp3');
             // audio.play();
 
-            // Quitar animación después de 5 segundos
             setTimeout(() => {
               setTicketNuevo(null);
             }, 9000);
@@ -107,6 +99,7 @@ function PantallaAnuncios() {
 
         ticketsAnteriores = tickets;
         setTicketsLlamados(tickets);
+        setTicketEspera(esperaTickets);
       } catch (error) {
         console.error("Error cargando tickets:", error);
       }
@@ -129,35 +122,32 @@ function PantallaAnuncios() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg ">
+        <div className=" mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             {config?.logo_url && (
               <img
                 src={config.logo_url}
                 alt="Logo"
-                className="w-20 h-20 drop-shadow-lg object-contain rounded-lg p-1"
+                className="w-20 h-20 drop-shadow-lg object-contain rounded-lg p-1 2xl:w-20 2xl:h-40"
               />
             )}
-            <h1 className="text-3xl font-bold">
+            <h1 className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-8xl font-bold">
               {config?.nombre_empresa || "MI EMPRESA"}
             </h1>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-2 text-lg font-semibold mb-1">
-              <Calendar className="w-5 h-5" />
+            <div className="flex items-center gap-2 text-xl sm:text-xl md:text-1xl lg:text-2xl xl:text-3xl 2xl:text-6xl font-semibold mb-1">
               <span className="capitalize">{fecha}</span>
             </div>
-            <div className="flex items-center gap-2 text-4xl font-bold">
-              <Clock className="w-8 h-8" />
+
+            <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-8xl font-bold">
               <span>{hora}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Animación de ticket nuevo llamado */}
       {ticketNuevo && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-3xl p-16 max-w-2xl w-full mx-4 shadow-2xl animate-bounce-in">
@@ -191,80 +181,122 @@ function PantallaAnuncios() {
         </div>
       )}
 
-      {/* Contenido */}
-      <div className="max-w-7xl mx-auto p-8">
-        {ticketsLlamados.length > 0 ? (
-          <div>
-            <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3">
-              <Bell className="w-10 h-10 text-blue-600" />
-              Tickets Llamados
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {ticketsLlamados.map((ticket, index) => (
-                <div
-                  key={ticket.id}
-                  className={`bg-white rounded-2xl p-8 shadow-lg border-l-8 transform transition-all duration-300 hover:scale-105 ${
-                    index === 0 ? "ring-4 ring-blue-400 animate-pulse-slow" : ""
-                  }`}
-                  style={{
-                    borderLeftColor: ticket.servicio_color,
-                    animationDelay: `${index * 100}ms`,
-                  }}>
-                  <div className="text-center">
-                    {index === 0 && (
-                      <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
-                        ¡AHORA!
+      <div className="p-8">
+        {ticketsLlamados.length > 0 || ticketEspera.length > 0 ? (
+          <div className="flex flex-row justify-around">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 2xl:text-8xl">
+                <Bell className="w-20 h-20 text-orange-500 2xl:w-40 2xl:h-40" />
+                Tickets Llamados
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ticketsLlamados.map((ticket, index) => (
+                  <div
+                    key={ticket.id}
+                    className={`bg-white rounded-2xl p-8 shadow-lg border-l-8 transform transition-all duration-300 hover:scale-105 ${
+                      index === 0
+                        ? "ring-4 ring-blue-400 animate-pulse-slow"
+                        : ""
+                    }`}
+                    style={{
+                      borderLeftColor: ticket.servicio_color,
+                      animationDelay: `${index * 100}ms`,
+                    }}>
+                    <div className="text-center">
+                      {index === 0 && (
+                        <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
+                          ¡AHORA!
+                        </div>
+                      )}
+                      <div
+                        className="text-6xl font-extrabold mb-4"
+                        style={{ color: ticket.servicio_color }}>
+                        {ticket.numero}
                       </div>
-                    )}
-                    <div
-                      className="text-6xl font-extrabold mb-4"
-                      style={{ color: ticket.servicio_color }}>
-                      {ticket.numero}
-                    </div>
-                    <div className="text-3xl font-bold text-gray-800 mb-2">
-                      Puesto{" "}
-                      <span className="text-blue-600">
-                        {ticket.puesto_numero}
-                      </span>
-                    </div>
-                    <div className="text-xl text-gray-600">
-                      {ticket.servicio_nombre}
-                    </div>
-                    {ticket.llamado_veces > 1 && (
-                      <div className="mt-3 text-sm text-orange-600 font-semibold">
-                        llamado por: ({ticket.llamado_veces}ª vez)
-                        <DemoSpeaker
-                          key={`${ticket.id}-${ticket.llamado_veces}`}
-                          number={ticket.numero}
-                          text={ticket.puesto_nombre}
-                        />
+                      <div className="text-3xl font-bold text-gray-800 mb-2">
+                        Puesto{" "}
+                        <span className="text-blue-600">
+                          {ticket.puesto_numero} - {ticket.puesto_nombre}
+                        </span>
                       </div>
-                    )}
+                      {ticket.llamado_veces > 1 && (
+                        <div className="mt-3 text-sm text-orange-600 font-semibold">
+                          llamado por: ({ticket.llamado_veces}ª vez)
+                          <DemoSpeaker
+                            key={`${ticket.id}-${ticket.llamado_veces}`}
+                            number={ticket.numero}
+                            text={ticket.puesto_nombre}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+            <div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 2xl:text-8xl">
+                <Clock className="w-20 h-20 text-amber-600 2xl:w-40 2xl:h-40" />
+                Tickets en Espera
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ticketEspera
+                  .map((ticket, index) => (
+                    <div
+                      key={ticket.id}
+                      className={`bg-white rounded-2xl p-8 shadow-lg border-l-8 `}
+                      style={{
+                        borderLeftColor: ticket.servicio_color,
+                        animationDelay: `${index * 100}ms`,
+                      }}>
+                      <div className="text-center">
+                        <div
+                          className="text-6xl font-extrabold mb-4"
+                          style={{ color: ticket.servicio_color }}>
+                          {ticket.numero}
+                        </div>
+                        <div className="text-3xl font-bold text-gray-800 mb-2">
+                          <span className="text-blue-600">
+                            {ticket.servicio_nombre}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                  .reverse()}
+              </div>
             </div>
           </div>
         ) : (
           <div
             className="flex items-center justify-center"
-            style={{ height: "calc(100vh - 200px)" }}>
+            style={{ height: "calc(100vh - 300px)" }}>
             {medios.length > 0 && (
-              <div className="w-full max-w-6xl mx-auto animate-fade-in">
-                {/* Contenedor principal */}
-                <div className="relative bg-gray-900 rounded-3xl shadow-2xl overflow-hidden">
-                  {/* Imagen/Video */}
-                  <div className="relative w-full h-[60vh] min-h-[400px] max-h-[700px] flex items-center justify-center p-8">
+              <div className="w-full h-full mx-auto animate-fade-in">
+                <div className="relative bg-gray-900 rounded-3xl shadow-2xl overflow-hidden h-full">
+                  <div className="relative w-full h-full flex items-center justify-center p-8">
                     {medios[mediaIndex].tipo === "imagen" ? (
                       <img
                         src={medios[mediaIndex].url}
                         alt={medios[mediaIndex].nombre}
-                        className="max-w-full max-h-full object-contain rounded-xl"
+                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          width: "auto",
+                          height: "auto",
+                        }}
                       />
                     ) : (
                       <video
                         src={medios[mediaIndex].url}
-                        className="max-w-full max-h-full object-contain rounded-xl"
+                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          width: "auto",
+                          height: "auto",
+                        }}
                         autoPlay
                         muted
                         loop
@@ -272,7 +304,6 @@ function PantallaAnuncios() {
                     )}
                   </div>
 
-                  {/* Indicadores (si hay más de un medio) */}
                   {medios.length > 1 && (
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
                       {medios.map((_, index) => (
@@ -288,7 +319,7 @@ function PantallaAnuncios() {
                     </div>
                   )}
 
-                  {/* Contador (opcional) */}
+                  {/* Contador */}
                   <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
                     {mediaIndex + 1} / {medios.length}
                   </div>

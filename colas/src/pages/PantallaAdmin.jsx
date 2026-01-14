@@ -26,7 +26,25 @@ import {
   XCircle,
   AlertCircle,
   User,
+  File,
+  FileSpreadsheet,
 } from "lucide-react";
+
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 function PantallaAdmin() {
   const [seccion, setSeccion] = useState("configuracion");
@@ -109,8 +127,6 @@ function PantallaAdmin() {
 
   const cargarHistorial = async () => {
     try {
-      console.log("📋 Cargando historial...");
-
       const params = {
         fecha_inicio: filtrosHistorial.fecha_inicio,
         fecha_fin: filtrosHistorial.fecha_fin,
@@ -150,11 +166,9 @@ function PantallaAdmin() {
         }, {})
       ).reverse();
 
-      setHistorial(historialFiltrado)
-
-      console.log(`✅ Historial cargado: ${dataFiltrada.length} tickets`);
+      setHistorial(historialFiltrado);
     } catch (error) {
-      console.error("❌ Error cargando historial:", error);
+      console.error("Error cargando historial:", error);
     }
   };
 
@@ -170,7 +184,7 @@ function PantallaAdmin() {
         bg: "bg-red-100",
         text: "text-red-700",
         icon: XCircle,
-        label: "No Presentado",
+        label: "No Atendido",
       },
       espera: {
         bg: "bg-yellow-100",
@@ -215,29 +229,25 @@ function PantallaAdmin() {
 
   const cargarEstadisticasCompletas = async () => {
     try {
-      console.log("📊 Cargando estadísticas completas...");
-
       const [rango, servicios, operadores, horas, resumen] = await Promise.all([
         API.getEstadisticasRango(fechaInicio, fechaFin),
         API.getEstadisticasServicios(fechaInicio, fechaFin),
         API.getEstadisticasOperadores(fechaInicio, fechaFin),
-        API.getEstadisticasHoras(fechaFin), // Último día
+        API.getEstadisticasHoras(fechaFin),
         API.getEstadisticasResumen(fechaInicio, fechaFin),
       ]);
 
       setEstadisticasRango(rango);
       setEstadisticasServicios(servicios);
       setEstadisticasOperadores(operadores);
+      console.log(servicios,"tiempo server")
       setEstadisticasHoras(horas);
       setResumenGeneral(resumen);
-
-      console.log("✅ Estadísticas cargadas correctamente");
     } catch (error) {
-      console.error("❌ Error cargando estadísticas:", error);
+      console.error("Error cargando estadísticas:", error);
     }
   };
 
-  // Colores para las gráficas
   const COLORS = [
     "#3B82F6",
     "#10B981",
@@ -250,11 +260,11 @@ function PantallaAdmin() {
   const handleGuardarConfiguracion = async () => {
     try {
       await API.updateConfiguracion(configuracion.id, configuracion);
-      alert("✅ Configuración guardada correctamente");
+      alert("Configuración guardada correctamente");
       cargarDatos();
     } catch (error) {
       console.error("Error guardando configuración:", error);
-      alert("❌ Error al guardar la configuración");
+      alert("Error al guardar la configuración");
     }
   };
 
@@ -287,7 +297,7 @@ function PantallaAdmin() {
       cargarDatos();
     } catch (error) {
       console.error("Error al actualizar servicio:", error);
-      alert("❌ Error al actualizar servicio");
+      alert("Error al actualizar servicio");
     }
   };
 
@@ -314,7 +324,7 @@ function PantallaAdmin() {
       cargarDatos();
     } catch (error) {
       console.error("Error guardando servicio:", error);
-      alert("❌ Error al guardar el servicio");
+      alert("Error al guardar el servicio");
     }
   };
 
@@ -348,7 +358,7 @@ function PantallaAdmin() {
       cargarDatos();
     } catch (error) {
       console.error("Error guardando puesto:", error);
-      alert("❌ Error al guardar el puesto");
+      alert("Error al guardar el puesto");
     }
   };
 
@@ -375,7 +385,7 @@ function PantallaAdmin() {
       cargarDatos();
     } catch (error) {
       console.error("Error guardando usuario:", error);
-      alert("❌ Error al guardar el usuario");
+      alert("Error al guardar el usuario");
     }
   };
 
@@ -393,7 +403,7 @@ function PantallaAdmin() {
   const handleGuardarMedio = async () => {
     try {
       if (!formulario.url || !formulario.nombre) {
-        alert("⚠️ Por favor completa todos los campos");
+        alert("Por favor completa todos los campos");
         return;
       }
 
@@ -408,25 +418,15 @@ function PantallaAdmin() {
         es_local: isBase64,
         tamano_kb: tamanoKb,
       };
-
-      console.log("💾 Guardando medio:", {
-        nombre: medioData.nombre,
-        tipo: medioData.tipo,
-        es_local: medioData.es_local,
-        tamano_kb: medioData.tamano_kb,
-      });
-
       await API.createMedio(medioData);
-
-      console.log("✅ Medio guardado correctamente");
-      alert("✅ Medio guardado correctamente");
+      alert("Medio guardado correctamente");
 
       setEditando(null);
       setFormulario({});
       cargarDatos();
     } catch (error) {
-      console.error("❌ Error guardando medio:", error);
-      alert("❌ Error: " + error.message);
+      console.error("Error guardando medio:", error);
+      alert("Error: " + error.message);
     }
   };
 
@@ -455,7 +455,7 @@ function PantallaAdmin() {
           {
             id: "operadores-servicios",
             icon: UserCog,
-            label: "Puesto vs Servicios",
+            label: "Asignar Servicios",
           },
           { id: "medios", icon: Image, label: "Medios" },
           { id: "historial", icon: History, label: "Historial" },
@@ -557,7 +557,7 @@ function PantallaAdmin() {
                         <p
                           className="text-red-600 text-sm mt-2"
                           style={{ display: "none" }}>
-                          ⚠️ No se pudo cargar la imagen
+                          No se pudo cargar la imagen
                         </p>
                       </div>
                     )}
@@ -697,6 +697,7 @@ function PantallaAdmin() {
                               codigo: e.target.value,
                             })
                           }
+                          disabled={editando !== "nuevo"}
                           className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                           maxLength={10}
                         />
@@ -889,7 +890,9 @@ function PantallaAdmin() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {puestos.map((puesto) => (
-                    <div key={puesto.id} className="p-6 bg-gray-50 rounded-xl">
+                    <div
+                      key={puesto.id}
+                      className="p-6 bg-blue-50 rounded-xl border-l-4 border-blue-600">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <div className="text-3xl font-bold text-blue-600 mb-2">
@@ -1127,14 +1130,14 @@ function PantallaAdmin() {
                                 }`}>
                                 {operador.nombre}
                               </h4>
-                              <p
+                              {/* <p
                                 className={`text-sm ${
                                   operadorSeleccionado?.id === operador.id
                                     ? "text-blue-100"
                                     : "text-gray-600"
                                 }`}>
                                 {operador.username}
-                              </p>
+                              </p> */}
                               {operador.puesto_numero && (
                                 <p
                                   className={`text-xs mt-1 ${
@@ -1142,7 +1145,7 @@ function PantallaAdmin() {
                                       ? "text-blue-100"
                                       : "text-gray-500"
                                   }`}>
-                                  Puesto: {operador.puesto_numero}
+                                  Puesto: {operador.puesto_nombre}
                                 </p>
                               )}
                             </div>
@@ -1207,7 +1210,7 @@ function PantallaAdmin() {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-2 rounded-xl border-blue-200 p-3">
                           {serviciosOperador.map((servicio) => (
                             <div
                               key={servicio.id}
@@ -1215,7 +1218,7 @@ function PantallaAdmin() {
                               className={`p-6 rounded-xl cursor-pointer transition-all border-2 ${
                                 servicio.asignado
                                   ? "border-green-500 bg-green-50 shadow-md"
-                                  : "border-gray-200 bg-white hover:border-gray-300"
+                                  : "border-red-200 bg-red-50 hover:border-gray-300"
                               }`}>
                               <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 pt-1">
@@ -1223,9 +1226,9 @@ function PantallaAdmin() {
                                     className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                                       servicio.asignado
                                         ? "bg-green-500 border-green-500"
-                                        : "border-gray-300"
+                                        : "bg-red-500 border-red-300"
                                     }`}>
-                                    {servicio.asignado && (
+                                    {servicio.asignado ? (
                                       <svg
                                         className="w-4 h-4 text-white"
                                         fill="none"
@@ -1236,6 +1239,19 @@ function PantallaAdmin() {
                                           strokeLinejoin="round"
                                           strokeWidth={3}
                                           d="M5 13l4 4L19 7"
+                                        />
+                                      </svg>
+                                    ) : (
+                                      <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={3}
+                                          d="M6 18L18 6M6 6l12 12"
                                         />
                                       </svg>
                                     )}
@@ -1368,7 +1384,7 @@ function PantallaAdmin() {
                                 : 20 * 1024 * 1024;
                             if (file.size > maxSize) {
                               alert(
-                                `⚠️ El archivo es demasiado grande. Máximo: ${
+                                `El archivo es demasiado grande. Máximo: ${
                                   formulario.tipo === "imagen" ? "5MB" : "20MB"
                                 }`
                               );
@@ -1394,7 +1410,7 @@ function PantallaAdmin() {
                               !validImageTypes.includes(file.type)
                             ) {
                               alert(
-                                "⚠️ Tipo de archivo no válido. Solo: JPG, PNG, GIF, WebP"
+                                "Tipo de archivo no válido. Solo: JPG, PNG, GIF, WebP"
                               );
                               e.target.value = "";
                               return;
@@ -1405,36 +1421,21 @@ function PantallaAdmin() {
                               !validVideoTypes.includes(file.type)
                             ) {
                               alert(
-                                "⚠️ Tipo de archivo no válido. Solo: MP4, WebM, OGG"
+                                "Tipo de archivo no válido. Solo: MP4, WebM, OGG"
                               );
                               e.target.value = "";
                               return;
                             }
 
-                            console.log("📁 Archivo seleccionado:", {
-                              nombre: file.name,
-                              tipo: file.type,
-                              tamaño: (file.size / 1024).toFixed(2) + " KB",
-                            });
-
                             const reader = new FileReader();
-                            reader.onloadstart = () => {
-                              console.log(
-                                "⏳ Convirtiendo archivo a base64..."
-                              );
-                            };
+
                             reader.onload = (event) => {
                               const base64 = event.target.result;
 
                               if (!base64 || !base64.startsWith("data:")) {
-                                alert("❌ Error al procesar el archivo");
+                                alert("Error al procesar el archivo");
                                 return;
                               }
-
-                              console.log("✅ Base64 generado:", {
-                                longitud: base64.length,
-                                inicio: base64.substring(0, 50) + "...",
-                              });
 
                               setFormulario({
                                 ...formulario,
@@ -1444,8 +1445,8 @@ function PantallaAdmin() {
                               });
                             };
                             reader.onerror = () => {
-                              console.error("❌ Error al leer el archivo");
-                              alert("❌ Error al leer el archivo");
+                              console.error("Error al leer el archivo");
+                              alert("Error al leer el archivo");
                             };
                             reader.readAsDataURL(file);
                           }}
@@ -1619,13 +1620,12 @@ function PantallaAdmin() {
                 </div>
               </div>
             )}
-
-            {/* SECCIÓN ESTADÍSTICAS */}
+            {/* SECCIÓN ESTADÍSTICAS - CORREGIDA */}
             {seccion === "estadisticas" && (
               <div className="space-y-6">
                 {/* Filtros de Fecha */}
                 <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-5 h-5 text-gray-600" />
                       <label className="text-sm font-semibold text-gray-700">
@@ -1660,7 +1660,7 @@ function PantallaAdmin() {
 
                 {/* Resumen General */}
                 {resumenGeneral && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold opacity-90">
@@ -1668,7 +1668,7 @@ function PantallaAdmin() {
                         </h3>
                         <BarChart3 className="w-6 h-6 opacity-75" />
                       </div>
-                      <div className="text-4xl font-bold mb-1">
+                      <div className="text-4xl font-bold mb-1 justify-self-auto">
                         {resumenGeneral.total_tickets || 0}
                       </div>
                       <p className="text-sm opacity-75">Tickets procesados</p>
@@ -1681,7 +1681,7 @@ function PantallaAdmin() {
                         </h3>
                         <TrendingUp className="w-6 h-6 opacity-75" />
                       </div>
-                      <div className="text-4xl font-bold mb-1">
+                      <div className="text-4xl font-bold mb-1 justify-self-auto">
                         {resumenGeneral.atendidos || 0}
                       </div>
                       <p className="text-sm opacity-75">
@@ -1698,26 +1698,40 @@ function PantallaAdmin() {
                     <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold opacity-90">
-                          Tiempo Promedio
+                          Tiempo aprox.
                         </h3>
                         <Clock className="w-6 h-6 opacity-75" />
                       </div>
-                      <div className="text-4xl font-bold mb-1">
+                      <div className="text-4xl font-bold mb-1 justify-self-auto">
                         {Math.round(
-                          resumenGeneral.tiempo_promedio_minutos || 0
+                          resumenGeneral.tiempo_promedio_servicio || 0
                         )}
+                        <span className="text-xl m-4">(min)</span>
                       </div>
-                      <p className="text-sm opacity-75">Minutos por ticket</p>
+                      <p className="text-sm opacity-75">Tiempo de atención aprox.</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-semibold opacity-90">
+                          Tiempo aprox.
+                        </h3>
+                        <Clock className="w-6 h-6 opacity-75" />
+                      </div>
+                      <div className="text-4xl font-bold mb-1 justify-self-auto">
+                        {Math.round(resumenGeneral.tiempo_promedio_espera || 0)}
+                        <span className="text-xl m-4">(min)</span>
+                      </div>
+                      <p className="text-sm opacity-75">Promedio de espera aprox.</p>
                     </div>
 
                     <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold opacity-90">
-                          No Presentados
+                          No Atendido
                         </h3>
                         <X className="w-6 h-6 opacity-75" />
                       </div>
-                      <div className="text-4xl font-bold mb-1">
+                      <div className="text-4xl font-bold mb-1 justify-self-auto">
                         {resumenGeneral.no_presentados || 0}
                       </div>
                       <p className="text-sm opacity-75">
@@ -1738,62 +1752,165 @@ function PantallaAdmin() {
                   <h3 className="text-2xl font-bold text-gray-800 mb-6">
                     Tickets por Día
                   </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={estadisticasRango}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="fecha"
-                        tickFormatter={(value) => {
-                          const date = new Date(value);
-                          return `${date.getDate()}/${date.getMonth() + 1}`;
-                        }}
-                      />
-                      <YAxis />
-                      <Tooltip
-                        labelFormatter={(value) => {
-                          const date = new Date(value);
-                          return date.toLocaleDateString("es-ES");
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="total_tickets"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                        name="Total"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="atendidos"
-                        stroke="#10B981"
-                        strokeWidth={2}
-                        name="Atendidos"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="no_presentados"
-                        stroke="#EF4444"
-                        strokeWidth={2}
-                        name="No Presentados"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {estadisticasRango && estadisticasRango.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={estadisticasRango}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="fecha"
+                          tickFormatter={(value) => {
+                            const date = new Date(value);
+                            return `${date.getDate()} - ${date
+                              .toLocaleString("es-ES", { month: "long" })
+                              .replace(/^./, (l) => l.toUpperCase())}`;
+                          }}
+                        />
+                        <YAxis />
+                        <Tooltip
+                          labelFormatter={(value) => {
+                            const date = new Date(value);
+                            return date.toLocaleDateString("es-ES");
+                          }}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="total_tickets"
+                          stroke="#3B82F6"
+                          strokeWidth={2}
+                          name="Total"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="atendidos"
+                          stroke="#10B981"
+                          strokeWidth={2}
+                          name="Atendidos"
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="no_presentados"
+                          stroke="#EF4444"
+                          strokeWidth={2}
+                          name="No Atendido"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <p>No hay datos para mostrar en este período</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Gráficas de Servicios y Operadores */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   {/* Tickets por Servicio */}
                   <div className="bg-white rounded-2xl shadow-lg p-8">
                     <h3 className="text-2xl font-bold text-gray-800 mb-6">
                       Tickets por Servicio
                     </h3>
+                    {estadisticasServicios &&
+                    estadisticasServicios.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={estadisticasServicios}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="codigo" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar
+                            dataKey="total_tickets"
+                            fill="#3B82F6"
+                            name="Total"
+                          />
+                          <Bar
+                            dataKey="atendidos"
+                            fill="#10B981"
+                            name="Atendidos"
+                          />
+                          <Bar
+                            dataKey="no_presentados"
+                            fill="red"
+                            name="No Atendidos"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="text-center py-12 text-gray-500">
+                        <p>No hay datos de servicios</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Distribución de Estados */}
+                  {/* <div className="bg-white rounded-2xl shadow-lg p-8">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                      Distribución de Estados
+                    </h3>
+                    {resumenGeneral && resumenGeneral.total_tickets > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={[
+                              {
+                                name: "Atendidos",
+                                value: resumenGeneral?.atendidos || 0,
+                              },
+                              {
+                                name: "No Presentados",
+                                value: resumenGeneral?.no_presentados || 0,
+                              },
+                              {
+                                name: "En Espera",
+                                value: resumenGeneral?.en_espera || 0,
+                              },
+                              {
+                                name: "En Proceso",
+                                value: resumenGeneral?.en_proceso || 0,
+                              },
+                            ].filter((item) => item.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) =>
+                              `${name}: ${(percent * 100).toFixed(0)}%`
+                            }
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value">
+                            {COLORS.map((color, index) => (
+                              <Cell key={`cell-${index}`} fill={color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="text-center py-12 text-gray-500">
+                        <p>No hay datos para mostrar</p>
+                      </div>
+                    )}
+                  </div> */}
+                </div>
+
+                {/* Tickets por Hora */}
+                <div className="bg-white rounded-2xl shadow-lg p-8">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                    Tickets por Hora del Día ({fechaFin})
+                  </h3>
+                  {estadisticasHoras && estadisticasHoras.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={estadisticasServicios}>
+                      <BarChart data={estadisticasHoras}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="codigo" />
+                        <XAxis
+                          dataKey="hora"
+                          tickFormatter={(value) => `${value}:00`}
+                        />
                         <YAxis />
-                        <Tooltip />
+                        <Tooltip
+                          labelFormatter={(value) => `Hora: ${value}:00`}
+                        />
                         <Legend />
                         <Bar
                           dataKey="total_tickets"
@@ -1807,82 +1924,11 @@ function PantallaAdmin() {
                         />
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
-
-                  {/* Distribución de Estados */}
-                  <div className="bg-white rounded-2xl shadow-lg p-8">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                      Distribución de Estados
-                    </h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={[
-                            {
-                              name: "Atendidos",
-                              value: resumenGeneral?.atendidos || 0,
-                            },
-                            {
-                              name: "No Presentados",
-                              value: resumenGeneral?.no_presentados || 0,
-                            },
-                            {
-                              name: "En Espera",
-                              value: resumenGeneral?.en_espera || 0,
-                            },
-                            {
-                              name: "En Proceso",
-                              value: resumenGeneral?.en_proceso || 0,
-                            },
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) =>
-                            `${name}: ${(percent * 100).toFixed(0)}%`
-                          }
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value">
-                          {COLORS.map((color, index) => (
-                            <Cell key={`cell-${index}`} fill={color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Tickets por Hora */}
-                <div className="bg-white rounded-2xl shadow-lg p-8">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                    Tickets por Hora del Día ({fechaFin})
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={estadisticasHoras}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="hora"
-                        tickFormatter={(value) => `${value}:00`}
-                      />
-                      <YAxis />
-                      <Tooltip
-                        labelFormatter={(value) => `Hora: ${value}:00`}
-                      />
-                      <Legend />
-                      <Bar
-                        dataKey="total_tickets"
-                        fill="#3B82F6"
-                        name="Total"
-                      />
-                      <Bar
-                        dataKey="atendidos"
-                        fill="#10B981"
-                        name="Atendidos"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <p>No hay datos de tickets en este día</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Rendimiento por Operador */}
@@ -1891,57 +1937,59 @@ function PantallaAdmin() {
                     Rendimiento por Operador
                   </h3>
                   <div className="space-y-4">
-                    {estadisticasOperadores.map((operador) => (
-                      <div
-                        key={operador.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
-                            <span className="text-blue-700 font-bold">
-                              {operador.puesto_numero || "?"}
-                            </span>
+                    {estadisticasOperadores &&
+                    estadisticasOperadores.length > 0 ? (
+                      estadisticasOperadores.map((operador) => (
+                        <div
+                          key={operador.id}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                              <span className="text-blue-700 font-bold">
+                                {operador.puesto_numero || "?"}
+                              </span>
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-800">
+                                {operador.nombre}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                Puesto {operador.puesto_numero || "Sin asignar"}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-gray-800">
-                              {operador.nombre}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              Puesto {operador.puesto_numero || "Sin asignar"}
-                            </p>
+                          <div className="flex gap-8 text-center">
+                            <div>
+                              <div className="text-2xl font-bold text-blue-600">
+                                {operador.total_tickets || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">Total</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-green-600">
+                                {operador.atendidos || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Atendidos
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-yellow-600">
+                                {Math.round(
+                                  operador.tiempo_promedio_servicio || 0
+                                )}{" "}
+                                min
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Tiempo Promedio
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex gap-8 text-center">
-                          <div>
-                            <div className="text-2xl font-bold text-blue-600">
-                              {operador.total_tickets || 0}
-                            </div>
-                            <div className="text-xs text-gray-600">Total</div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">
-                              {operador.atendidos || 0}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              Atendidos
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-yellow-600">
-                              {Math.round(
-                                operador.tiempo_promedio_minutos || 0
-                              )}
-                              m
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              Promedio
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {estadisticasOperadores.length === 0 && (
+                      ))
+                    ) : (
                       <div className="text-center py-12 text-gray-500">
+                        <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                         <p>No hay datos de operadores en este período</p>
                       </div>
                     )}
@@ -1954,63 +2002,65 @@ function PantallaAdmin() {
                     Detalle por Servicio
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {estadisticasServicios.map((servicio) => (
-                      <div
-                        key={servicio.id}
-                        className="p-6 bg-gray-50 rounded-xl border-l-4"
-                        style={{ borderLeftColor: servicio.color }}>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div
-                            className="text-3xl font-bold"
-                            style={{ color: servicio.color }}>
-                            {servicio.codigo}
+                    {estadisticasServicios &&
+                    estadisticasServicios.length > 0 ? (
+                      estadisticasServicios.map((servicio) => (
+                        <div
+                          key={servicio.id}
+                          className="p-6 bg-gray-50 rounded-xl border-l-4 hover:shadow-md transition-shadow"
+                          style={{ borderLeftColor: servicio.color }}>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div
+                              className="text-3xl font-bold"
+                              style={{ color: servicio.color }}>
+                              {servicio.codigo}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-bold text-gray-800">
+                                {servicio.nombre}
+                              </h4>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-gray-800">
-                              {servicio.nombre}
-                            </h4>
+                          <div className="grid grid-cols-2 gap-4 text-center">
+                            <div>
+                              <div className="text-2xl font-bold text-blue-600">
+                                {servicio.total_tickets || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">Total</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-green-600">
+                                {servicio.atendidos || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Atendidos
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-red-600">
+                                {servicio.no_presentados || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                No Present.
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-yellow-600">
+                                {Math.round(
+                                  servicio.tiempo_promedio_servicio || 0
+                                )}{" "}
+                                min
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Tiempo Promedio
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-center">
-                          <div>
-                            <div className="text-2xl font-bold text-blue-600">
-                              {servicio.total_tickets || 0}
-                            </div>
-                            <div className="text-xs text-gray-600">Total</div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-green-600">
-                              {servicio.atendidos || 0}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              Atendidos
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-red-600">
-                              {servicio.no_presentados || 0}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              No Present.
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-2xl font-bold text-yellow-600">
-                              {Math.round(
-                                servicio.tiempo_promedio_minutos || 0
-                              )}
-                              m
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              Promedio
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {estadisticasServicios.length === 0 && (
+                      ))
+                    ) : (
                       <div className="col-span-full text-center py-12 text-gray-500">
+                        <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                         <p>No hay datos de servicios en este período</p>
                       </div>
                     )}
@@ -2109,7 +2159,7 @@ function PantallaAdmin() {
                         className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
                         <option value="">Todos</option>
                         <option value="atendido">Atendido</option>
-                        <option value="no_presentado">No Presentado</option>
+                        <option value="no_presentado">No Atendido</option>
                         <option value="en_atencion">En Atención</option>
                         <option value="llamado">Llamado</option>
                         <option value="espera">En Espera</option>
@@ -2219,7 +2269,8 @@ function PantallaAdmin() {
                         a.click();
                       }}
                       className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
-                      📥 Exportar CSV
+                      <FileSpreadsheet className="text-green-200" /> Exportar
+                      CSV
                     </button>
                   </div>
                 </div>
@@ -2227,7 +2278,6 @@ function PantallaAdmin() {
                 {/* Lista de Tickets */}
                 <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                   {historial.map((ticket) => {
-                    console.log(historial, "history");
                     const estadoInfo = getEstadoBadge(ticket.accion);
                     const IconoEstado = estadoInfo.icon;
 

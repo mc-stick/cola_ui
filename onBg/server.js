@@ -22,24 +22,19 @@ app.post('/api/print', async (req, res) => {
 
 // WEBSOCKET
 const WebSocket = require('ws');
-const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('╔══════════════════════════╗');
-  console.log('║  RUNNING ON BACKGROUND   ║');
-  console.log('╚══════════════════════════╝');
-  console.log('');
-  console.log(`🌐 Servidor: http://localhost:${PORT}`);
-  console.log('');
-});
+const server = app.listen(PORT)
+//, () => {
+//   console.log(`Servidor: http://localhost:${PORT}`);
+// });
 
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-  console.log('✅ Cliente WebSocket conectado');
-  ws.on('close', () => {
-    console.log('❌ Cliente WebSocket desconectado');
-  });
-});
+// wss.on('connection', (ws) => {
+//   console.log('WebSocket conectado');
+//   ws.on('close', () => {
+//     console.log('WebSocket desconectado');
+//   });
+// });
 
 global.notificarCambio = (tipo, data) => {
   wss.clients.forEach((client) => {
@@ -49,10 +44,10 @@ global.notificarCambio = (tipo, data) => {
   });
 };
 
-process.on('SIGINT', () => {
-  console.log('\n Cerrando servidor...');
-  server.close(() => {
-    pool.end();
-    process.exit(0);
-  });
-});
+// process.on('SIGINT', () => {
+//   console.log('\n Cerrando servidor...');
+//   server.close(() => {
+//     pool.end();
+//     process.exit(0);
+//   });
+// });

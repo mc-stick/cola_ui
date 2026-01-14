@@ -55,15 +55,11 @@ function PantallaCliente() {
   };
 
   const handleAgregarDigito = (digito) => {
-     console.log("printing ide", tipoId)
     setIdentificacion((prev) => {
-      // IDENTIFICACIÓN: máximo 8 dígitos
       if (tipoId === "identificacion" && prev.length >= 8) {
-       
         return prev;
       }
 
-      // TELÉFONO: máximo 10 dígitos
       if (tipoId === "telefono" && prev.length >= 10) {
         return prev;
       }
@@ -108,8 +104,7 @@ function PantallaCliente() {
       setPaso(4);
 
       if (tipoId === "telefono") {
-        //console.log("Enviar SMS al:", identificacion);
-        SendTwilioSms("mensaje a enviar",identificacion);
+        SendTwilioSms("mensaje a enviar", identificacion);
       } else {
         await imprimirTicket(ticket, servicio.nombre);
       }
@@ -119,8 +114,8 @@ function PantallaCliente() {
     }
   };
 
-  const imprimirTicket = async (ticket,service) => {
-    console.log("imprimir", ticket)
+  const imprimirTicket = async (ticket, service) => {
+    console.log("imprimir", ticket);
     try {
       //await API.PrintTicket(ticket, service);
     } catch (error) {
@@ -128,16 +123,16 @@ function PantallaCliente() {
     }
   };
 
-    const handleGuardarConfiguracion = async () => {
-      try {
-        await API.updateConfiguracion(configuracion.id, configuracion);
-        alert("Configuración guardada.");
-        cargarDatos();
-      } catch (error) {
-        console.error("Error guardando configuración:", error);
-        alert("Error al guardar la configuración");
-      }
-    };
+  const handleGuardarConfiguracion = async () => {
+    try {
+      await API.updateConfiguracion(configuracion.id, configuracion);
+      alert("Configuración guardada.");
+      cargarDatos();
+    } catch (error) {
+      console.error("Error guardando configuración:", error);
+      alert("Error al guardar la configuración");
+    }
+  };
 
   const handleReiniciar = () => {
     setPaso(1);

@@ -2,16 +2,16 @@ const API_URL = import.meta.env.VITE_API_URL;
 const API_PRINT = import.meta.env.VITE_API_PRINT;
 
 class API {
-  // ============================================
+ 
   // CONFIGURACIÓN
-  // ============================================
+ 
   async getConfiguracion() {
     try {
       const response = await fetch(`${API_URL}/configuracion`);
       if (!response.ok) throw new Error('Error al obtener configuración');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getConfiguracion:', error);
+      console.error(' Error en getConfiguracion:', error);
       throw error;
     }
   }
@@ -26,21 +26,21 @@ class API {
       if (!response.ok) throw new Error('Error al actualizar configuración');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en updateConfiguracion:', error);
+      console.error(' Error en updateConfiguracion:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // MEDIOS
-  // ============================================
+ 
   async getMedios() {
     try {
       const response = await fetch(`${API_URL}/medios`);
       if (!response.ok) throw new Error('Error al obtener medios');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getMedios:', error);
+      console.error(' Error en getMedios:', error);
       throw error;
     }
   }
@@ -51,15 +51,13 @@ class API {
       if (!response.ok) throw new Error('Error al obtener medio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getMedio:', error);
+      console.error(' Error en getMedio:', error);
       throw error;
     }
   }
 
   async createMedio(data) {
     try {
-      console.log('📤 Enviando medio al servidor...');
-      
       const response = await fetch(`${API_URL}/medios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +71,7 @@ class API {
       
       return response.json();
     } catch (error) {
-      console.error('❌ Error en createMedio:', error);
+      console.error(' Error en createMedio:', error);
       throw error;
     }
   }
@@ -93,7 +91,7 @@ class API {
       
       return response.json();
     } catch (error) {
-      console.error('❌ Error en updateMedio:', error);
+      console.error(' Error en updateMedio:', error);
       throw error;
     }
   }
@@ -108,27 +106,28 @@ class API {
       
       return response.json();
     } catch (error) {
-      console.error('❌ Error en deleteMedio:', error);
+      console.error(' Error en deleteMedio:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // SERVICIOS
-  // ============================================
+ 
   async getServicios() {
     try {
       const response = await fetch(`${API_URL}/servicios`);
       if (!response.ok) throw new Error('Error al obtener servicios');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getServicios:', error);
+      console.error(' Error en getServicios:', error);
       throw error;
     }
   }
   
   async createServicio(data) {
     try {
+      
       const response = await fetch(`${API_URL}/servicios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -137,7 +136,7 @@ class API {
       if (!response.ok) throw new Error('Error al crear servicio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en createServicio:', error);
+      console.error(' Error en createServicio:', error);
       throw error;
     }
   }
@@ -152,7 +151,7 @@ class API {
       if (!response.ok) throw new Error('Error al actualizar servicio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en updateServicio:', error);
+      console.error(' Error en updateServicio:', error);
       throw error;
     }
   }
@@ -165,21 +164,21 @@ class API {
       if (!response.ok) throw new Error('Error al eliminar servicio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en deleteServicio:', error);
+      console.error(' Error en deleteServicio:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // PUESTOS
-  // ============================================
+ 
   async getPuestos() {
     try {
       const response = await fetch(`${API_URL}/puestos`);
       if (!response.ok) throw new Error('Error al obtener puestos');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getPuestos:', error);
+      console.error(' Error en getPuestos:', error);
       throw error;
     }
   }
@@ -194,7 +193,7 @@ class API {
       if (!response.ok) throw new Error('Error al crear puesto');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en createPuesto:', error);
+      console.error(' Error en createPuesto:', error);
       throw error;
     }
   }
@@ -209,14 +208,14 @@ class API {
       if (!response.ok) throw new Error('Error al actualizar puesto');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en updatePuesto:', error);
+      console.error(' Error en updatePuesto:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // USUARIOS Y AUTENTICACIÓN
-  // ============================================
+ 
   async login(username, password) {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -233,7 +232,7 @@ class API {
       
       return data;
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error(' Error en login:', error);
       throw error;
     }
   }
@@ -244,7 +243,7 @@ class API {
       if (!response.ok) throw new Error('Error al obtener usuarios');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getUsuarios:', error);
+      console.error(' Error en getUsuarios:', error);
       throw error;
     }
   }
@@ -259,7 +258,7 @@ class API {
       if (!response.ok) throw new Error('Error al crear usuario');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en createUsuario:', error);
+      console.error(' Error en createUsuario:', error);
       throw error;
     }
   }
@@ -274,21 +273,21 @@ class API {
       if (!response.ok) throw new Error('Error al actualizar usuario');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en updateUsuario:', error);
+      console.error(' Error en updateUsuario:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // OPERADOR-SERVICIOS
-  // ============================================
+ 
   async getOperadorServicios(usuarioId) {
     try {
       const response = await fetch(`${API_URL}/operadores/${usuarioId}/servicios`);
       if (!response.ok) throw new Error('Error al obtener servicios del operador');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getOperadorServicios:', error);
+      console.error(' Error en getOperadorServicios:', error);
       throw error;
     }
   }
@@ -301,7 +300,7 @@ class API {
       if (!response.ok) throw new Error('Error al asignar servicio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en asignarServicioOperador:', error);
+      console.error(' Error en asignarServicioOperador:', error);
       throw error;
     }
   }
@@ -314,7 +313,7 @@ class API {
       if (!response.ok) throw new Error('Error al desasignar servicio');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en desasignarServicioOperador:', error);
+      console.error(' Error en desasignarServicioOperador:', error);
       throw error;
     }
   }
@@ -325,14 +324,14 @@ class API {
       if (!response.ok) throw new Error('Error al obtener operadores con servicios');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getOperadoresConServicios:', error);
+      console.error(' Error en getOperadoresConServicios:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // TICKETS
-  // ============================================
+ 
   async createTicket(data) {
     try {
       const response = await fetch(`${API_URL}/tickets`, {
@@ -343,7 +342,7 @@ class API {
       if (!response.ok) throw new Error('Error al crear ticket');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en createTicket:', error);
+      console.error(' Error en createTicket:', error);
       throw error;
     }
   }
@@ -354,7 +353,7 @@ class API {
       if (!response.ok) throw new Error('Error al obtener tickets en espera');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getTicketsEspera:', error);
+      console.error(' Error en getTicketsEspera:', error);
       throw error;
     }
   }
@@ -365,7 +364,7 @@ class API {
       if (!response.ok) throw new Error('Error al obtener tickets llamados');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getTicketsLlamados:', error);
+      console.error(' Error en getTicketsLlamados:', error);
       throw error;
     }
   }
@@ -376,7 +375,7 @@ class API {
       if (!response.ok) throw new Error('Error al obtener tickets del operador');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getTicketsByOperador:', error);
+      console.error(' Error en getTicketsByOperador:', error);
       throw error;
     }
   }
@@ -391,7 +390,7 @@ class API {
       if (!response.ok) throw new Error('Error al llamar ticket');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en llamarTicket:', error);
+      console.error(' Error en llamarTicket:', error);
       throw error;
     }
   }
@@ -406,7 +405,7 @@ class API {
       if (!response.ok) throw new Error('Error al atender ticket');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en atenderTicket:', error);
+      console.error(' Error en atenderTicket:', error);
       throw error;
     }
   }
@@ -421,14 +420,14 @@ class API {
       if (!response.ok) throw new Error('Error al finalizar ticket');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en finalizarTicket:', error);
+      console.error(' Error en finalizarTicket:', error);
       throw error;
     }
   }
   
-  // ============================================
+ 
   // HISTORIAL Y ESTADÍSTICAS
-  // ============================================
+ 
   async getHistorial(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
@@ -436,7 +435,7 @@ class API {
       if (!response.ok) throw new Error('Error al obtener historial');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getHistorial:', error);
+      console.error(' Error en getHistorial:', error);
       throw error;
     }
   }
@@ -448,17 +447,85 @@ class API {
       if (!response.ok) throw new Error('Error al obtener estadísticas');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en getEstadisticas:', error);
+      console.error(' Error en getEstadisticas:', error);
       throw error;
     }
   }
 
-  // ============================================
-  // SERVICIO DE IMPRESIÓN
-  // ============================================
+  async getEstadisticasRango(fechaInicio, fechaFin) {
+    try {
+      const params = new URLSearchParams();
+      if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+      if (fechaFin) params.append('fecha_fin', fechaFin);
+      
+      const response = await fetch(`${API_URL}/estadisticas/rango?${params}`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas por rango');
+      return response.json();
+    } catch (error) {
+      console.error(' Error en getEstadisticasRango:', error);
+      throw error;
+    }
+  }
+
+  async getEstadisticasServicios(fechaInicio, fechaFin) {
+    try {
+      const params = new URLSearchParams();
+      if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+      if (fechaFin) params.append('fecha_fin', fechaFin);
+      
+      const response = await fetch(`${API_URL}/estadisticas/servicios?${params}`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas por servicio');
+      return response.json();
+    } catch (error) {
+      console.error(' Error en getEstadisticasServicios:', error);
+      throw error;
+    }
+  }
+
+  async getEstadisticasOperadores(fechaInicio, fechaFin) {
+    try {
+      const params = new URLSearchParams();
+      if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+      if (fechaFin) params.append('fecha_fin', fechaFin);
+      
+      const response = await fetch(`${API_URL}/estadisticas/operadores?${params}`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas por operador');
+      return response.json();
+    } catch (error) {
+      console.error(' Error en getEstadisticasOperadores:', error);
+      throw error;
+    }
+  }
+
+  async getEstadisticasHoras(fecha) {
+    try {
+      const queryString = fecha ? `?fecha=${fecha}` : '';
+      const response = await fetch(`${API_URL}/estadisticas/horas${queryString}`);
+      if (!response.ok) throw new Error('Error al obtener estadísticas por hora');
+      return response.json();
+    } catch (error) {
+      console.error(' Error en getEstadisticasHoras:', error);
+      throw error;
+    }
+  }
+
+  async getEstadisticasResumen(fechaInicio, fechaFin) {
+    try {
+      const params = new URLSearchParams();
+      if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+      if (fechaFin) params.append('fecha_fin', fechaFin);
+      
+      const response = await fetch(`${API_URL}/estadisticas/resumen?${params}`);
+      if (!response.ok) throw new Error('Error al obtener resumen de estadísticas');
+      return response.json();
+    } catch (error) {
+      console.error(' Error en getEstadisticasResumen:', error);
+      throw error;
+    }
+  }
+
   async PrintTicket(ticket, servicio) {
     try {
-      console.log('🖨️  Enviando ticket a imprimir:', ticket.numero);
       
       const response = await fetch(`${API_PRINT}/print`, {
         method: 'POST',
@@ -468,11 +535,9 @@ class API {
       
       if (!response.ok) throw new Error('Error al imprimir ticket');
       
-      console.log('✅ Ticket impreso correctamente');
       return response.json();
     } catch (error) {
-      console.error('❌ Error en PrintTicket:', error);
-      // No lanzar error para que el ticket se cree aunque falle la impresión
+      console.error(' Error en PrintTicket:', error);
       return { success: false, error: error.message };
     }
   }
