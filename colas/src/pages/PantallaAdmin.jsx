@@ -28,6 +28,7 @@ import {
   User,
   File,
   FileSpreadsheet,
+  Check,
 } from "lucide-react";
 
 import {
@@ -86,6 +87,7 @@ function PantallaAdmin() {
 
   useEffect(() => {
     cargarDatos();
+    console.log(fechaInicio, fechaFin);
   }, [seccion]);
 
   const cargarDatos = async () => {
@@ -240,7 +242,6 @@ function PantallaAdmin() {
       setEstadisticasRango(rango);
       setEstadisticasServicios(servicios);
       setEstadisticasOperadores(operadores);
-      console.log(servicios,"tiempo server")
       setEstadisticasHoras(horas);
       setResumenGeneral(resumen);
     } catch (error) {
@@ -335,6 +336,15 @@ function PantallaAdmin() {
       cargarDatos();
     } catch (error) {
       console.error("Error eliminando servicio:", error);
+    }
+  };
+
+  const handleSwitchServicio = async (id) => {
+    try {
+      await API.switchServicio(id);
+      cargarDatos();
+    } catch (error) {
+      console.error("Error activar/desactivar servicio:", error);
     }
   };
 
@@ -794,8 +804,29 @@ function PantallaAdmin() {
                             Tiempo promedio: {servicio.tiempo_promedio} min
                           </p>
                         </div>
+                        <span
+                          class={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
+                            servicio.service_active
+                              ? " bg-green-600 "
+                              : "bg-red-600"
+                          }`}>
+                          {servicio.service_active ? "Activo" : "Desactivado"}
+                        </span>
                       </div>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => handleSwitchServicio(servicio.id)}
+                          className={`p-2 ${
+                            servicio.service_active
+                              ? " bg-green-600 hover:bg-green-700"
+                              : "bg-red-600 hover:bg-red-700"
+                          } text-white rounded-lg transition-colors`}>
+                          {servicio.service_active ? (
+                            <Check className="w-5 h-5" />
+                          ) : (
+                            <X className="w-5 h-5" />
+                          )}
+                        </button>
                         <button
                           onClick={() => {
                             setEditando(servicio.id);
@@ -1708,7 +1739,9 @@ function PantallaAdmin() {
                         )}
                         <span className="text-xl m-4">(min)</span>
                       </div>
-                      <p className="text-sm opacity-75">Tiempo de atención aprox.</p>
+                      <p className="text-sm opacity-75">
+                        Tiempo de atención aprox.
+                      </p>
                     </div>
                     <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
                       <div className="flex items-center justify-between mb-2">
@@ -1721,7 +1754,9 @@ function PantallaAdmin() {
                         {Math.round(resumenGeneral.tiempo_promedio_espera || 0)}
                         <span className="text-xl m-4">(min)</span>
                       </div>
-                      <p className="text-sm opacity-75">Promedio de espera aprox.</p>
+                      <p className="text-sm opacity-75">
+                        Promedio de espera aprox.
+                      </p>
                     </div>
 
                     <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
@@ -2007,8 +2042,8 @@ function PantallaAdmin() {
                       estadisticasServicios.map((servicio) => (
                         <div
                           key={servicio.id}
-                          className="p-6 bg-gray-50 rounded-xl border-l-4 hover:shadow-md transition-shadow"
-                          style={{ borderLeftColor: servicio.color }}>
+                          className="p-6 bg-gray-50 rounded-xl border-2 hover:shadow-md transition-shadow"
+                          style={{ borderColor: servicio.color }}>
                           <div className="flex items-center gap-3 mb-4">
                             <div
                               className="text-3xl font-bold"

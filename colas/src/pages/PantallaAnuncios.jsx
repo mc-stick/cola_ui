@@ -3,7 +3,6 @@ import API from "../services/api";
 import { Calendar, Clock, Bell, BellRing } from "lucide-react";
 import DemoSpeaker from "../TTS/DEMOindex";
 import "./../styles/Pantalla.css";
-
 function PantallaAnuncios() {
   const [config, setConfig] = useState(null);
   const [ticketsLlamados, setTicketsLlamados] = useState([]);
@@ -54,19 +53,20 @@ function PantallaAnuncios() {
     return () => clearInterval(interval);
   }, []);
 
+  const cargarDatos = async () => {
+    try {
+      const [configData, mediosData] = await Promise.all([
+        API.getConfiguracion(),
+        API.getMedios(),
+      ]);
+      setConfig(configData);
+      setMedios(mediosData);
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    }
+  };
+
   useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const [configData, mediosData] = await Promise.all([
-          API.getConfiguracion(),
-          API.getMedios(),
-        ]);
-        setConfig(configData);
-        setMedios(mediosData);
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
     cargarDatos();
   }, []);
 
@@ -110,38 +110,60 @@ function PantallaAnuncios() {
     return () => clearInterval(interval);
   }, []);
 
+  // CORRECCIÓN: Esperar a que los videos terminen antes de cambiar
   useEffect(() => {
-    if (medios.length === 0 || ticketsLlamados.length > 0) return;
+    if (medios.length === 0) return;
 
-    const interval = setInterval(() => {
-      setMediaIndex((prev) => (prev + 1) % medios.length);
+    const currentMedia = medios[mediaIndex];
+
+    // Si es un video, no usar intervalo, esperar a que termine
+    if (currentMedia?.tipo === "video") {
+      return; // El evento onEnded del video manejará el cambio
+    }
+
+    // Para imágenes, usar el tiempo de rotación configurado
+    const timeout = setTimeout(() => {
+      setMediaIndex((prev) => {
+        const nextIndex = (prev + 1) % medios.length;
+        return nextIndex;
+      });
     }, config?.tiempo_rotacion || 5000);
 
-    return () => clearInterval(interval);
-  }, [medios, ticketsLlamados, config]);
+    return () => clearTimeout(timeout);
+  }, [medios, mediaIndex, config]);
+
+  const handleVideoEnded = () => {
+    setMediaIndex((prev) => {
+      const nextIndex = (prev + 1) % medios.length;
+      if (nextIndex === 0) {
+        cargarDatos();
+      }
+      return nextIndex;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg ">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-5 py-4 shadow-lg ">
         <div className=" mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             {config?.logo_url && (
               <img
                 src={config.logo_url}
                 alt="Logo"
-                className="w-20 h-20 drop-shadow-lg object-contain rounded-lg p-1 2xl:w-20 2xl:h-40"
+                className="w-20 h-20 drop-shadow-lg object-contain rounded-lg p-1 "
               />
             )}
-            <h1 className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-8xl font-bold">
+            <h1 className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-4xl  font-bold">
               {config?.nombre_empresa || "MI EMPRESA"}
             </h1>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-2 text-xl sm:text-xl md:text-1xl lg:text-2xl xl:text-3xl 2xl:text-6xl font-semibold mb-1">
+            <div className="flex items-center gap-2 text-xl sm:text-xl md:text-1xl lg:text-2xl xl:text-3xl  font-bold mb-1">
               <span className="capitalize">{fecha}</span>
             </div>
 
-            <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-8xl font-bold">
+            <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl  font-bold">
               <span>{hora}</span>
             </div>
           </div>
@@ -181,62 +203,59 @@ function PantallaAnuncios() {
         </div>
       )}
 
-      <div className="p-8">
-        {ticketsLlamados.length > 0 || ticketEspera.length > 0 ? (
-          <div className="flex flex-row justify-around">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 2xl:text-8xl">
-                <Bell className="w-20 h-20 text-orange-500 2xl:w-40 2xl:h-40" />
-                Tickets Llamados
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {ticketsLlamados.map((ticket, index) => (
-                  <div
-                    key={ticket.id}
-                    className={`bg-white rounded-2xl p-8 shadow-lg border-l-8 transform transition-all duration-300 hover:scale-105 ${
-                      index === 0
-                        ? "ring-4 ring-blue-400 animate-pulse-slow"
-                        : ""
-                    }`}
-                    style={{
-                      borderLeftColor: ticket.servicio_color,
-                      animationDelay: `${index * 100}ms`,
-                    }}>
-                    <div className="text-center">
-                      {index === 0 && (
-                        <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
-                          ¡AHORA!
-                        </div>
-                      )}
-                      <div
-                        className="text-6xl font-extrabold mb-4"
-                        style={{ color: ticket.servicio_color }}>
-                        {ticket.numero}
+      {ticketsLlamados.length > 0 || ticketEspera.length > 0 ? (
+        <div className="flex flex-row justify-around">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 ">
+              <Bell className="w-20 h-20 text-orange-500  " />
+              Tickets Llamados
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {ticketsLlamados.map((ticket, index) => (
+                <div
+                  key={ticket.id}
+                  className={`bg-white rounded-2xl p-8 shadow-lg border-l-8 transform transition-all duration-300 hover:scale-105 ${
+                    index === 0 ? "ring-4 ring-blue-400 animate-pulse-slow" : ""
+                  }`}
+                  style={{
+                    borderLeftColor: ticket.servicio_color,
+                    animationDelay: `${index * 100}ms`,
+                  }}>
+                  <div className="text-center">
+                    {index === 0 && (
+                      <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
+                        ¡AHORA!
                       </div>
-                      <div className="text-3xl font-bold text-gray-800 mb-2">
-                        Puesto{" "}
-                        <span className="text-blue-600">
-                          {ticket.puesto_numero} - {ticket.puesto_nombre}
-                        </span>
-                      </div>
-                      {ticket.llamado_veces > 1 && (
-                        <div className="mt-3 text-sm text-orange-600 font-semibold">
-                          llamado por: ({ticket.llamado_veces}ª vez)
-                          <DemoSpeaker
-                            key={`${ticket.id}-${ticket.llamado_veces}`}
-                            number={ticket.numero}
-                            text={ticket.puesto_nombre}
-                          />
-                        </div>
-                      )}
+                    )}
+                    <div
+                      className="text-6xl font-extrabold mb-4"
+                      style={{ color: ticket.servicio_color }}>
+                      {ticket.numero}
                     </div>
+                    <div className="text-3xl font-bold text-gray-800 mb-2">
+                      Puesto{" "}
+                      <span className="text-blue-600">
+                        {ticket.puesto_numero} - {ticket.puesto_nombre}
+                      </span>
+                    </div>
+                    {ticket.llamado_veces > 1 && (
+                      <div className="mt-3 text-sm text-orange-600 font-semibold">
+                        llamado por: ({ticket.llamado_veces}ª vez)
+                        <DemoSpeaker
+                          key={`${ticket.id}-${ticket.llamado_veces}`}
+                          number={ticket.numero}
+                          text={ticket.puesto_nombre}
+                        />
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 2xl:text-8xl">
-                <Clock className="w-20 h-20 text-amber-600 2xl:w-40 2xl:h-40" />
+          </div>
+          {/* <div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3 ">
+                <Clock className="w-20 h-20 text-amber-600 " />
                 Tickets en Espera
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -262,73 +281,60 @@ function PantallaAnuncios() {
                         </div>
                       </div>
                     </div>
-                  ))
-                  .reverse()}
+                  ))}
               </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="flex items-center justify-center"
-            style={{ height: "calc(100vh - 300px)" }}>
-            {medios.length > 0 && (
-              <div className="w-full h-full mx-auto animate-fade-in">
-                <div className="relative bg-gray-900 rounded-3xl shadow-2xl overflow-hidden h-full">
-                  <div className="relative w-full h-full flex items-center justify-center p-8">
-                    {medios[mediaIndex].tipo === "imagen" ? (
-                      <img
-                        src={medios[mediaIndex].url}
-                        alt={medios[mediaIndex].nombre}
-                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                          width: "auto",
-                          height: "auto",
-                        }}
-                      />
-                    ) : (
-                      <video
-                        src={medios[mediaIndex].url}
-                        className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "100%",
-                          width: "auto",
-                          height: "auto",
-                        }}
-                        autoPlay
-                        muted
-                        loop
-                      />
-                    )}
-                  </div>
-
-                  {medios.length > 1 && (
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                      {medios.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            index === mediaIndex
-                              ? "w-8 bg-white"
-                              : "w-2 bg-white/50"
-                          }`}
-                        />
-                      ))}
-                    </div>
+            </div> */}
+        </div>
+      ) : (
+        <div
+          className="flex items-center justify-center pt-1"
+          style={{ height: "calc(100vh - 130px)" }}>
+          {medios.length > 0 && (
+            <div className="w-full h-full mx-auto animate-fade-in ">
+              <div className="relative rounded-3xl shadow-2xl overflow-hidden h-full">
+                <div className="relative w-full h-full flex items-center rounded-3xl pb-2 justify-center">
+                  {medios[mediaIndex].tipo === "imagen" ? (
+                    <img
+                      src={medios[mediaIndex].url}
+                      alt={medios[mediaIndex].nombre}
+                      className="w-full h-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <video
+                      key={medios[mediaIndex].url} // Key para forzar remontaje
+                      src={medios[mediaIndex].url}
+                      className="w-full h-full object-contain rounded-xl"
+                      autoPlay
+                      muted
+                      onEnded={handleVideoEnded}
+                    />
                   )}
+                </div>
 
-                  {/* Contador */}
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    {mediaIndex + 1} / {medios.length}
+                {medios.length > 1 && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                    {medios.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          index === mediaIndex
+                            ? "w-8 bg-gray-400/70"
+                            : "w-2 bg-gray-800"
+                        }`}
+                      />
+                    ))}
                   </div>
+                )}
+
+                {/* Contador */}
+                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  {mediaIndex + 1} / {medios.length}
                 </div>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

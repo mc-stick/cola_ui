@@ -7,7 +7,7 @@ import PantallaOperador from './pages/PantallaOperador';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/cola/">
       <Routes>
         <Route path="/" element={<MenuInicial />} />
         <Route path="/anuncios" element={<PantallaAnuncios />} />

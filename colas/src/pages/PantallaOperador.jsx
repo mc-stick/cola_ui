@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
-import { LogOut, PhoneCall, Check, X, UserCircle, Bell } from "lucide-react";
+import { LogOut, PhoneCall, Check, X, UserCircle, Bell, FileWarningIcon, TicketIcon, CircleUser, WorkflowIcon, Workflow, BriefcaseIcon } from "lucide-react";
 
 function PantallaOperador() {
   const [usuario, setUsuario] = useState(null);
@@ -194,18 +194,6 @@ function PantallaOperador() {
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
-
-          {/* Ayuda para pruebas */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center mb-2">
-              <strong>Usuarios de prueba:</strong>
-            </p>
-            <p className="text-xs text-gray-500 text-center">
-              juan / operador123
-              <br />
-              maria / operador123
-            </p>
-          </div>
         </div>
       </div>
     );
@@ -217,9 +205,10 @@ function PantallaOperador() {
       <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold">Operador: {usuario.nombre}</h2>
-            <p className="text-blue-200 text-lg">
-              Puesto: {usuario.puesto_numero || "Sin asignar"}
+            <h2 className="text-3xl font-bold p-2 flex items-center gap-2"><CircleUser className="w-8 h-6 text-blue-300"/>{usuario.nombre}</h2>
+            
+            <p className="text-blue-200 text-lg flex items-center ml-3 gap-2"><BriefcaseIcon className="w-6 h-6 text-amber-300"/>
+              Puesto #:  {usuario.puesto_numero || "Sin asignar"} - {usuario.puesto_nombre || "Sin asignar"}
             </p>
             {serviciosAsignados.length > 0 && (
               <p className="text-blue-200 text-sm mt-1">
@@ -294,7 +283,7 @@ function PantallaOperador() {
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
-                  <UserCircle className="w-24 h-24 mx-auto" />
+                  <TicketIcon className="w-24 h-24 mx-auto" />
                 </div>
                 <p className="text-gray-500 text-lg">
                   No hay ticket en atención
@@ -319,8 +308,8 @@ function PantallaOperador() {
 
             {serviciosAsignados.length === 0 && (
               <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
-                <p className="text-yellow-800 text-sm">
-                  ⚠️ No tienes servicios asignados. Contacta al administrador.
+                <p className="text-yellow-800 text-sm flex">
+                  <FileWarningIcon/> <span className="ml-2">No tienes servicios asignados. Contacta al administrador.</span>
                 </p>
               </div>
             )}

@@ -333,6 +333,32 @@ app.delete('/api/servicios/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/servicios/:id/switch', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT service_active FROM servicios WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    const nuevoValor = !rows[0].service_active;
+
+    await pool.query(
+      'UPDATE servicios SET service_active = ? WHERE id = ?',
+      [nuevoValor, req.params.id]
+    );
+
+    res.json({ success: true, service_active: nuevoValor });
+  } catch (error) {
+    console.error('Error modificando servicio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // ============================================
 // RUTAS DE PUESTOS
 // ============================================
@@ -996,7 +1022,7 @@ app.get('/api/estadisticas/operadores', async (req, res) => {
         ON u.puesto_id = p.id
       LEFT JOIN tickets t 
         ON u.id = t.usuario_id
-        AND DATE(t.created_at) > "2025"
+        AND DATE(t.created_at) > ?
       WHERE u.rol = 'operador'
         AND u.activo = TRUE
       GROUP BY u.id, u.nombre, p.numero

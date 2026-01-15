@@ -32,7 +32,9 @@ function PantallaCliente() {
   const cargarServicios = async () => {
     try {
       const data = await API.getServicios();
-      setServicios(data);
+
+      const serv = data.filter(item => item.service_active === 1);
+      setServicios(serv);
     } catch (error) {
       console.error("Error cargando servicios:", error);
     }

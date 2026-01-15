@@ -168,6 +168,18 @@ class API {
       throw error;
     }
   }
+  async switchServicio(id) {
+    try {
+      const response = await fetch(`${API_URL}/servicios/${id}/switch`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Error al eliminar servicio');
+      return response.json();
+    } catch (error) {
+      console.error(' Error Activando/desactivando servicio:', error);
+      throw error;
+    }
+  }
   
  
   // PUESTOS
