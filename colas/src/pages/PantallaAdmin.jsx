@@ -1248,7 +1248,7 @@ function PantallaAdmin() {
                               onClick={() => handleToggleServicio(servicio)}
                               className={`p-6 rounded-xl cursor-pointer transition-all border-2 ${
                                 servicio.asignado
-                                  ? "border-green-500 bg-green-50 shadow-md"
+                                  ?  servicio.service_active ? "border-green-500 bg-green-50 shadow-md" :"border-gray-500 bg-gray-50 shadow-md"
                                   : "border-red-200 bg-red-50 hover:border-gray-300"
                               }`}>
                               <div className="flex items-start gap-4">
@@ -1256,7 +1256,7 @@ function PantallaAdmin() {
                                   <div
                                     className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                                       servicio.asignado
-                                        ? "bg-green-500 border-green-500"
+                                        ? servicio.service_active ? "bg-green-500 border-green-500" :"bg-gray-500 border-gray-500"
                                         : "bg-red-500 border-red-300"
                                     }`}>
                                     {servicio.asignado ? (
@@ -1303,10 +1303,9 @@ function PantallaAdmin() {
                                   <p className="text-sm text-gray-600">
                                     {servicio.descripcion}
                                   </p>
-                                  {servicio.tiempo_promedio && (
-                                    <p className="text-xs text-gray-500 mt-2">
-                                      ⏱️ Tiempo promedio:{" "}
-                                      {servicio.tiempo_promedio} min
+                                  {!servicio.service_active && (
+                                    <p className="text-ls text-red-500 font-bold mt-2">
+                                       Servicio inhabilitado.
                                     </p>
                                   )}
                                 </div>
