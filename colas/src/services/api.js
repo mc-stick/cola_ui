@@ -110,6 +110,21 @@ class API {
       throw error;
     }
   }
+
+  async SwitchMedio(id) {
+    try {
+      const response = await fetch(`${API_URL}/medios/${id}/switch`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) throw new Error('Error al modificar switch medio');
+      
+      return response.json();
+    } catch (error) {
+      console.error(' Error en switchMedio:', error);
+      throw error;
+    }
+  }
   
  
   // SERVICIOS

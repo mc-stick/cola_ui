@@ -29,6 +29,11 @@ import {
   File,
   FileSpreadsheet,
   Check,
+  ImageOffIcon,
+  PlayIcon,
+  PaintbrushIcon,
+  BarChartHorizontalBig,
+  Building2Icon,
 } from "lucide-react";
 
 import {
@@ -82,12 +87,11 @@ function PantallaAdmin() {
     fecha_fin: new Date().toISOString().split("T")[0],
     servicio_id: "",
     estado: "",
-    busqueda: "",
+    operador: "",
   });
 
   useEffect(() => {
     cargarDatos();
-    console.log(fechaInicio, fechaFin);
   }, [seccion]);
 
   const cargarDatos = async () => {
@@ -119,6 +123,7 @@ function PantallaAdmin() {
           await cargarEstadisticasCompletas();
           break;
         case "historial":
+          setUsuarios(await API.getUsuarios());
           await cargarHistorial();
           break;
       }
@@ -142,19 +147,23 @@ function PantallaAdmin() {
         params.estado = filtrosHistorial.estado;
       }
 
+      if (filtrosHistorial.operador) {
+        params.operador = filtrosHistorial.operador;
+      }
+
       const data = await API.getHistorial(params);
 
       // Filtrar por búsqueda local
       let dataFiltrada = data;
-      if (filtrosHistorial.busqueda) {
-        const busqueda = filtrosHistorial.busqueda.toLowerCase();
-        dataFiltrada = data.filter(
-          (ticket) =>
-            ticket.numero?.toLowerCase().includes(busqueda) ||
-            ticket.identificacion?.toLowerCase().includes(busqueda) ||
-            ticket.operador_nombre?.toLowerCase().includes(busqueda)
-        );
-      }
+      // if (filtrosHistorial.busqueda) {
+      //   const busqueda = filtrosHistorial.busqueda.toLowerCase();
+      //   dataFiltrada = data.filter(
+      //     (ticket) =>
+      //       ticket.numero?.toLowerCase().includes(busqueda) ||
+      //       ticket.identificacion?.toLowerCase().includes(busqueda) ||
+      //       ticket.operador_nombre?.toLowerCase().includes(busqueda)
+      //   );
+      // }
       setServicios(await API.getServicios());
 
       //setHistorial(dataFiltrada);
@@ -168,6 +177,7 @@ function PantallaAdmin() {
         }, {})
       ).reverse();
 
+      console.log(historialFiltrado,"history")
       setHistorial(historialFiltrado);
     } catch (error) {
       console.error("Error cargando historial:", error);
@@ -450,6 +460,15 @@ function PantallaAdmin() {
     }
   };
 
+  const handleSwitchMedio = async (id) => {
+    try {
+      await API.SwitchMedio(id);
+      cargarDatos();
+    } catch (error) {
+      console.error("Error eliminando medio:", error);
+    }
+  };
+
   const MenuLateral = () => (
     <div className="w-64 bg-white shadow-lg rounded-2xl p-6 h-fit sticky top-8">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -510,8 +529,9 @@ function PantallaAdmin() {
             {seccion === "configuracion" && configuracion && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800">
-                    Configuración General
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <Building2Icon className="w-8 h-8 text-purple-600" />
+                    Configuracion General
                   </h2>
                 </div>
 
@@ -534,7 +554,108 @@ function PantallaAdmin() {
                     />
                   </div>
 
-                  <div>
+                  {/* //////////////////////////////////// */}
+
+                  <div className="bg-gray-50 p-6 rounded-xl mb-6">
+                    <h3 className="text-xl font-bold mb-4">Agregar Logo</h3>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Seleccionar Archivo
+                    </label>
+                    <div className="mb-4 flex">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 m-5 text-center hover:border-blue-500 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+
+                            const maxSize = 5 * 1024 * 1024;
+                            if (file.size > maxSize) {
+                              alert(
+                                `El archivo es demasiado grande. Máximo: 5MB`
+                              );
+                              e.target.value = "";
+                              return;
+                            }
+
+                            const validImageTypes = [
+                              "image/jpeg",
+                              "image/jpg",
+                              "image/png",
+                              "image/gif",
+                              "image/webp",
+                            ];
+
+                            if (!validImageTypes.includes(file.type)) {
+                              alert(
+                                "Tipo de archivo no válido. Solo: JPG, PNG, GIF, WebP"
+                              );
+                              e.target.value = "";
+                              return;
+                            }
+                            const reader = new FileReader();
+
+                            reader.onload = (event) => {
+                              const base64 = event.target.result;
+
+                              if (!base64 || !base64.startsWith("data:")) {
+                                alert("Error al procesar el archivo");
+                                return;
+                              }
+
+                              setConfiguracion({
+                                ...configuracion,
+                                logo_url: base64,
+                              });
+                            };
+                            reader.onerror = () => {
+                              console.error("Error al leer el archivo");
+                              alert("Error al leer el archivo");
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="hidden"
+                          id="file-upload"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="cursor-pointer inline-flex flex-col items-center">
+                          <ImageIcon className="w-10 h-10 text-green-900" />
+                          <span className="text-sm text-gray-600 font-semibold">
+                            Click para seleccionar Una imagen
+                          </span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            PNG, JPG, GIF hasta 5MB
+                          </span>
+                        </label>
+                      </div>
+
+                      {configuracion.logo_url && (
+                        <div className="mt-3 p-4 ml-20 bg-gray-50 rounded-lg">
+                          <p className="text-sm font-semibold text-gray-700 mb-2">
+                            Vista previa:
+                          </p>
+                          <img
+                            src={configuracion.logo_url}
+                            alt="Logo preview"
+                            className="w-24 h-24 object-contain bg-white rounded-lg p-2 border-2 border-gray-200"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "block";
+                            }}
+                          />
+                          <p
+                            className="text-red-600 text-sm mt-2"
+                            style={{ display: "none" }}>
+                            No se pudo cargar la imagen
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       URL del Logo
                     </label>
@@ -571,7 +692,7 @@ function PantallaAdmin() {
                         </p>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -659,7 +780,8 @@ function PantallaAdmin() {
             {seccion === "servicios" && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <Briefcase className="w-8 h-8 text-purple-600" />
                     Servicios
                   </h2>
                   <button
@@ -805,7 +927,7 @@ function PantallaAdmin() {
                           </p>
                         </div>
                         <span
-                          class={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
+                          className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${
                             servicio.service_active
                               ? " bg-green-600 "
                               : "bg-red-600"
@@ -851,7 +973,10 @@ function PantallaAdmin() {
             {seccion === "puestos" && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800">Puestos</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <MapPin className="w-8 h-8 text-purple-600" />
+                    Puestos
+                  </h2>
                   <button
                     onClick={handleCrearPuesto}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
@@ -952,7 +1077,10 @@ function PantallaAdmin() {
             {seccion === "usuarios" && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800">Usuarios</h2>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <Users className="w-8 h-8 text-purple-600" />
+                    Usuarios
+                  </h2>
                   <button
                     onClick={handleCrearUsuario}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
@@ -1248,7 +1376,9 @@ function PantallaAdmin() {
                               onClick={() => handleToggleServicio(servicio)}
                               className={`p-6 rounded-xl cursor-pointer transition-all border-2 ${
                                 servicio.asignado
-                                  ?  servicio.service_active ? "border-green-500 bg-green-50 shadow-md" :"border-gray-500 bg-gray-50 shadow-md"
+                                  ? servicio.service_active
+                                    ? "border-green-500 bg-green-50 shadow-md"
+                                    : "border-gray-500 bg-gray-50 shadow-md"
                                   : "border-red-200 bg-red-50 hover:border-gray-300"
                               }`}>
                               <div className="flex items-start gap-4">
@@ -1256,7 +1386,9 @@ function PantallaAdmin() {
                                   <div
                                     className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                                       servicio.asignado
-                                        ? servicio.service_active ? "bg-green-500 border-green-500" :"bg-gray-500 border-gray-500"
+                                        ? servicio.service_active
+                                          ? "bg-green-500 border-green-500"
+                                          : "bg-gray-500 border-gray-500"
                                         : "bg-red-500 border-red-300"
                                     }`}>
                                     {servicio.asignado ? (
@@ -1305,7 +1437,7 @@ function PantallaAdmin() {
                                   </p>
                                   {!servicio.service_active && (
                                     <p className="text-ls text-red-500 font-bold mt-2">
-                                       Servicio inhabilitado.
+                                      Servicio inhabilitado.
                                     </p>
                                   )}
                                 </div>
@@ -1342,7 +1474,8 @@ function PantallaAdmin() {
             {seccion === "medios" && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <ImageIcon className="w-8 h-8 text-purple-600" />
                     Medios (Imágenes/Videos)
                   </h2>
                   <button
@@ -1569,7 +1702,7 @@ function PantallaAdmin() {
                     medios.map((medio) => (
                       <div
                         key={medio.id}
-                        className="bg-gray-50 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow">
+                        className="bg-gray-50 rounded-xl overflow-hidden  shadow-md hover:shadow-2xl  transition-shadow">
                         <div className="aspect-video bg-gray-200 flex items-center justify-center relative">
                           {medio.tipo === "imagen" ? (
                             <img
@@ -1600,6 +1733,16 @@ function PantallaAdmin() {
                               }}
                             />
                           )}
+                          <span
+                            className={`px-3 py-1 rounded text-xs font-semibold text-white absolute top-2 left-2 bg-black/70 capitalize ${
+                              medio.medio_active === 1
+                                ? " bg-green-600 "
+                                : "bg-red-600"
+                            }`}>
+                            {medio.medio_active === 1
+                              ? "Mostrando en pantalla"
+                              : "No se muestra en pantalla"}
+                          </span>
                           <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold capitalize">
                             {medio.tipo}
                           </div>
@@ -1643,6 +1786,33 @@ function PantallaAdmin() {
                               Eliminar
                             </button>
                           </div>
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleSwitchMedio(medio.id)}
+                              className={`flex-1 flex items-center justify-center gap-2
+                               text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm ${
+                                 medio.medio_active === 0
+                                   ? " bg-green-600 hover:bg-green-800"
+                                   : "bg-gray-600 hover:bg-gray-800"
+                               }`}>
+                              {medio.medio_active === 0 ? (
+                                medio.tipo === "imagen" ? (
+                                  <ImageIcon className="w-6 h-6 font-bold" />
+                                ) : (
+                                  <PlayIcon className="w-6 h-6 font-bold" />
+                                )
+                              ) : (
+                                <ImageOffIcon className="w-6 h-6" />
+                              )}
+
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-semibold text-white`}>
+                                {medio.medio_active === 0
+                                  ? "Mostrar"
+                                  : "No mostrar"}
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -1654,37 +1824,43 @@ function PantallaAdmin() {
             {seccion === "estadisticas" && (
               <div className="space-y-6">
                 {/* Filtros de Fecha */}
-                <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-gray-600" />
-                      <label className="text-sm font-semibold text-gray-700">
-                        Desde:
-                      </label>
-                      <input
-                        type="date"
-                        value={fechaInicio}
-                        onChange={(e) => setFechaInicio(e.target.value)}
-                        className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                      />
+                <div className="bg-white rounded-2xl shadow-lg p-8">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                    <BarChartHorizontalBig className="w-8 h-8 text-purple-600" />
+                    Estadísticas
+                  </h2>
+                  <div className="bg-gray-50 rounded-xl p-6 mb-2">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-gray-600" />
+                        <label className="text-sm font-semibold text-gray-700">
+                          Desde:
+                        </label>
+                        <input
+                          type="date"
+                          value={fechaInicio}
+                          onChange={(e) => setFechaInicio(e.target.value)}
+                          className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Hasta:
+                        </label>
+                        <input
+                          type="date"
+                          value={fechaFin}
+                          onChange={(e) => setFechaFin(e.target.value)}
+                          className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                      <button
+                        onClick={cargarEstadisticasCompletas}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                        <TrendingUp className="w-5 h-5" />
+                        Actualizar
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Hasta:
-                      </label>
-                      <input
-                        type="date"
-                        value={fechaFin}
-                        onChange={(e) => setFechaFin(e.target.value)}
-                        className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-                    <button
-                      onClick={cargarEstadisticasCompletas}
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                      <TrendingUp className="w-5 h-5" />
-                      Actualizar
-                    </button>
                   </div>
                 </div>
 
@@ -2016,6 +2192,7 @@ function PantallaAdmin() {
                               </div>
                               <div className="text-xs text-gray-600">
                                 Tiempo Promedio
+                                <p> de atención</p>
                               </div>
                             </div>
                           </div>
@@ -2086,7 +2263,7 @@ function PantallaAdmin() {
                                 min
                               </div>
                               <div className="text-xs text-gray-600">
-                                Tiempo Promedio
+                                Tiempo Promedio  de atención
                               </div>
                             </div>
                           </div>
@@ -2194,15 +2371,35 @@ function PantallaAdmin() {
                         <option value="">Todos</option>
                         <option value="atendido">Atendido</option>
                         <option value="no_presentado">No Atendido</option>
-                        <option value="en_atencion">En Atención</option>
+                        {/* <option value="en_atencion">En Atención</option> */}
                         <option value="llamado">Llamado</option>
                         <option value="espera">En Espera</option>
-                        <option value="cancelado">Cancelado</option>
+                        {/* <option value="cancelado">Cancelado</option> */}
                       </select>
                     </div>
-
-                    {/* Buscar */}
                     <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Atendido por:
+                      </label>
+                      <select
+                        value={filtrosHistorial.operador}
+                        onChange={(e) =>
+                          setFiltrosHistorial({
+                            ...filtrosHistorial,
+                            operador: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
+                        <option value="">Todos</option>
+                        {usuarios.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Buscar */}
+                    {/* <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Buscar
                       </label>
@@ -2221,7 +2418,7 @@ function PantallaAdmin() {
                           className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                         />
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex gap-3 mt-4">
@@ -2242,12 +2439,12 @@ function PantallaAdmin() {
                           fecha_fin: new Date().toISOString().split("T")[0],
                           servicio_id: "",
                           estado: "",
-                          busqueda: "",
+                          operador: "",
                         });
                       }}
                       className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                      <X className="w-5 h-5" />
-                      Limpiar
+                      <PaintbrushIcon className="w-5 h-5" />
+                      Limpiar Filtro
                     </button>
                   </div>
                 </div>
@@ -2261,7 +2458,7 @@ function PantallaAdmin() {
                     </span>{" "}
                     tickets
                   </p>
-                  <div className="flex gap-2">
+                  {/* <div className="flex gap-2">
                     <button
                       onClick={() => {
                         const csv = [
@@ -2272,7 +2469,6 @@ function PantallaAdmin() {
                             "Operador",
                             "Puesto",
                             "ID Cliente",
-                            "Tiempo Total",
                             "Fecha Creación",
                             "Fecha Atención",
                           ].join(","),
@@ -2284,7 +2480,6 @@ function PantallaAdmin() {
                               t.operador_nombre || "N/A",
                               t.puesto_numero || "N/A",
                               t.identificacion || "N/A",
-                              formatearTiempo(t.tiempo_total_minutos),
                               new Date(t.created_at).toLocaleString("es-ES"),
                               t.atendido_at
                                 ? new Date(t.atendido_at).toLocaleString(
@@ -2306,7 +2501,7 @@ function PantallaAdmin() {
                       <FileSpreadsheet className="text-green-200" /> Exportar
                       CSV
                     </button>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Lista de Tickets */}
@@ -2334,8 +2529,8 @@ function PantallaAdmin() {
                                 }}>
                                 {ticket.numero}
                               </div>
-                              <div className="text-xs text-gray-500 text-center font-bold mt-2 underline">
-                                Ticket #{ticket.id}
+                              <div className="text-xs text-gray-500 text-center font-bold mt-2">
+                                Ticket #<strong>{ticket.id}</strong>
                               </div>
                             </div>
 
@@ -2381,7 +2576,6 @@ function PantallaAdmin() {
                                 </div>
                               )}
 
-                              {/* Llamadas */}
                               {ticket.detalles && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                   <PhoneCall className="w-4 h-4" />
@@ -2391,51 +2585,7 @@ function PantallaAdmin() {
                             </div>
                           </div>
 
-                          {/* Columna Derecha: Tiempos y Fechas */}
                           <div className="flex-shrink-0 text-right space-y-2">
-                            {/* Tiempos */}
-                            {ticket.accion === "llamado" && (
-                              <div className="space-y-1">
-                                {ticket.tiempo_espera_minutos !== null && (
-                                  <div className="flex items-center gap-2 justify-end text-sm">
-                                    <span className="text-gray-600">
-                                      Espera:
-                                    </span>
-                                    <span className="font-bold text-yellow-600">
-                                      {formatearTiempo(
-                                        ticket.tiempo_espera_minutos
-                                      )}
-                                    </span>
-                                  </div>
-                                )}
-                                {ticket.tiempo_atencion_minutos !== null && (
-                                  <div className="flex items-center gap-2 justify-end text-sm">
-                                    <span className="text-gray-600">
-                                      Atención:
-                                    </span>
-                                    <span className="font-bold text-blue-600">
-                                      {formatearTiempo(
-                                        ticket.tiempo_atencion_minutos
-                                      )}
-                                    </span>
-                                  </div>
-                                )}
-                                {ticket.tiempo_total_minutos !== null && (
-                                  <div className="flex items-center gap-2 justify-end text-sm">
-                                    <span className="text-gray-600">
-                                      Total:
-                                    </span>
-                                    <span className="font-bold text-green-600">
-                                      {formatearTiempo(
-                                        ticket.tiempo_total_minutos
-                                      )}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Fechas */}
                             <div className="space-y-1 text-xs text-gray-500 border-t pt-2 mt-2">
                               {ticket.accion !== "creado" ? (
                                 <div className="flex items-center gap-2 justify-end">
@@ -2454,9 +2604,9 @@ function PantallaAdmin() {
                                 </div>
                               )}
                               <div className="flex items-center gap-2 justify-end">
-                                <Clock className="w-3 h-3" />
-                                <span>Creado:</span>
-                                <span className="font-semibold">
+                                <Clock className="w-3 h-3 text-green-500" />
+                                <span className="font-bold">Creado:</span>
+                                <span className="font-semibold italic">
                                   {new Date(ticket.created_at).toLocaleString(
                                     "es-ES",
                                     {
@@ -2465,10 +2615,29 @@ function PantallaAdmin() {
                                       year: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
+                                      hour12: true,
                                     }
                                   )}
                                 </span>
                               </div>
+                              {ticket.finalizado_at && (
+                                <div className="flex items-center gap-2 justify-end">
+                                  <Clock className="w-3 h-3 text-red-500" />
+                                  <span className="font-bold">Fin:</span>
+                                  <span className="font-semibold italic">
+                                    {new Date(
+                                      ticket.finalizado_at
+                                    ).toLocaleString("es-ES", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
                               {ticket.llamado_at && (
                                 <div className="flex items-center gap-2 justify-end">
                                   <PhoneCall className="w-3 h-3" />

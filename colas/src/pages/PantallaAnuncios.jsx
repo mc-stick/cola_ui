@@ -60,7 +60,10 @@ function PantallaAnuncios() {
         API.getMedios(),
       ]);
       setConfig(configData);
-      setMedios(mediosData);
+
+      const media = mediosData.filter(item => item.medio_active === 1);
+      setMedios(media);
+      
     } catch (error) {
       console.error("Error cargando datos:", error);
     }
@@ -110,21 +113,20 @@ function PantallaAnuncios() {
     return () => clearInterval(interval);
   }, []);
 
-  // CORRECCIÓN: Esperar a que los videos terminen antes de cambiar
   useEffect(() => {
     if (medios.length === 0) return;
 
     const currentMedia = medios[mediaIndex];
 
-    // Si es un video, no usar intervalo, esperar a que termine
     if (currentMedia?.tipo === "video") {
-      return; // El evento onEnded del video manejará el cambio
+      return; 
     }
-
-    // Para imágenes, usar el tiempo de rotación configurado
     const timeout = setTimeout(() => {
       setMediaIndex((prev) => {
         const nextIndex = (prev + 1) % medios.length;
+        if(nextIndex===0){
+          cargarDatos();
+        }
         return nextIndex;
       });
     }, config?.tiempo_rotacion || 5000);
@@ -135,9 +137,6 @@ function PantallaAnuncios() {
   const handleVideoEnded = () => {
     setMediaIndex((prev) => {
       const nextIndex = (prev + 1) % medios.length;
-      if (nextIndex === 0) {
-        cargarDatos();
-      }
       return nextIndex;
     });
   };

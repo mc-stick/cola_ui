@@ -80,6 +80,7 @@ app.get('/api/medios', async (req, res) => {
         url,
         nombre,
         activo,
+        medio_active,
         orden,
         es_local,
         tamano_kb,
@@ -147,14 +148,6 @@ app.post('/api/medios', async (req, res) => {
     const urlLength = url.length;
     const isBase64 = url.startsWith('data:');
     
-    ('📥 Recibiendo medio:', {
-      tipo,
-      nombre,
-      es_local: es_local || isBase64,
-      tamano_kb: tamano_kb || Math.round(urlLength / 1024),
-      url_length: urlLength,
-      is_base64: isBase64
-    });
 
     if (isBase64) {
       if (tipo === 'imagen' && !url.startsWith('data:image/')) {
@@ -179,11 +172,6 @@ app.post('/api/medios', async (req, res) => {
       ]
     );
     
-    (' Medio guardado:', {
-      id: result.insertId,
-      nombre,
-      url_length: urlLength
-    });
     
     res.json({ 
       id: result.insertId, 
@@ -238,7 +226,7 @@ app.delete('/api/medios/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    ('🗑️  Eliminando medio:', id);
+    
     
     await pool.query(
       'UPDATE medios SET activo = FALSE WHERE id = ?',
@@ -249,6 +237,31 @@ app.delete('/api/medios/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error(' Error eliminando medio:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/medios/:id/switch', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT medio_active FROM medios WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'medio no encontrado' });
+    }
+
+    const nuevoValor = !rows[0].medio_active;
+
+    await pool.query(
+      'UPDATE medios SET medio_active = ? WHERE id = ?',
+      [nuevoValor, req.params.id]
+    );
+
+    res.json({ success: true, medio_active: nuevoValor });
+  } catch (error) {
+    console.error('Error modificando medio:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -746,10 +759,10 @@ app.post('/api/tickets/:id/finalizar', async (req, res) => {
 // ============================================
 app.get('/api/historial', async (req, res) => {
   try {
-    const { fecha_inicio, fecha_fin, servicio_id } = req.query;
-    
+    const { fecha_inicio, fecha_fin, servicio_id, estado, operador } = req.query;
+   
     let query = `
-      SELECT h.*, t.numero, u.nombre as usuario_nombre, s.nombre as servicio_nombre
+      SELECT h.*,t.finalizado_at, t.numero, u.nombre as usuario_nombre, s.nombre as servicio_nombre
       FROM historial h
       LEFT JOIN tickets t ON h.ticket_id = t.id
       LEFT JOIN usuarios u ON h.usuario_id = u.id
@@ -760,12 +773,12 @@ app.get('/api/historial', async (req, res) => {
     const params = [];
     
     if (fecha_inicio) {
-      query += ' AND DATE(h.created_at) >= ?';
+      query += ' AND DATE(t.created_at) >= ?';
       params.push(fecha_inicio);
     }
     
     if (fecha_fin) {
-      query += ' AND DATE(h.created_at) <= ?';
+      query += ' AND DATE(t.finalizado_at) <= ?';
       params.push(fecha_fin);
     }
     
@@ -773,10 +786,21 @@ app.get('/api/historial', async (req, res) => {
       query += ' AND t.servicio_id = ?';
       params.push(servicio_id);
     }
+
+    if (estado) {
+      query += ' AND t.estado = ?';
+      params.push(estado);
+    }
+
+    if (operador) {
+      query += ' AND t.usuario_id = ?';
+      params.push(operador);
+    }
     
     query += ' ORDER BY h.created_at DESC LIMIT 1000';
     
     const [rows] = await pool.query(query, params);
+     console.log(rows)
     res.json(rows);
   } catch (error) {
     console.error(' Error obteniendo historial:', error);
@@ -848,6 +872,8 @@ app.get('/api/historial', async (req, res) => {
     }
     
     const [rows] = await pool.query(query, params);
+
+   
     
     res.json(rows);
   } catch (error) {
@@ -988,7 +1014,6 @@ ORDER BY total_tickets DESC;
 app.get('/api/estadisticas/operadores', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
-    
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const fin = fecha_fin || new Date().toISOString().split('T')[0];
         
@@ -1022,7 +1047,8 @@ app.get('/api/estadisticas/operadores', async (req, res) => {
         ON u.puesto_id = p.id
       LEFT JOIN tickets t 
         ON u.id = t.usuario_id
-        AND DATE(t.created_at) > ?
+        AND DATE(t.created_at) >= ?
+        AND DATE(t.finalizado_at) <= ?
       WHERE u.rol = 'operador'
         AND u.activo = TRUE
       GROUP BY u.id, u.nombre, p.numero
