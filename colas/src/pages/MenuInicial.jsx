@@ -32,7 +32,7 @@ function MenuInicial() {
     {
       path: "/cliente",
       titulo: "Pantalla Cliente",
-      descripcion: "Solicitar tickets",
+      descripcion: "Solicitar tickets qw",
       icon: Ticket,
       color: "bg-green-600",
       colorHover: "hover:bg-green-700",

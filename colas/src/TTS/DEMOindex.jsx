@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import TextSpeaker from "./Reader";
 
-export default function DemoSpeaker({ number="", text="" }) {
+export default function DemoSpeaker({ number="", text="", song=false }) {
   const speakerRef = useRef();
 
   const handleSpeak = () => {
@@ -20,10 +20,11 @@ export default function DemoSpeaker({ number="", text="" }) {
     return () => clearTimeout(timer);
   }, [text, number]);
 
+
   return (
     
     <>
-      <TextSpeaker ref={speakerRef} />
+      <TextSpeaker ref={speakerRef} ding={song} />
     </>
   );
 }

@@ -3,18 +3,19 @@ import useVoice from "./usevoice";
 import { speakText } from "./TTS";
 import dindongsong from "../assets/sound/dingdong.mp3"
 
-const TextSpeaker = forwardRef((props, ref) => {
+const TextSpeaker = forwardRef((props, ref ) => {  //arreglar la declaracion de ding
   const voice = useVoice();
   const queue = useRef([]);
   const isSpeaking = useRef(false);
-  const audioRef = useRef(typeof Audio !== "undefined" ? new Audio(dindongsong) : null);
+  
+  const audioRef = useRef(typeof Audio !== "undefined" && props.ding!==false ? new Audio(dindongsong ) : null);
   // const audioRef = useRef(typeof Audio !== "undefined" ? new Audio(App_params_config.sound.dingdong) : null);
 
   const playDingAsync = () => { 
     return new Promise((resolve) => {
       try {
         const audio = audioRef.current;
-        if (!audio) return setTimeout(resolve, 2000);
+        if (!audio) return setTimeout(resolve, 1000);
 
         audio.currentTime = 0.5;
         const startTime = Date.now();
@@ -31,7 +32,7 @@ const TextSpeaker = forwardRef((props, ref) => {
           const elapsed = Date.now() - startTime;
           const remaining = Math.max(0, 2000 - elapsed);
           setTimeout(resolve, remaining);
-        }, 4000);
+        }, 3000);
 
         const onEnded = () => {
           cleanup();
@@ -54,11 +55,11 @@ const TextSpeaker = forwardRef((props, ref) => {
         if (playPromise && typeof playPromise.then === "function") {
           playPromise.catch(() => {
             cleanup();
-            setTimeout(resolve, 2000);
+            setTimeout(resolve, 500);
           });
         }
       } catch (e) {
-        setTimeout(resolve, 2000);
+        setTimeout(resolve, 500);
       }
     });
   };

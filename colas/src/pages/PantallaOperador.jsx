@@ -1,36 +1,144 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import API from "../services/api";
-import { LogOut, PhoneCall, Check, X, UserCircle, Bell, FileWarningIcon, TicketIcon, CircleUser, WorkflowIcon, Workflow, BriefcaseIcon } from "lucide-react";
+import {
+  LogOut,
+  PhoneCall,
+  Check,
+  X,
+  Bell,
+  FileWarningIcon,
+  TicketIcon,
+  CircleUser,
+  TagsIcon,
+  ArrowRightLeftIcon,
+  Settings2Icon,
+  ChevronDown,
+  Save,
+  MapPinIcon,
+  ClockIcon,
+} from "lucide-react";
+import LoginComponent from "./Login";
 
 function PantallaOperador() {
+  const [formulario, setFormulario] = useState({});
+  const [value, setValue] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [EditOpen, setEditOpen] = useState(false);
   const [usuario, setUsuario] = useState(null);
   const [ticketsEspera, setTicketsEspera] = useState([]);
   const [ticketActual, setTicketActual] = useState(null);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [attend, setAttend] = useState(false);
   const [serviciosAsignados, setServiciosAsignados] = useState([]);
+  const menuRef = useRef(null);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const result = await API.login(username, password);
-      if (result.success) {
-        const servicios = await API.getOperadorServicios(result.user.id);
-        const asignados = servicios.filter((s) => s.asignado).map((s) => s.id);
+  const [activo, setActivo] = useState(false);
 
-        setServiciosAsignados(asignados);
-        setUsuario(result.user);
-      } else {
-        alert("Credenciales inválidas");
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [todosServicios, setTodosServicios] = useState([]);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState("");
+  const [comentario, setComentario] = useState("");
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+        setActivo(false)
       }
-    } catch (error) {
-      console.error("Error en login:", error);
-      alert("Error al iniciar sesión");
+    };
+
+    if (menuOpen || activo) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    setLoading(false);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen,activo]);
+
+  const handleChange = (e) => {
+    const inputValue = e.target.value;
+    const allowedPrefixes = ["809", "829", "849"];
+    setValue(false);
+    if (inputValue.length <= 10) {
+      if (inputValue.length >= 3) {
+        const prefix = inputValue.slice(0, 3);
+
+        if (allowedPrefixes.includes(prefix)) {
+          setFormulario({
+            ...formulario,
+            tel: inputValue,
+          });
+        } else {
+          setValue(true);
+        }
+      } else {
+        setFormulario({
+          ...formulario,
+          tel: inputValue,
+        });
+      }
+    }
+  };
+
+  const handleGuardarUsuario = async () => {
+    if (formulario.tel?.length < 10) {
+      setValue(true);
+      return;
+    }
+    if (formulario.pass?.length < 5) {
+      return;
+    }
+    try {
+      await API.updateUsuarioOperator(usuario.id, formulario);
+
+      setFormulario({});
+      setEditOpen(false);
+      restaurarSesion();
+    } catch (error) {}
+  };
+
+  const restaurarSesion = async () => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const result = await API.getCurrentUser();
+
+        if (result.success && result.user.rol === "operador") {
+          setUsuario(result.user);
+
+          const servicios = await API.getOperadorServicios(result.user.id);
+          const asignados = servicios.filter((s) => s.asignado);
+          setServiciosAsignados(asignados);
+
+          cargarTodosServicios();
+        } else {
+          localStorage.removeItem("token");
+        }
+      } catch (error) {
+        console.error("Error restaurando sesión:", error);
+        localStorage.removeItem("token");
+      }
+    }
+  };
+
+  useEffect(() => {
+    restaurarSesion();
+  }, []);
+
+  const cargarTodosServicios = async () => {
+    try {
+      const servicios = await API.getServicios();
+      setTodosServicios(servicios);
+    } catch (error) {
+      console.error("Error cargando servicios:", error);
+    }
+  };
+
+  const handleLoginSuccess = (user, servicios) => {
+    setUsuario(user);
+    setServiciosAsignados(servicios);
+    cargarTodosServicios();
+    restaurarSesion();
   };
 
   useEffect(() => {
@@ -45,18 +153,22 @@ function PantallaOperador() {
     try {
       const todosTickets = await API.getTicketsEspera();
       const ticketsFiltrados = todosTickets.filter((ticket) => {
-        const incluido = serviciosAsignados.includes(ticket.servicio_id);
-        return incluido;
+        return serviciosAsignados.some(
+          (servicio) => servicio.id === ticket.servicio_id,
+        );
       });
 
       setTicketsEspera(ticketsFiltrados);
 
       const miTicket = await API.getTicketsByOperador(usuario.id);
       const ticketEnAtencion = miTicket.find(
-        (t) => t.estado === "llamado" || t.estado === "en_atencion"
+        (t) => t.estado === "llamado" || t.estado === "en_atencion",
       );
 
       setTicketActual(ticketEnAtencion || null);
+      comentario === null || comentario === ""
+        ? setComentario(ticketEnAtencion?.notes || "")
+        : "";
     } catch (error) {
       console.error("Error cargando tickets:", error);
     }
@@ -68,20 +180,24 @@ function PantallaOperador() {
       return;
     }
 
-    if (attend) {
+    if (ticketActual !== null) {
       alert("Ya tienes un ticket en atención");
       return;
     }
 
     try {
       const siguiente = ticketsEspera[0];
-      if (!serviciosAsignados.includes(siguiente.servicio_id)) {
+      if (
+        !serviciosAsignados.some(
+          (servicio) => servicio.id === siguiente.servicio_id,
+        )
+      ) {
         alert("No tienes permiso para atender este servicio");
         return;
       }
 
       await API.llamarTicket(siguiente.id, usuario.id, usuario.puesto_id);
-      setAttend(true);
+
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       console.error("Error llamando ticket:", error);
@@ -101,13 +217,15 @@ function PantallaOperador() {
 
   const handleAtendido = async () => {
     if (!ticketActual) return;
-
-    //if (!confirm("¿Confirmar que el ticket fue atendido?")) return;
-
     try {
-      await API.finalizarTicket(ticketActual.id, usuario.id, "atendido");
+      await API.finalizarTicket(
+        ticketActual.id,
+        usuario.id,
+        "atendido",
+        comentario,
+      );
       setTicketActual(null);
-      setAttend(false);
+      setComentario(null);
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       console.error("Error finalizando ticket:", error);
@@ -117,17 +235,87 @@ function PantallaOperador() {
 
   const handleNoPresento = async () => {
     if (!ticketActual) return;
-
     if (!confirm("¿Confirmar que el cliente NO se presentó?")) return;
 
     try {
-      await API.finalizarTicket(ticketActual.id, usuario.id, "no_presentado");
+      await API.finalizarTicket(
+        ticketActual.id,
+        usuario.id,
+        "no_presentado",
+        comentario,
+      );
       setTicketActual(null);
-      setAttend(false);
+      setComentario(null);
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       alert("Error al finalizar ticket");
     }
+  };
+
+  const handleMasTarde = async () => {
+    if (!ticketActual) return;
+    if (!confirm("¿Esta seguro de realizar esta acción?")) return;
+
+    try {
+      await API.finalizarTicket(
+        ticketActual.id,
+        usuario.id,
+        "pendiente",
+        comentario,
+      );
+      setTicketActual(null);
+      setComentario(null);
+      setTimeout(() => cargarTickets(), 500);
+    } catch (error) {
+      alert("Error al finalizar ticket");
+    }
+  };
+
+  const abrirModalTransferir = () => {
+    setShowTransferModal(true);
+    setServicioSeleccionado("");
+  };
+
+  const cerrarModalTransferir = () => {
+    setShowTransferModal(false);
+    setServicioSeleccionado("");
+  };
+
+  const handleConfirmarTransferencia = async () => {
+    if (!ticketActual || !servicioSeleccionado) {
+      alert("Debes seleccionar un servicio");
+      return;
+    }
+
+    try {
+      await API.transferirTicket(
+        ticketActual.id,
+        servicioSeleccionado,
+        comentario,
+      );
+      setTicketActual(null);
+      setComentario(null);
+      cerrarModalTransferir();
+      setTimeout(() => cargarTickets(), 500);
+      alert("Ticket transferido exitosamente");
+    } catch (error) {
+      console.error("Error al transferir ticket:", error);
+      alert("Error al transferir ticket");
+    }
+  };
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    localStorage.removeItem("token");
+    setUsuario(null);
+    setTicketActual(null);
+    setTicketsEspera([]);
+    setServiciosAsignados([]);
+  };
+
+  const handleEdit = () => {
+    setMenuOpen(false);
+    setEditOpen(true);
   };
 
   function tiempoTranscurrido(fecha) {
@@ -146,87 +334,111 @@ function PantallaOperador() {
 
   if (!usuario) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center p-8">
-        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="bg-blue-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UserCircle className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-800">
-              Acceso Operador
-            </h2>
-            <p className="text-gray-600 mt-2">Ingresa tus credenciales</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Usuario
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
-                placeholder="Ingresa tu usuario"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Contraseña
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
-                placeholder="Ingresa tu contraseña"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors">
-              {loading ? "Ingresando..." : "Ingresar"}
-            </button>
-          </form>
-        </div>
-      </div>
+      <LoginComponent
+        onLoginSuccess={handleLoginSuccess}
+        tipoUsuario="operador"
+      />
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-8 py-6 shadow-lg">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div>
-            <h2 className="text-3xl font-bold p-2 flex items-center gap-2"><CircleUser className="w-8 h-6 text-blue-300"/>{usuario.nombre}</h2>
-            
-            <p className="text-blue-200 text-lg flex items-center ml-3 gap-2"><BriefcaseIcon className="w-6 h-6 text-amber-300"/>
-              Puesto #:  {usuario.puesto_numero || "Sin asignar"} - {usuario.puesto_nombre || "Sin asignar"}
-            </p>
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-4 py-2 shadow-lg">
+        <div className="max-w-7xl mx-auto flex justify-between items-start">
+          {/* INFO USUARIO */}
+          <div
+            className="mt-1 ml-10 p-2 flex items-center justify-between gap-16
+                rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+            {/* PUESTO */}
+            <div className="flex ml-20 items-center gap-3">
+              <div className="p-2 rounded-full bg-amber-400/20 animate-pulse">
+                <MapPinIcon className="w-6 h-6 text-amber-300" />
+              </div>
+
+              <span
+                className="px-4 py-1 rounded-lg text-lg font-extrabold uppercase tracking-wide
+                     bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md">
+                {usuario.puesto_nombre}
+              </span>
+            </div>
+
+            {/* SERVICIOS */}
             {serviciosAsignados.length > 0 && (
-              <p className="text-blue-200 text-sm mt-1">
-                {serviciosAsignados.length} servicio(s) asignado(s)
-              </p>
+              <div className="flex ml-20 mr-10 flex-col gap-3">
+                <div className="flex items-center gap-2 text-white font-bold">
+                  <TagsIcon className="w-5 h-5 text-cyan-300 animate-pulse" />
+                  <span className="tracking-wide">Servicios asignados</span>
+                </div>
+
+                <div  className="flex flex-wrap gap-2 relative">
+                  {serviciosAsignados.map((servicio) => (
+                    <div key={servicio.id} className="relative">
+                      <span
+                        onClick={() =>
+                          setActivo(activo === servicio.id ? null : servicio.id)
+                        }
+                        className={`relative px-3 py-1 rounded-lg text-xs font-bold border border-white/30
+              shadow-md transition-all duration-300 cursor-pointer
+              hover:scale-110 hover:shadow-xl hover:brightness-110 ${activo !== servicio.id ? null : servicio.id ? "animate-pulse":""}`}
+                        style={{ backgroundColor: servicio.color }}>
+                        {servicio.codigo}
+
+                        <span
+                          className="absolute inset-0 blur-md opacity-40 -z-10 rounded-lg"
+                          style={{ backgroundColor: servicio.color }}
+                        />
+                      </span>
+
+                      {/* Tooltip */}
+                      {activo === servicio.id && (
+                        <div
+                        ref={menuRef}
+                          className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2
+              bg-gray-900 text-white text-xs font-bold
+              px-3 py-2 rounded-lg shadow-xl whitespace-nowrap
+              animate-fade-in">
+                          {servicio.nombre}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-          <button
-            onClick={() => {
-              setUsuario(null);
-              setTicketActual(null);
-              setTicketsEspera([]);
-              setServiciosAsignados([]);
-            }}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition-colors">
-            <LogOut className="w-5 h-5" />
-            Cerrar Sesión
-          </button>
+
+          {/* NOMBRE + MENÚ */}
+          <div className="relative mt-10 text-right">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 text-3xl font-bold p-2 hover:bg-blue-800/40 rounded-lg transition">
+              <CircleUser className="w-8 h-6 text-blue-300" />
+              {usuario.nombre}
+              <ChevronDown className="w-5 h-5" />
+            </button>
+
+            {/* DROPDOWN */}
+            {menuOpen && (
+              <div
+                ref={menuRef}
+                className="absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50">
+                <button
+                  onClick={handleEdit}
+                  className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100 transition">
+                  <Settings2Icon className="w-5 h-5 text-cyan-600" />
+                  Configuración
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-3 hover:bg-red-50 text-red-600 transition">
+                  <LogOut className="w-5 h-5" />
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -278,6 +490,26 @@ function PantallaOperador() {
                     <X className="w-6 h-6" />
                     No se Presentó
                   </button>
+                  <button
+                    onClick={handleMasTarde}
+                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-800 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                    <ClockIcon className="w-6 h-6" />
+                    Volver mas tarde.
+                  </button>
+                  <button
+                    onClick={abrirModalTransferir}
+                    className="flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                    <ArrowRightLeftIcon className="w-6 h-6" />
+                    Transferir
+                  </button>
+
+                  <textarea
+                    id="message"
+                    rows="3"
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                    className="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full p-3.5 shadow-xs placeholder:text-body"
+                    placeholder="Agrega un comentario aqui..."></textarea>
                 </div>
               </div>
             ) : (
@@ -309,7 +541,10 @@ function PantallaOperador() {
             {serviciosAsignados.length === 0 && (
               <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
                 <p className="text-yellow-800 text-sm flex">
-                  <FileWarningIcon/> <span className="ml-2">No tienes servicios asignados. Contacta al administrador.</span>
+                  <FileWarningIcon />{" "}
+                  <span className="ml-2">
+                    No tienes servicios asignados. Contacta al administrador.
+                  </span>
                 </p>
               </div>
             )}
@@ -318,17 +553,20 @@ function PantallaOperador() {
               onClick={handleLlamarSiguiente}
               disabled={
                 ticketsEspera.length === 0 ||
-                attend === true ||
-                serviciosAsignados.length === 0
+                ticketActual !== null ||
+                serviciosAsignados.length === 0 ||
+                usuario.puesto_numero === null
               }
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-bold text-xl mb-6 transition-all transform hover:scale-105 active:scale-95 disabled:transform-none shadow-lg">
               {serviciosAsignados.length === 0
                 ? "Sin servicios asignados"
-                : ticketsEspera.length === 0
-                ? "No hay tickets en espera"
-                : attend
-                ? "Atendiendo un ticket"
-                : "Llamar Siguiente"}
+                : usuario.puesto_numero === null
+                  ? "No tienes un puesto asignado"
+                  : ticketsEspera.length === 0
+                    ? "No hay tickets en espera"
+                    : ticketActual !== null
+                      ? "Atendiendo un ticket"
+                      : "Llamar Siguiente"}
             </button>
 
             <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
@@ -353,6 +591,11 @@ function PantallaOperador() {
                     <div className="text-gray-700 font-semibold">
                       {ticket.servicio_nombre}
                     </div>
+                    {ticket.transferido === 1 && (
+                      <div className="text-red-700 font-semibold text-xs">
+                        Transferido (Prioridad)
+                      </div>
+                    )}
                     <div className="text-sm text-indigo-600">
                       {tiempoTranscurrido(ticket.created_at)}
                     </div>
@@ -370,8 +613,199 @@ function PantallaOperador() {
           </div>
         </div>
       </div>
+
+      {EditOpen && (
+        <EditModal
+          usuario={usuario}
+          formulario={formulario}
+          setFormulario={setFormulario}
+          value={value}
+          setvalue={setValue}
+          handleChange={handleChange}
+          handleGuardarUsuario={handleGuardarUsuario}
+          setEditOpen={setEditOpen}
+        />
+      )}
+
+      {/* Modal de Transferencia */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ArrowRightLeftIcon className="w-8 h-8 text-cyan-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Transferir Ticket
+              </h3>
+              <p className="text-gray-600">
+                Ticket:{" "}
+                <span className="font-bold text-cyan-600">
+                  {ticketActual?.numero}
+                </span>
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Seleccionar Servicio de Destino
+              </label>
+              <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                {todosServicios.map((servicio) => (
+                  <label
+                    key={servicio.id}
+                    className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      servicioSeleccionado === servicio.id
+                        ? "border-cyan-500 bg-cyan-50"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    }`}>
+                    <input
+                      type="radio"
+                      name="servicio"
+                      value={servicio.id}
+                      checked={servicioSeleccionado === servicio.id}
+                      onChange={() => setServicioSeleccionado(servicio.id)}
+                      className="w-5 h-5 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <div className="ml-3 flex items-center gap-3 flex-1">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: servicio.color }}></div>
+                      <span className="font-semibold text-gray-800">
+                        {servicio.nombre}
+                      </span>
+                      <span
+                        className="ml-auto text-xs font-bold px-2 py-1 rounded"
+                        style={{
+                          backgroundColor: servicio.color,
+                          color: "white",
+                        }}>
+                        {servicio.codigo}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={cerrarModalTransferir}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-xl font-bold transition-colors">
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmarTransferencia}
+                disabled={!servicioSeleccionado}
+                className="flex-1 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-bold transition-colors">
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default PantallaOperador;
+
+const EditModal = ({
+  usuario,
+  formulario,
+  setFormulario,
+  value,
+  handleChange,
+  handleGuardarUsuario,
+  setEditOpen,
+}) => {
+  const passLength = formulario.pass?.length || 0;
+  const telLength = formulario.tel?.length || 0;
+
+  return (
+    <div className="fixed inset-0 bg-gray-800/90  flex items-center justify-center z-50 animate-fade-in">
+      <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-xl w-full mx-4 shadow-xl animate-bounce-in">
+        <div className="bg-gray-50 p-6 rounded-xl mb-6">
+          <h3 className="text-xl font-bold mb-4">Configuración</h3>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nombre Completo
+              </label>
+              <input
+                type="text"
+                disabled
+                value={usuario.nombre || ""}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Usuario
+              </label>
+              <input
+                type="text"
+                disabled
+                value={usuario.username || ""}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                value={formulario?.pass || ""}
+                onChange={(e) =>
+                  setFormulario({
+                    ...formulario,
+                    pass: e.target.value,
+                  })
+                }
+                className={`w-full px-4 py-2 border-2 ${formulario.pass?.length < 5 || 0 ? "border-red-400" : "border-gray-300"}  rounded-lg focus:outline-none focus:border-blue-600`}
+                placeholder={"dejar vacío no cambia"}
+              />
+            </div>
+            <div>
+              <label
+                className={`block text-sm font-semibold ${value ? "text-red-600" : "text-gray-700"}  mb-2`}>
+                Número de teléfono {value ? "(incorrecto)" : ""}
+              </label>
+              <input
+                type="text"
+                value={formulario.tel || ""}
+                onChange={handleChange}
+                placeholder={usuario.tel || "Ingresa un número de teléfono"}
+                className={`w-full px-4 py-2 border-2 ${value ? "border-red-600 focus:border-red-600" : "border-gray-300"} rounded-lg focus:outline-none focus:border-blue-600`}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleGuardarUsuario}
+              disabled={passLength < 5 && telLength < 10}
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition-colors 
+    ${
+      passLength < 5 && telLength < 10
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-green-600 hover:bg-green-700 text-white"
+    }`}>
+              <Save className="w-5 h-5" />
+              Guardar
+            </button>
+            <button
+              onClick={() => {
+                setEditOpen(false);
+                setFormulario({});
+              }}
+              className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+              <X className="w-5 h-5" />
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const jwt = require ('jsonwebtoken');
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
@@ -7,8 +9,9 @@ const {msgtw} = require('./twilio/apiTwi.js');
 
 const app = express();
 const PORT = process.env.PORT || 4001;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Aumentar límite para base64
+
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -28,12 +31,145 @@ const pool = mysql.createPool({
 // Test de conexión
 pool.getConnection()
   .then(conn => {
-    (' Conectado a la base de datos');
+
     conn.release();
   })
   .catch(err => {
-    console.error(' Error conectando a la base de datos:', err.message);
+
   });
+
+// ============================================
+// FUNCIÓN DE AUDITORÍA
+// ============================================
+async function registrarAuditoria({ usuarioId, accion, modulo, detalles, req }) {
+  
+  const fecha = new Date();
+  const fechaStr = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+  const horaStr = fecha.toTimeString().split(' ')[0]; // HH:MM:SS
+
+  try {
+    await pool.query(
+      `INSERT INTO auditoria 
+       (usuario_id, accion, modulo, detalle, fecha, hora, ip, user_agent)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        usuarioId,
+        accion,
+        modulo,
+        detalles || null,
+        fechaStr,
+        horaStr,
+        req?.ip || null,
+        req?.headers['user-agent'] || null
+      ]
+    );
+  } catch (error) {
+    console.error('Error registrando auditoría:', error.message);
+  }
+}
+
+// ============================================
+// MIDDLEWARE DE AUTENTICACIÓN
+// ============================================
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET || 'tu_secreto_jwt', (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token inválido' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// ============================================
+// RUTAS DE AUTENTICACIÓN
+// ============================================
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const [rows] = await pool.query(
+      'SELECT * FROM usuarios WHERE username = ? AND activo = TRUE AND user_active = TRUE',
+      [username]
+    );
+
+    if (rows.length === 0) {
+      await registrarAuditoria({
+        usuarioId: null,
+        accion: 'LOGIN FALLIDO',
+        modulo: 'Autenticación',
+        detalles: `Usuario: ${username}`,
+        req
+      });
+      return res.status(401).json({ error: 'Credenciales inválidas o usuario inactivo' });
+    }
+
+    const user = rows[0];
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      await registrarAuditoria({
+        usuarioId: user.id,
+        accion: 'LOGIN FALLIDO',
+        modulo: 'Autenticación',
+        detalles: `Contraseña incorrecta para ${user.nombre}`,
+        req
+      });
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    delete user.password; 
+
+    const token = jwt.sign(
+      { id: user.id, nombre: user.nombre, rol: user.rol },
+      JWT_SECRET,
+      { expiresIn: '8h' } 
+    );
+
+    await registrarAuditoria({
+      usuarioId: user.id,
+      accion: 'LOGIN EXITOSO',
+      modulo: 'Autenticación',
+      detalles: `Usuario "${user.nombre}" con privilegios "${user.rol}" inicia sesion`,
+      req
+    });
+
+    res.json({ user, token, success: true });
+
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    const [usuarios] = await pool.query(
+      `SELECT u.id, u.nombre, u.username, u.rol, u.puesto_id, u.tel,
+              p.nombre as puesto_nombre, p.numero as puesto_numero 
+       FROM usuarios u
+       LEFT JOIN puestos p ON u.puesto_id = p.id
+       WHERE u.id = ?`,
+      [req.user.id]
+    );
+
+    if (usuarios.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json(usuarios[0]);
+  } catch (error) {
+    console.error('Error obteniendo usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ============================================
 // RUTAS DE CONFIGURACIÓN
@@ -43,12 +179,12 @@ app.get('/api/configuracion', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM configuracion LIMIT 1');
     res.json(rows[0] || {});
   } catch (error) {
-    console.error(' Error obteniendo configuración:', error);
+    console.error('Error obteniendo configuración:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/configuracion/:id', async (req, res) => {
+app.put('/api/configuracion/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion } = req.body;
@@ -58,10 +194,18 @@ app.put('/api/configuracion/:id', async (req, res) => {
       [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, id]
     );
     
-    (' Configuración actualizada');
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ACTUALIZAR CONFIGURACIÓN',
+      modulo: 'Configuración',
+      detalles: `Empresa: ${nombre_empresa}`,
+      req
+    });
+    
+   
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error actualizando configuración:', error);
+    console.error('Error actualizando configuración:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -71,65 +215,22 @@ app.put('/api/configuracion/:id', async (req, res) => {
 // ============================================
 app.get('/api/medios', async (req, res) => {
   try {
-    (' Consultando medios activos...');
-    
     const [rows] = await pool.query(
       `SELECT 
-        id,
-        tipo,
-        url,
-        nombre,
-        activo,
-        medio_active,
-        orden,
-        es_local,
-        tamano_kb,
-        created_at
+        id, tipo, url, nombre, activo, medio_active, orden, es_local, tamano_kb, created_at
        FROM medios 
        WHERE activo = TRUE 
        ORDER BY orden, created_at`
     );
     
-    (` Medios encontrados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo medios:', error);
+    console.error('Error obteniendo medios:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.get('/api/medios/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const [rows] = await pool.query(
-      `SELECT 
-        id,
-        tipo,
-        url,
-        nombre,
-        activo,
-        orden,
-        es_local,
-        tamano_kb,
-        created_at
-       FROM medios 
-       WHERE id = ?`,
-      [id]
-    );
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Medio no encontrado' });
-    }
-    
-    res.json(rows[0]);
-  } catch (error) {
-    console.error(' Error obteniendo medio:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/medios', async (req, res) => {
+app.post('/api/medios', authenticateToken, async (req, res) => {
   try {
     const { tipo, url, nombre, orden, es_local, tamano_kb } = req.body;
     
@@ -147,7 +248,6 @@ app.post('/api/medios', async (req, res) => {
 
     const urlLength = url.length;
     const isBase64 = url.startsWith('data:');
-    
 
     if (isBase64) {
       if (tipo === 'imagen' && !url.startsWith('data:image/')) {
@@ -172,6 +272,13 @@ app.post('/api/medios', async (req, res) => {
       ]
     );
     
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'CREAR MEDIO',
+      modulo: 'Medios',
+      detalles: `Tipo: ${tipo}, Nombre: ${nombre}, ID: ${result.insertId}`,
+      req
+    });
     
     res.json({ 
       id: result.insertId, 
@@ -180,7 +287,7 @@ app.post('/api/medios', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(' Error guardando medio:', error);
+    console.error('Error guardando medio:', error);
     
     if (error.code === 'ER_DATA_TOO_LONG') {
       return res.status(400).json({ 
@@ -194,57 +301,61 @@ app.post('/api/medios', async (req, res) => {
   }
 });
 
-app.put('/api/medios/:id', async (req, res) => {
+app.put('/api/medios/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { tipo, url, nombre, orden, activo, es_local, tamano_kb } = req.body;
     
-    ('📝 Actualizando medio:', id);
-    
     await pool.query(
       `UPDATE medios 
-       SET tipo = ?, 
-           url = ?, 
-           nombre = ?, 
-           orden = ?, 
-           activo = ?,
-           es_local = ?,
-           tamano_kb = ?
+       SET tipo = ?, url = ?, nombre = ?, orden = ?, activo = ?, es_local = ?, tamano_kb = ?
        WHERE id = ?`,
       [tipo, url, nombre, orden, activo, es_local, tamano_kb, id]
     );
     
-    (' Medio actualizado:', id);
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ACTUALIZAR MEDIO',
+      modulo: 'Medios',
+      detalles: `ID: ${id}, Nombre: ${nombre}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error actualizando medio:', error);
+    console.error('Error actualizando medio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.delete('/api/medios/:id', async (req, res) => {
+app.delete('/api/medios/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
-    
     
     await pool.query(
       'UPDATE medios SET activo = FALSE WHERE id = ?',
       [id]
     );
     
-    (' Medio eliminado:', id);
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ELIMINAR MEDIO',
+      modulo: 'Medios',
+      detalles: `ID: ${id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error eliminando medio:', error);
+    console.error('Error eliminando medio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.delete('/api/medios/:id/switch', async (req, res) => {
+app.delete('/api/medios/:id/switch', authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT medio_active FROM medios WHERE id = ?',
+      'SELECT medio_active,tipo, nombre  FROM medios WHERE id = ?',
       [req.params.id]
     );
 
@@ -253,36 +364,25 @@ app.delete('/api/medios/:id/switch', async (req, res) => {
     }
 
     const nuevoValor = !rows[0].medio_active;
+    const tipo = rows[0].tipo;
+    const nombre = rows[0].nombre;
 
     await pool.query(
       'UPDATE medios SET medio_active = ? WHERE id = ?',
       [nuevoValor, req.params.id]
     );
 
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: nuevoValor ? `ACTIVAR MEDIO` : `DESACTIVAR MEDIO`,
+      modulo: 'Medios',
+      detalles: nuevoValor ? `Activó ${tipo} ${nombre} en pantalla` : `Desactivó ${tipo} ${nombre} en pantalla`,
+      req
+    });
+
     res.json({ success: true, medio_active: nuevoValor });
   } catch (error) {
     console.error('Error modificando medio:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post('/api/medios/reorder', async (req, res) => {
-  try {
-    const { medios } = req.body;
-    
-    ('🔄 Reordenando medios...');
-    
-    for (const medio of medios) {
-      await pool.query(
-        'UPDATE medios SET orden = ? WHERE id = ?',
-        [medio.orden, medio.id]
-      );
-    }
-    
-    (' Medios reordenados');
-    res.json({ success: true });
-  } catch (error) {
-    console.error(' Error reordenando medios:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -297,13 +397,12 @@ app.get('/api/servicios', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo servicios:', error);
+    console.error('Error obteniendo servicios:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/servicios', async (req, res) => {
-  
+app.post('/api/servicios', authenticateToken, async (req, res) => {
   try {
     const { nombre, descripcion, codigo, color, tiempo_promedio } = req.body;
    
@@ -311,23 +410,48 @@ app.post('/api/servicios', async (req, res) => {
       'INSERT INTO servicios (nombre, descripcion, codigo, color, tiempo_promedio) VALUES (?, ?, ?, ?, ?)',
       [nombre, descripcion, codigo, color, tiempo_promedio]
     );
-    (' Servicio creado:', result.insertId);
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'CREAR SERVICIO',
+      modulo: 'Servicios',
+      detalles: `Nombre: ${nombre}, Código: ${codigo}, ID: ${result.insertId}`,
+      req
+    });
+    
     res.json({ id: result.insertId, success: true });
   } catch (error) {
-    console.error(' Error creando servicio:', error);
+    console.error('Error creando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/servicios/:id', async (req, res) => {
+app.put('/api/servicios/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, color, tiempo_promedio, activo } = req.body;
+
+    const [rows] = await pool.query(
+      'Select * from servicios WHERE id = ?',
+      [id]
+    );
+    const anterior = rows[0].nombre;
+
+  
+    
     await pool.query(
       'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, tiempo_promedio = ?, activo = ? WHERE id = ?',
       [nombre, descripcion, color, tiempo_promedio, activo, id]
     );
-    (' Servicio actualizado:', id);
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: `ACTUALIZAR SERVICIO ID: ${id}`,
+      modulo: 'Servicios',
+      detalles: ` Cambió "${anterior}" por "${nombre}"`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
     console.error(' Error actualizando servicio:', error);
@@ -335,18 +459,26 @@ app.put('/api/servicios/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/servicios/:id', async (req, res) => {
+app.delete('/api/servicios/:id', authenticateToken, async (req, res) => {
   try {
     await pool.query('UPDATE servicios SET activo = FALSE WHERE id = ?', [req.params.id]);
-    (' Servicio eliminado:', req.params.id);
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ELIMINAR SERVICIO',
+      modulo: 'Servicios',
+      detalles: `ID: ${req.params.id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error eliminando servicio:', error);
+    console.error('Error eliminando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.delete('/api/servicios/:id/switch', async (req, res) => {
+app.delete('/api/servicios/:id/switch', authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT service_active FROM servicios WHERE id = ?',
@@ -364,13 +496,20 @@ app.delete('/api/servicios/:id/switch', async (req, res) => {
       [nuevoValor, req.params.id]
     );
 
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: nuevoValor ? 'ACTIVAR SERVICIO' : 'DESACTIVAR SERVICIO',
+      modulo: 'Servicios',
+      detalles: `ID: ${req.params.id}`,
+      req
+    });
+
     res.json({ success: true, service_active: nuevoValor });
   } catch (error) {
     console.error('Error modificando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // ============================================
 // RUTAS DE PUESTOS
@@ -382,38 +521,136 @@ app.get('/api/puestos', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo puestos:', error);
+    console.error('Error obteniendo puestos:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/puestos', async (req, res) => {
+app.post('/api/puestos', authenticateToken, async (req, res) => {
   try {
     const { numero, nombre } = req.body;
+
+    const numeroStr = numero != null ? numero.toString().trim() : '';
+    const nombreStr = nombre != null ? nombre.toString().trim() : '';
+
+    if (!numeroStr || !nombreStr) {
+      return res.status(400).json({
+        error: 'Número o nombre no pueden estar vacíos'
+      });
+    }
+
+    const [existentes] = await pool.query(
+      'SELECT * FROM puestos WHERE numero = ? OR nombre = ?',
+      [numeroStr, nombreStr]
+    );
+
+    if (existentes.length > 0) {
+      return res.status(400).json({
+        error: 'Ya existe un puesto con el mismo número o nombre'
+      });
+    }
+
     const [result] = await pool.query(
       'INSERT INTO puestos (numero, nombre) VALUES (?, ?)',
-      [numero, nombre]
+      [numeroStr, nombreStr]
     );
-    (' Puesto creado:', result.insertId);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'CREAR PUESTO',
+      modulo: 'Puestos',
+      detalles: `Número: ${numeroStr}, Nombre: ${nombreStr}, ID: ${result.insertId}`,
+      req
+    });
+
     res.json({ id: result.insertId, success: true });
+
   } catch (error) {
-    console.error(' Error creando puesto:', error);
+    console.error('Error creando puesto:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/puestos/:id', async (req, res) => {
+app.put('/api/puestos/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { numero, nombre, activo } = req.body;
+
+    const [existentes] = await pool.query(
+      'SELECT * FROM puestos WHERE (numero = ? OR nombre = ?) AND id != ?',
+      [numero, nombre, id]
+    );
+
+    if (existentes.length > 0) {
+      return res.status(400).json({
+        error: 'Ya existe otro puesto con el mismo número o nombre'
+      });
+    }
+
     await pool.query(
       'UPDATE puestos SET numero = ?, nombre = ?, activo = ? WHERE id = ?',
       [numero, nombre, activo, id]
     );
-    (' Puesto actualizado:', id);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ACTUALIZAR PUESTO',
+      modulo: 'Puestos',
+      detalles: `ID: ${id}, Número: ${numero}, Nombre: ${nombre}`,
+      req
+    });
+
     res.json({ success: true });
+
   } catch (error) {
-    console.error(' Error actualizando puesto:', error);
+    console.error('Error actualizando puesto:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/puestos/:id/switch', authenticateToken, async (req, res) => {
+  try {
+    const puestoId = req.params.id;
+    const [rows] = await pool.query(
+      'SELECT puesto_active FROM puestos WHERE id = ?',
+      [puestoId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Puesto no encontrado' });
+    }
+
+    const [usuariosAsignados] = await pool.query(
+      'SELECT COUNT(*) AS total FROM usuarios WHERE puesto_id = ?',
+      [puestoId]
+    );
+
+    if (usuariosAsignados[0].total > 0) {
+      return res.status(400).json({
+        error: 'No se puede desactivar el puesto porque tiene usuarios asignados'
+      });
+    }
+
+    const nuevoValor = !rows[0].puesto_active;
+    const name = rows[0].nombre;
+
+    await pool.query(
+      'UPDATE puestos SET puesto_active = ? WHERE id = ?',
+      [nuevoValor, puestoId]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: nuevoValor ? 'ACTIVAR PUESTO' : 'DESACTIVAR PUESTO',
+      modulo: 'Puestos',
+      detalles: `ID: ${puestoId}, NOMBRE: ${name}`,
+      req
+    });
+
+    res.json({ success: true, puesto_active: nuevoValor });
+
+  } catch (error) {
+    console.error('Error modificando puesto:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -421,37 +658,6 @@ app.put('/api/puestos/:id', async (req, res) => {
 // ============================================
 // RUTAS DE USUARIOS
 // ============================================
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const [rows] = await pool.query(
-      `SELECT u.*, p.numero as puesto_numero, p.nombre as puesto_nombre 
-       FROM usuarios u 
-       LEFT JOIN puestos p ON u.puesto_id = p.id 
-       WHERE u.username = ? AND u.password = ? AND u.activo = TRUE`,
-      [username, password]
-    );
-    
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-    
-    const user = rows[0];
-    delete user.password;
-    
-    (' Login exitoso:', {
-      usuario: user.nombre,
-      rol: user.rol,
-      puesto: user.puesto_numero || 'Sin puesto'
-    });
-    
-    res.json({ user, success: true });
-  } catch (error) {
-    console.error(' Error en login:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 app.get('/api/usuarios', async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -460,47 +666,416 @@ app.get('/api/usuarios', async (req, res) => {
     rows.forEach(user => delete user.password);
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo usuarios:', error);
+    console.error('Error obteniendo usuarios:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/usuarios', async (req, res) => {
+app.get('/api/usuarios/:user', async (req, res) => {
   try {
-    const { nombre, username, password, rol, puesto_id } = req.body;
-    const [result] = await pool.query(
-      'INSERT INTO usuarios (nombre, username, password, rol, puesto_id) VALUES (?, ?, ?, ?, ?)',
-      [nombre, username, password, rol, puesto_id || null]
+    const [rows] = await pool.query(
+      'SELECT tel FROM usuarios WHERE activo = TRUE AND username=?',
+      [req.params.user]
     );
-    (' Usuario creado:', result.insertId);
-    res.json({ id: result.insertId, success: true });
+
+    const usuario = rows[0];
+    res.json(usuario);
   } catch (error) {
-    console.error(' Error creando usuario:', error);
+    console.error('Error', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/usuarios/:id', async (req, res) => {
+app.post('/api/usuarios', authenticateToken, async (req, res) => {
+  try {
+    const { nombre, username, password, rol, puesto_id, tel } = req.body;
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const [result] = await pool.query(
+      'INSERT INTO usuarios (nombre, username, password, rol, puesto_id, tel) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, username, hashedPassword, rol, puesto_id || null, tel]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'CREAR USUARIO',
+      modulo: 'Usuarios',
+      detalles: `Usuario: ${username}, Rol: ${rol}, ID: ${result.insertId}`,
+      req
+    });
+    
+    res.json({ id: result.insertId, success: true });
+
+  } catch (error) {
+    console.error('Error creando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/usuarios/:user/change', authenticateToken, async (req, res) => {
+  try {
+    const { user } = req.params;
+    const { password } = req.body;
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    
+    await pool.query(
+      'UPDATE usuarios SET password = ? WHERE username = ?',
+      [hashedPassword, user]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'CAMBIAR CONTRASEÑA',
+      modulo: 'Usuarios',
+      detalles: `Usuario: ${user}`,
+      req
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/usuarios/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, username, password, rol, puesto_id, activo } = req.body;
+    const { nombre, username, password, rol, puesto_id, activo, tel } = req.body;
+
+    const saltRounds = 10;
     
-    let query = 'UPDATE usuarios SET nombre = ?, username = ?, rol = ?, puesto_id = ?, activo = ?';
-    let params = [nombre, username, rol, puesto_id || null, activo];
+    let query = 'UPDATE usuarios SET nombre = ?, username = ?, rol = ?, puesto_id = ?, activo = ?, tel=?';
+    let params = [nombre, username, rol, puesto_id || null, activo, tel];
     
     if (password) {
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
       query += ', password = ?';
-      params.push(password);
+      params.push(hashedPassword);
     }
     
     query += ' WHERE id = ?';
     params.push(id);
     
     await pool.query(query, params);
-    (' Usuario actualizado:', id);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ACTUALIZAR USUARIO',
+      modulo: 'Usuarios',
+      detalles: `ID: ${id}, Usuario: ${username}, Rol: ${rol}`,
+      req
+    });
+
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error actualizando usuario:', error);
+    console.error('Error actualizando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/usuarios/:id/operator', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { pass, tel } = req.body;
+    const updates = [];
+    const params = [];
+
+    if (pass) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(pass, saltRounds);
+      updates.push('password = ?');
+      params.push(hashedPassword);
+    }
+
+    if (tel) {
+      updates.push('tel = ?');
+      params.push(tel);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No hay campos para actualizar' });
+    }
+
+    const query = `UPDATE usuarios SET ${updates.join(', ')} WHERE id = ?`;
+    params.push(id);
+
+    await pool.query(query, params);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ACTUALIZAR DATOS OPERADOR',
+      modulo: 'Usuarios',
+      detalles: `ID: ${id}, Campos: ${updates.join(', ')}`,
+      req
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error actualizando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/usuarios/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const [rows] = await pool.query(
+      'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const usuario = rows[0];
+
+    if (usuario.rol === 'admin' && usuario.activo) {
+      const [admins] = await pool.query(
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin" AND activo = 1 and user_active=1'
+      );
+
+      if (admins[0].total <= 1) {
+        return res.status(400).json({
+          error: 'No se puede eliminar el último administrador activo'
+        });
+      }
+    }
+
+    await pool.query(
+      'UPDATE usuarios SET activo = 0 WHERE id = ?',
+      [userId]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ELIMINAR USUARIO',
+      modulo: 'Usuarios',
+      detalles: `ID: ${userId}, Usuario: ${usuario.username}`,
+      req
+    });
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error eliminando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/usuarios/:id/switch', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, rol, activo, user_active, username FROM usuarios WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'usuario no encontrado' });
+    }
+
+    const usuario = rows[0];
+    const nuevoValor = !rows[0].user_active;
+
+    if (usuario.rol === 'admin' && usuario.activo) {
+      const [admins] = await pool.query(
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin" AND activo = 1 AND user_active=1'
+      );
+
+      if (admins[0].total <= 1 && nuevoValor===false) {
+        return res.status(400).json({
+          error: 'No se puede deshabilitar el último administrador activo'
+        });
+      }
+    }
+    
+    await pool.query(
+      'UPDATE usuarios SET user_active = ? WHERE id = ?',
+      [nuevoValor, req.params.id]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: nuevoValor ? 'ACTIVAR USUARIO' : 'DESACTIVAR USUARIO',
+      modulo: 'Usuarios',
+      detalles: `ID: ${req.params.id}, Usuario: ${usuario.username}`,
+      req
+    });
+
+    res.json({ success: true, activo: nuevoValor });
+  } catch (error) {
+    console.error('Error modificando usuario:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// RUTAS DE PERMISOS
+// ============================================
+app.get('/api/usuarios/permisos/todos', async (req, res) => {
+  try {
+    const [admins] = await pool.query(`
+      SELECT DISTINCT
+        u.id, u.nombre, u.username, u.rol, u.user_active, u.activo
+      FROM usuarios u
+      WHERE u.rol = 'admin' AND u.activo = TRUE
+      ORDER BY u.nombre
+    `);
+
+    for (const admin of admins) {
+      const [permisos] = await pool.query(
+        `SELECT p.id, p.nombre
+        FROM usuarios_permisos up
+        INNER JOIN permisos p ON p.id = up.permiso_id
+        WHERE up.usuario_id = ? AND up.activo = TRUE
+        ORDER BY p.nombre`,
+        [admin.id]
+      );
+      admin.permisos = permisos;
+    }
+
+    res.json(admins);
+
+  } catch (error) {
+    console.error('Error obteniendo admins con permisos:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/usuarios/:id/permisos', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query(`
+      SELECT p.id
+      FROM permisos p
+      INNER JOIN usuarios_permisos up ON up.permiso_id = p.id
+      WHERE up.usuario_id = ? AND up.activo = 1
+    `, [id]);
+
+    res.json(rows.map(r => r.id));
+  } catch (error) {
+    console.error('Error obteniendo permisos:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/usuarios/permisos', authenticateToken, async (req, res) => {
+  try {
+    const { usuario_id, permiso_id } = req.body;
+
+    const [result] = await pool.query(`
+      INSERT INTO usuarios_permisos (usuario_id, permiso_id, activo)
+      VALUES (?, ?, 1)
+    `, [usuario_id, permiso_id]);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ASIGNAR PERMISO',
+      modulo: 'Permisos',
+      detalles: `Usuario ID: ${usuario_id}, Permiso ID: ${permiso_id}`,
+      req
+    });
+
+    res.status(201).json({
+      id: result.insertId,
+      usuario_id,
+      permiso_id,
+      activo: 1
+    });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'Permiso ya asignado al usuario' });
+    }
+
+    console.error('Error asignando permiso:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/usuarios/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res) => {
+  try {
+    const { usuarioId, permisoId } = req.params;
+    const { activo } = req.body;
+
+    const [rows] = await pool.query(
+      `SELECT 1 FROM usuarios_permisos
+       WHERE usuario_id = ? AND permiso_id = ?`,
+      [usuarioId, permisoId]
+    );
+
+    if (rows.length === 0) {
+      await pool.query(
+        `INSERT INTO usuarios_permisos (usuario_id, permiso_id, activo)
+         VALUES (?, ?, 1)`,
+        [usuarioId, permisoId]
+      );
+
+      await registrarAuditoria({
+        usuarioId: req.user.id,
+        accion: 'CREAR Y ACTIVAR PERMISO',
+        modulo: 'Permisos',
+        detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
+        req
+      });
+
+      return res.json({ message: 'Permiso creado y activado' });
+    }
+
+    await pool.query(
+      `UPDATE usuarios_permisos
+       SET activo = ?
+       WHERE usuario_id = ? AND permiso_id = ?`,
+      [activo, usuarioId, permisoId]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: activo ? 'ACTIVAR PERMISO' : 'DESACTIVAR PERMISO',
+      modulo: 'Permisos',
+      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
+      req
+    });
+
+    res.json({ message: 'Permiso actualizado' });
+
+  } catch (error) {
+    console.error('Error gestionando permiso:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/usuarios/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res) => {
+  try {
+    const { usuarioId, permisoId } = req.params;
+
+    const [result] = await pool.query(`
+      UPDATE usuarios_permisos
+      SET activo = 0
+      WHERE usuario_id = ? AND permiso_id = ?
+    `, [usuarioId, permisoId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Permiso no encontrado' });
+    }
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'REMOVER PERMISO',
+      modulo: 'Permisos',
+      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
+      req
+    });
+
+    res.json({ message: 'Permiso removido del usuario' });
+  } catch (error) {
+    console.error('Error removiendo permiso:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -511,8 +1086,6 @@ app.put('/api/usuarios/:id', async (req, res) => {
 app.get('/api/operadores/:usuario_id/servicios', async (req, res) => {
   try {
     const { usuario_id } = req.params;
-    
-    (' Consultando servicios del operador:', usuario_id);
     
     const [rows] = await pool.query(
       `SELECT s.*, 
@@ -528,19 +1101,16 @@ app.get('/api/operadores/:usuario_id/servicios', async (req, res) => {
       [usuario_id]
     );
     
-    (` Servicios encontrados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo servicios del operador:', error);
+    console.error('Error obteniendo servicios del operador:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/operadores/:usuario_id/servicios/:servicio_id', async (req, res) => {
+app.post('/api/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
   try {
     const { usuario_id, servicio_id } = req.params;
-    
-    (' Asignando servicio:', { usuario_id, servicio_id });
     
     await pool.query(
       `INSERT INTO operador_servicios (usuario_id, servicio_id) 
@@ -549,29 +1119,41 @@ app.post('/api/operadores/:usuario_id/servicios/:servicio_id', async (req, res) 
       [usuario_id, servicio_id]
     );
     
-    (' Servicio asignado');
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ASIGNAR SERVICIO A OPERADOR',
+      modulo: 'Operadores-Servicios',
+      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error asignando servicio:', error);
+    console.error('Error asignando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.delete('/api/operadores/:usuario_id/servicios/:servicio_id', async (req, res) => {
+app.delete('/api/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
   try {
     const { usuario_id, servicio_id } = req.params;
-    
-    (' Desasignando servicio:', { usuario_id, servicio_id });
     
     await pool.query(
       'DELETE FROM operador_servicios WHERE usuario_id = ? AND servicio_id = ?',
       [usuario_id, servicio_id]
     );
     
-    (' Servicio desasignado');
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'DESASIGNAR SERVICIO DE OPERADOR',
+      modulo: 'Operadores-Servicios',
+      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error desasignando servicio:', error);
+    console.error('Error desasignando servicio:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -580,12 +1162,8 @@ app.get('/api/operadores-servicios', async (req, res) => {
   try {    
     const [operadores] = await pool.query(
       `SELECT DISTINCT
-        u.id,
-        u.nombre,
-        u.username,
-        u.puesto_id,
-        p.numero as puesto_numero,
-        p.nombre as puesto_nombre
+        u.id, u.nombre, u.username, u.puesto_id, u.user_active,
+        p.numero as puesto_numero, p.nombre as puesto_nombre
        FROM usuarios u
        LEFT JOIN puestos p ON u.puesto_id = p.id
        WHERE u.rol = 'operador' AND u.activo = TRUE
@@ -604,10 +1182,9 @@ app.get('/api/operadores-servicios', async (req, res) => {
       operador.servicios = servicios;
     }
     
-    (` Operadores encontrados: ${operadores.length}`);
     res.json(operadores);
   } catch (error) {
-    console.error(' Error obteniendo operadores con servicios:', error);
+    console.error('Error obteniendo operadores con servicios:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -636,7 +1213,7 @@ app.post('/api/tickets', async (req, res) => {
       [insertResult.insertId, 'creado']
     );
     
-    (' Ticket creado:', numero);
+    
     
     res.json({ 
       id: insertResult.insertId,
@@ -644,7 +1221,7 @@ app.post('/api/tickets', async (req, res) => {
       success: true 
     });
   } catch (error) {
-    console.error(' Error creando ticket:', error);
+    console.error('Error creando ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -656,15 +1233,13 @@ app.get('/api/tickets/espera', async (req, res) => {
     );
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo tickets en espera:', error);
+    console.error('Error obteniendo tickets en espera:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/tickets/llamados', async (req, res) => {
   try {
-    (' Consultando tickets llamados...');
-    
     const [rows] = await pool.query(
       `SELECT * FROM vista_tickets 
        WHERE estado IN ('llamado', 'en_atencion') 
@@ -672,10 +1247,9 @@ app.get('/api/tickets/llamados', async (req, res) => {
        LIMIT 5`
     );
     
-    (` Tickets llamados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo tickets llamados:', error);
+    console.error('Error obteniendo tickets llamados:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -683,8 +1257,6 @@ app.get('/api/tickets/llamados', async (req, res) => {
 app.get('/api/tickets/operador/:usuario_id', async (req, res) => {
   try {
     const { usuario_id } = req.params;
-    
-    (' Consultando tickets del operador:', usuario_id);
     
     const [rows] = await pool.query(
       `SELECT * FROM vista_tickets 
@@ -694,62 +1266,106 @@ app.get('/api/tickets/operador/:usuario_id', async (req, res) => {
       [usuario_id]
     );
     
-    (` Tickets encontrados: ${rows.length}`);
     res.json(rows);
   } catch (error) {
-    console.error(' Error obteniendo tickets del operador:', error);
+    console.error('Error obteniendo tickets del operador:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/tickets/:id/llamar', async (req, res) => {
+app.post('/api/tickets/:id/llamar', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { usuario_id, puesto_id } = req.body;
-    
-    (' Llamando ticket:', { id, usuario_id, puesto_id });
     
     await pool.query(
       'CALL llamar_ticket(?, ?, ?)',
       [id, usuario_id, puesto_id]
     );
     
-    (' Ticket llamado');
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'LLAMAR TICKET',
+      modulo: 'Tickets',
+      detalles: `Ticket ID: ${id}, Puesto ID: ${puesto_id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error llamando ticket:', error);
+    console.error('Error llamando ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/tickets/:id/atender', async (req, res) => {
+app.post('/api/tickets/:id/atender', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { usuario_id } = req.body;
     
     await pool.query('CALL atender_ticket(?, ?)', [id, usuario_id]);
-    (' Ticket en atención');
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'ATENDER TICKET',
+      modulo: 'Tickets',
+      detalles: `Ticket ID: ${id}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error atendiendo ticket:', error);
+    console.error('Error atendiendo ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-app.post('/api/tickets/:id/finalizar', async (req, res) => {
+app.post('/api/tickets/:id/finalizar', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { usuario_id, estado } = req.body;
+    const { usuario_id, estado, comentario } = req.body;
     
     await pool.query(
-      'CALL finalizar_ticket(?, ?, ?)',
-      [id, usuario_id, estado]
+      'CALL finalizar_ticket(?, ?, ?, ?)',
+      [id, usuario_id, estado, comentario]
     );
     
-    (' Ticket finalizado:', estado);
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'FINALIZAR TICKET',
+      modulo: 'Tickets',
+      detalles: `Ticket ID: ${id}, Estado: ${estado}`,
+      req
+    });
+    
     res.json({ success: true });
   } catch (error) {
-    console.error(' Error finalizando ticket:', error);
+    console.error('Error finalizando ticket:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/tickets/:id/transferir', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { servicio_id, comentario } = req.body;
+    
+    await pool.query(
+      'UPDATE tickets SET servicio_id=?, notes=?, estado="espera", puesto_id=null, usuario_id=null, transferido=1 where id=? ',
+      [servicio_id, comentario, id]
+    );
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'TRANSFERIR TICKET',
+      modulo: 'Tickets',
+      detalles: `Ticket ID: ${id}, Nuevo Servicio ID: ${servicio_id}`,
+      req
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error transfiriendo ticket:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -762,12 +1378,12 @@ app.get('/api/historial', async (req, res) => {
     const { fecha_inicio, fecha_fin, servicio_id, estado, operador } = req.query;
    
     let query = `
-      SELECT h.*,t.finalizado_at, t.numero, u.nombre as usuario_nombre, s.nombre as servicio_nombre
+      SELECT h.*,t.finalizado_at, t.numero, u.nombre as usuario_nombre, s.nombre as servicio_nombre, t.transferido
       FROM historial h
       LEFT JOIN tickets t ON h.ticket_id = t.id
       LEFT JOIN usuarios u ON h.usuario_id = u.id
       LEFT JOIN servicios s ON t.servicio_id = s.id
-      WHERE 1=1
+      WHERE 1=1 AND s.service_active = 1
     `;
     
     const params = [];
@@ -800,81 +1416,6 @@ app.get('/api/historial', async (req, res) => {
     query += ' ORDER BY h.created_at DESC LIMIT 1000';
     
     const [rows] = await pool.query(query, params);
-     console.log(rows)
-    res.json(rows);
-  } catch (error) {
-    console.error(' Error obteniendo historial:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// En backend/server.js - REEMPLAZAR el endpoint de historial
-
-app.get('/api/historial', async (req, res) => {
-  try {
-    const { fecha_inicio, fecha_fin, servicio_id, estado, limit } = req.query;
-    
-    let query = `
-      SELECT 
-        t.id,
-        t.numero,
-        t.tipo_identificacion,
-        t.identificacion,
-        t.estado,
-        t.llamado_veces,
-        t.created_at,
-        t.llamado_at,
-        t.atendido_at,
-        s.nombre as servicio_nombre,
-        s.codigo as servicio_codigo,
-        s.color as servicio_color,
-        u.nombre as operador_nombre,
-        p.numero as puesto_numero,
-        TIMESTAMPDIFF(MINUTE, t.created_at, t.llamado_at) as tiempo_espera_minutos,
-        TIMESTAMPDIFF(MINUTE, t.llamado_at, t.atendido_at) as tiempo_atencion_minutos,
-        TIMESTAMPDIFF(MINUTE, t.created_at, t.atendido_at) as tiempo_total_minutos
-      FROM tickets t
-      LEFT JOIN servicios s ON t.servicio_id = s.id
-      LEFT JOIN usuarios u ON t.usuario_id = u.id
-      LEFT JOIN puestos p ON t.puesto_id = p.id
-      WHERE 1=1
-    `;
-    
-    const params = [];
-    
-    if (fecha_inicio) {
-      query += ' AND DATE(t.created_at) >= ?';
-      params.push(fecha_inicio);
-    }
-    
-    if (fecha_fin) {
-      query += ' AND DATE(t.created_at) <= ?';
-      params.push(fecha_fin);
-    }
-    
-    if (servicio_id) {
-      query += ' AND t.servicio_id = ?';
-      params.push(servicio_id);
-    }
-    
-    if (estado) {
-      query += ' AND t.estado = ?';
-      params.push(estado);
-    }
-    
-    query += ' ORDER BY t.created_at DESC';
-    
-    if (limit) {
-      query += ' LIMIT ?';
-      params.push(parseInt(limit));
-    } else {
-      query += ' LIMIT 500'; // Límite por defecto
-    }
-    
-    const [rows] = await pool.query(query, params);
-
-   
-    
     res.json(rows);
   } catch (error) {
     console.error(' Error obteniendo historial:', error);
@@ -902,10 +1443,49 @@ app.get('/api/estadisticas', async (req, res) => {
       tiempo_promedio: 0
     });
   } catch (error) {
-    console.error(' Error obteniendo estadísticas:', error);
+    console.error('Error obteniendo estadísticas:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
+app.get('/api/auditoria', async (req, res) => {
+  try {
+    const { fecha_inicio, fecha_fin, usuario_id } = req.query;
+    
+    let query = `
+      SELECT *
+      FROM view_auditoria
+      WHERE 1 = 1
+    `;
+    const params = [];
+
+    if (fecha_inicio) {
+      query += ' AND fecha >= ?';
+      params.push(fecha_inicio);
+    }
+
+    if (fecha_fin) {
+      query += ' AND fecha <= ?';
+      params.push(fecha_fin);
+    }
+
+    if (usuario_id) {
+      query += ' AND usuario_id = ?';
+      params.push(usuario_id);
+    }
+
+    query += ' ORDER BY auditoria_id DESC';
+
+    const [rows] = await pool.query(query, params);
+    res.json(rows);
+  } catch (error) {
+    console.error(' Error obteniendo auditoría:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.get('/api/estadisticas/rango', async (req, res) => {
   try {
@@ -916,7 +1496,7 @@ app.get('/api/estadisticas/rango', async (req, res) => {
      
     const query = `
       SELECT 
-        DATE(created_at) as fecha,
+        DATE(t.created_at) as fecha,
         COUNT(*) as total_tickets,
         SUM(CASE WHEN estado = 'atendido' THEN 1 ELSE 0 END) as atendidos,
         SUM(CASE WHEN estado = 'no_presentado' THEN 1 ELSE 0 END) as no_presentados,
@@ -924,29 +1504,25 @@ app.get('/api/estadisticas/rango', async (req, res) => {
         SUM(CASE WHEN estado IN ('llamado', 'en_atencion') THEN 1 ELSE 0 END) as en_proceso,
         AVG(CASE 
           WHEN estado = 'atendido' AND atendido_at IS NOT NULL 
-          THEN TIMESTAMPDIFF(MINUTE, created_at, atendido_at)
+          THEN TIMESTAMPDIFF(MINUTE, t.created_at, atendido_at)
           ELSE NULL 
         END) as tiempo_promedio_servicio
-      FROM tickets
-      WHERE DATE(created_at) BETWEEN ? AND ?
-      GROUP BY DATE(created_at)
+      FROM tickets t
+      LEFT JOIN servicios s ON s.id = t.servicio_id AND s.service_active = 1
+      WHERE DATE(t.created_at) BETWEEN ? AND ?
+      GROUP BY DATE(t.created_at)
       ORDER BY fecha ASC
     `;
     
-    const params = [inicio, fin];
-    
-    
-    const [rows] = await pool.query(query, params);
-    
+    const [rows] = await pool.query(query, [inicio, fin]);
     
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por rango:', error);
-        res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Estadísticas por servicio
 app.get('/api/estadisticas/servicios', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
@@ -954,54 +1530,33 @@ app.get('/api/estadisticas/servicios', async (req, res) => {
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const fin = fecha_fin || new Date().toISOString().split('T')[0];
     
-    
     const query = `
       SELECT 
-  s.id,
-  s.nombre,
-  s.codigo,
-  s.color,
-
-  COALESCE(COUNT(t.id), 0) AS total_tickets,
-
-  COALESCE(
-    SUM(CASE WHEN t.estado = 'atendido' THEN 1 END),
-    0
-  ) AS atendidos,
-
-  COALESCE(
-    SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END),
-    0
-  ) AS no_presentados,
-
-  COALESCE(
-    AVG(
-      CASE 
-        WHEN t.estado = 'atendido'
-         AND t.llamado_at IS NOT NULL
-         AND t.finalizado_at IS NOT NULL
-         AND t.finalizado_at > t.llamado_at
-        THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
-      END
-    ),
-    0
-  ) AS tiempo_promedio_servicio
-
-FROM servicios s
-LEFT JOIN tickets t 
-  ON s.id = t.servicio_id
-  AND t.created_at BETWEEN ? AND ?
-
-WHERE s.activo = TRUE
-
-GROUP BY s.id, s.nombre, s.codigo, s.color
-ORDER BY total_tickets DESC;
+        s.id, s.nombre, s.codigo, s.color, s.service_active,
+        COALESCE(COUNT(t.id), 0) AS total_tickets,
+        COALESCE(SUM(CASE WHEN t.estado = 'atendido' THEN 1 END), 0) AS atendidos,
+        COALESCE(SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END), 0) AS no_presentados,
+        COALESCE(
+          AVG(
+            CASE 
+              WHEN t.estado = 'atendido'
+               AND t.llamado_at IS NOT NULL
+               AND t.finalizado_at IS NOT NULL
+               AND t.finalizado_at > t.llamado_at
+              THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
+            END
+          ), 0
+        ) AS tiempo_promedio_servicio
+      FROM servicios s
+      LEFT JOIN tickets t 
+        ON s.id = t.servicio_id
+        AND t.created_at BETWEEN ? AND ?
+      WHERE s.activo = TRUE
+      GROUP BY s.id, s.nombre, s.codigo, s.color
+      ORDER BY total_tickets DESC
     `;
     
-    const params = [inicio, fin];
-    
-    const [rows] = await pool.query(query, params);
-    
+    const [rows] = await pool.query(query, [inicio, fin]);
     
     res.json(rows);
   } catch (error) {
@@ -1010,7 +1565,6 @@ ORDER BY total_tickets DESC;
   }
 });
 
-// Estadísticas por operador
 app.get('/api/estadisticas/operadores', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
@@ -1019,46 +1573,31 @@ app.get('/api/estadisticas/operadores', async (req, res) => {
         
     const query = `
       SELECT 
-        u.id,
-        u.nombre,
-        p.numero AS puesto_numero,
+        u.id, u.nombre, p.numero AS puesto_numero,
         COALESCE(COUNT(t.id), 0) AS total_tickets,
-        COALESCE(
-          SUM(CASE WHEN t.estado = 'atendido' THEN 1 END),
-          0
-        ) AS atendidos,
-        COALESCE(
-          SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END),
-          0
-        ) AS no_presentados,
-       
-          AVG(
-            CASE 
-              WHEN t.estado = 'atendido'
-              AND t.llamado_at IS NOT NULL
-              AND t.finalizado_at IS NOT NULL
-              AND t.finalizado_at > t.llamado_at
-              THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
-            END
-          
+        COALESCE(SUM(CASE WHEN t.estado = 'atendido' THEN 1 END), 0) AS atendidos,
+        COALESCE(SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END), 0) AS no_presentados,
+        AVG(
+          CASE 
+            WHEN t.estado = 'atendido'
+            AND t.llamado_at IS NOT NULL
+            AND t.finalizado_at IS NOT NULL
+            AND t.finalizado_at > t.llamado_at
+            THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
+          END
         ) AS tiempo_promedio_servicio
       FROM usuarios u
-      LEFT JOIN puestos p 
-        ON u.puesto_id = p.id
+      LEFT JOIN puestos p ON u.puesto_id = p.id
       LEFT JOIN tickets t 
         ON u.id = t.usuario_id
         AND DATE(t.created_at) >= ?
         AND DATE(t.finalizado_at) <= ?
-      WHERE u.rol = 'operador'
-        AND u.activo = TRUE
+      WHERE u.rol = 'operador' AND u.activo = TRUE
       GROUP BY u.id, u.nombre, p.numero
-      ORDER BY total_tickets DESC;
+      ORDER BY total_tickets DESC
     `;
     
-    const params = [inicio, fin];
-    
-    const [rows] = await pool.query(query, params);
-    
+    const [rows] = await pool.query(query, [inicio, fin]);
     
     res.json(rows);
   } catch (error) {
@@ -1067,7 +1606,6 @@ app.get('/api/estadisticas/operadores', async (req, res) => {
   }
 });
 
-// Estadísticas por hora del día
 app.get('/api/estadisticas/horas', async (req, res) => {
   try {
     const { fecha } = req.query;
@@ -1085,9 +1623,7 @@ app.get('/api/estadisticas/horas', async (req, res) => {
       ORDER BY hora
     `;
     
-    const params = [fechaConsulta];
-    
-    const [rows] = await pool.query(query, params);
+    const [rows] = await pool.query(query, [fechaConsulta]);
     
     res.json(rows);
   } catch (error) {
@@ -1096,7 +1632,6 @@ app.get('/api/estadisticas/horas', async (req, res) => {
   }
 });
 
-// Resumen general
 app.get('/api/estadisticas/resumen', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
@@ -1110,6 +1645,7 @@ app.get('/api/estadisticas/resumen', async (req, res) => {
         SUM(CASE WHEN estado = 'atendido' THEN 1 ELSE 0 END) as atendidos,
         SUM(CASE WHEN estado = 'no_presentado' THEN 1 ELSE 0 END) as no_presentados,
         SUM(CASE WHEN estado = 'espera' THEN 1 ELSE 0 END) as en_espera,
+        SUM(CASE WHEN transferido = 1 THEN 1 ELSE 0 END) as transferido,
         SUM(CASE WHEN estado IN ('llamado', 'en_atencion') THEN 1 ELSE 0 END) as en_proceso,
         AVG(CASE 
           WHEN estado = 'atendido' AND finalizado_at IS NOT NULL 
@@ -1124,12 +1660,9 @@ app.get('/api/estadisticas/resumen', async (req, res) => {
         MIN(created_at) as primer_ticket,
         MAX(created_at) as ultimo_ticket
       FROM tickets
-      WHERE DATE(created_at) BETWEEN ? AND ?
     `;
     
-    const params = [inicio, fin];
-    
-    const [rows] = await pool.query(query, params);
+    const [rows] = await pool.query(query, [inicio, fin]);
         
     res.json(rows[0] || {
       total_tickets: 0,
@@ -1138,9 +1671,11 @@ app.get('/api/estadisticas/resumen', async (req, res) => {
       en_espera: 0,
       en_proceso: 0,
       tiempo_promedio_servicio: 0,
+      transferidos: null,
       primer_ticket: null,
       ultimo_ticket: null
     });
+
   } catch (error) {
     console.error('Error obteniendo resumen general:', error);
     res.status(500).json({ error: error.message });
@@ -1152,15 +1687,15 @@ app.get('/api/estadisticas/resumen', async (req, res) => {
 // ============================================
 const WebSocket = require('ws');
 const server = app.listen(PORT, () => {
-  ('');
+  
 });
 
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
-  (' Cliente WebSocket conectado');
+ 
   ws.on('close', () => {
-    (' Cliente WebSocket desconectado');
+    
   });
 });
 
@@ -1173,9 +1708,10 @@ global.notificarCambio = (tipo, data) => {
 };
 
 process.on('SIGINT', () => {
-  ('\n👋 Cerrando servidor...');
+ 
   server.close(() => {
     pool.end();
+   
     process.exit(0);
   });
 });
