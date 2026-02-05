@@ -1370,6 +1370,80 @@ app.post('/api/tickets/:id/transferir', authenticateToken, async (req, res) => {
   }
 });
 
+//evaluar:
+
+// GET: estado de evaluación de un ticket
+app.get('/api/tickets/:id/estado-evaluacion', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await pool.query(
+      'SELECT finalizado_at, expirado, evaluation FROM tickets WHERE id=?', //created_at por id
+      [id]
+    );
+    const ticket = rows[0];
+     if (!ticket) return res.json({ success: true, expirado:false, yaEvaluado:false, notfound:true });
+    // if (!ticket) return res.status(404).json({ success: false, message: "Ticket no encontrado" });
+
+    const ahora = new Date();
+    const finalizado = ticket.finalizado_at ? new Date(ticket.finalizado_at) : null;
+
+    const expiradoPorTiempo = finalizado && (ahora - finalizado > 30 * 60 * 1000);
+    const expirado = ticket.expirado || expiradoPorTiempo;
+
+    if (expirado && !ticket.expirado) {
+      await pool.query('UPDATE tickets SET expirado=1 WHERE created_at=?', [id]); //created_at por id cambiar
+    }
+
+    res.json({
+      success: true,
+      expirado,
+      yaEvaluado: ticket.evaluation > 0,
+      notfound:false
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  }
+});
+
+// POST: enviar evaluación
+app.post('/api/tickets/:id/evaluar', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { evaluation } = req.body;
+
+    const [rows] = await pool.query(
+      'SELECT finalizado_at, expirado, evaluation FROM tickets WHERE id=?', //created_at por id cambiar
+      [id]
+    );
+    const ticket = rows[0];
+    if (!ticket) return res.status(404).json({ success: false, message: "Ticket no encontrado" });
+
+    const ahora = new Date();
+    const finalizado = ticket.finalizado_at ? new Date(ticket.finalizado_at) : null;
+
+    const expiradoPorTiempo = finalizado && (ahora - finalizado > 30 * 60 * 1000);
+    if (ticket.expirado || expiradoPorTiempo) {
+      if (!ticket.expirado) {
+        await pool.query('UPDATE tickets SET expirado=1 WHERE id=?', [id]); //created_at por id cambiar
+      }
+      return res.status(400).json({ success: false, message: "Ticket expirado" });
+    }
+
+    if (ticket.evaluation > 0) {
+      return res.status(400).json({ success: false, message: "Ticket ya evaluado" });
+    }
+
+    await pool.query('UPDATE tickets SET evaluation=?, expirado=1 WHERE id=?', [evaluation, id]); //created_at por id cambiar
+
+    res.json({ success: true, message: "Evaluación registrada correctamente" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  }
+});
+
+
 // ============================================
 // HISTORIAL Y ESTADÍSTICAS
 // ============================================
