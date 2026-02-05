@@ -1072,6 +1072,69 @@ class API {
       throw error;
     }
   }
+
+  async SendEvaluation(ticketId, rating) {
+  try {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/evaluar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.getAuthHeaders(),
+      },
+      body: JSON.stringify({ evaluation: rating }),
+    });
+
+    if (this.handleAuthError(response)) {
+      throw new Error('No autorizado');
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      // manejamos expirado o ya evaluado
+      if (result.message === 'Ticket expirado') {
+        return { success: false, expirado: true, message: result.message };
+      } 
+      if (result.message === 'Ticket ya evaluado') {
+        return { success: false, yaEvaluado: true, message: result.message };
+      }
+
+      toast.error(result.message || 'No se pudo enviar la evaluación');
+      throw new Error(result.message || 'Error al enviar evaluación');
+    }
+
+    toast.success('Evaluación enviada correctamente');
+    return { success: true };
+  } catch (error) {
+    console.error('Error en SendEvaluation:', error);
+
+    if (!error.message.includes('toast') && !error.message.includes('autorizado')) {
+      toast.error('Error al enviar la evaluación');
+    }
+
+    throw error;
+  }
+}
+
+async GetTicketEvaluationState(ticketId) {
+  try {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/estado-evaluacion`, {
+      headers: this.getAuthHeaders(),
+    });
+    const data = await response.json();
+    
+    return {
+      expirado: data.expirado || false,
+      yaEvaluado: data.yaEvaluado || false,
+      notfound: data.notfound || false,
+    };
+  } catch (error) {
+    //console.error('Error en GetTicketEvaluationState:', error);
+    return { expirado: true, yaEvaluado: false }; // asumimos expirado si hay error
+  }
+}
+
+
   
   async atenderTicket(id, usuarioId) {
     try {

@@ -17,19 +17,23 @@ export default function GuiaInvitado({ activar, setActivar }) {
           {
             element: "#grid-opcion3",
             popover: {
-              title: "Selecciona La opción Invitado.",
+              title: "Selecciona la opción Invitado.",
               description:
-                "RECUERDA: Primero realiza la acción y luego presiona el boton siguiente.",
+                "Presiona el boton invitado para continuar.",
               side: "top",
             },
-          },
-          {
-            element: "#btn-regresar",
-            popover: {
-              title: "¿Quires regresar a la pagina anterior?",
-              description:
-                "Puedes volver atrás para cambiar el método de identificación.",
-              side: "right",
+             
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
             },
           },
           {
@@ -40,6 +44,19 @@ export default function GuiaInvitado({ activar, setActivar }) {
                 "Presiona el servicio que necesitas para continuar.",
               side: "bottom",
             },
+             
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
+            },
           },
           {
             element: "#ticket-creado",
@@ -48,6 +65,19 @@ export default function GuiaInvitado({ activar, setActivar }) {
               description:
                 "Ahora solo espera a que tu número de ticket sea llamado en la pantalla. \n\n Aquí finaliza el tutorial, presiona aceptar para que otra persona pueda crear un ticket.",
               side: "bottom",
+            },
+             
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
             },
           },
         ],

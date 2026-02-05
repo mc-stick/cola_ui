@@ -16,8 +16,12 @@ import {
   Save,
   MapPinIcon,
   ClockIcon,
+  HelpingHandIcon,
 } from "lucide-react";
 import LoginComponent from "./Login";
+import { TutorialModal } from "../components/common/infoSliderModal";
+import SelectorGuia from "../helpers/GuiaSelect";
+import { getTutorialDeOperador } from "../helpers/Tutoriales";
 
 function PantallaOperador() {
   const [formulario, setFormulario] = useState({});
@@ -30,6 +34,19 @@ function PantallaOperador() {
   const [serviciosAsignados, setServiciosAsignados] = useState([]);
   const menuRef = useRef(null);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [runTour, setRunTour] = useState(false);
+  const [Guia_paso, setGuia_paso] = useState("");
+
+  const onGuide = (x) => {
+    setIsModalOpen(false);
+    setGuia_paso(x);
+    setTimeout(() => setRunTour(true), 300);
+    console.log(x, "guia ");
+  };
+
+  const tutorialConfig = getTutorialDeOperador(onGuide, usuario?.nombre);
+
   const [activo, setActivo] = useState(false);
 
   const [showTransferModal, setShowTransferModal] = useState(false);
@@ -41,7 +58,7 @@ function PantallaOperador() {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuOpen(false);
-        setActivo(false)
+        setActivo(false);
       }
     };
 
@@ -52,7 +69,7 @@ function PantallaOperador() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuOpen,activo]);
+  }, [menuOpen, activo]);
 
   const handleChange = (e) => {
     const inputValue = e.target.value;
@@ -351,7 +368,7 @@ function PantallaOperador() {
             className="mt-1 ml-10 p-2 flex items-center justify-between gap-16
                 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
             {/* PUESTO */}
-            <div className="flex ml-20 items-center gap-3">
+            <div id="title-puesto" className="flex ml-20 items-center gap-3">
               <div className="p-2 rounded-full bg-amber-400/20 animate-pulse">
                 <MapPinIcon className="w-6 h-6 text-amber-300" />
               </div>
@@ -364,52 +381,56 @@ function PantallaOperador() {
             </div>
 
             {/* SERVICIOS */}
-            {serviciosAsignados.length > 0 && (
-              <div className="flex ml-20 mr-10 flex-col gap-3">
-                <div className="flex items-center gap-2 text-white font-bold">
-                  <TagsIcon className="w-5 h-5 text-cyan-300 animate-pulse" />
-                  <span className="tracking-wide">Servicios asignados</span>
-                </div>
+            <div id="title-services">
+              {serviciosAsignados.length > 0 && (
+                <div className="flex ml-20 mr-10 flex-col gap-3">
+                  <div className="flex items-center gap-2 text-white font-bold">
+                    <TagsIcon className="w-5 h-5 text-cyan-300 animate-pulse" />
+                    <span className="tracking-wide">Servicios asignados</span>
+                  </div>
 
-                <div  className="flex flex-wrap gap-2 relative">
-                  {serviciosAsignados.map((servicio) => (
-                    <div key={servicio.id} className="relative">
-                      <span
-                        onClick={() =>
-                          setActivo(activo === servicio.id ? null : servicio.id)
-                        }
-                        className={`relative px-3 py-1 rounded-lg text-xs font-bold border border-white/30
-              shadow-md transition-all duration-300 cursor-pointer
-              hover:scale-110 hover:shadow-xl hover:brightness-110 ${activo !== servicio.id ? null : servicio.id ? "animate-pulse":""}`}
-                        style={{ backgroundColor: servicio.color }}>
-                        {servicio.codigo}
-
+                  <div className="flex flex-wrap gap-2 relative">
+                    {serviciosAsignados.map((servicio) => (
+                      <div key={servicio.id} className="relative">
                         <span
-                          className="absolute inset-0 blur-md opacity-40 -z-10 rounded-lg"
-                          style={{ backgroundColor: servicio.color }}
-                        />
-                      </span>
+                          onClick={() =>
+                            setActivo(
+                              activo === servicio.id ? null : servicio.id,
+                            )
+                          }
+                          className={`relative px-3 py-1 rounded-lg text-xs font-bold border border-white/30
+              shadow-md transition-all duration-300 cursor-pointer
+              hover:scale-110 hover:shadow-xl hover:brightness-110 ${activo !== servicio.id ? null : servicio.id ? "animate-pulse" : ""}`}
+                          style={{ backgroundColor: servicio.color }}>
+                          {servicio.codigo}
 
-                      {/* Tooltip */}
-                      {activo === servicio.id && (
-                        <div
-                        ref={menuRef}
-                          className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2
+                          <span
+                            className="absolute inset-0 blur-md opacity-40 -z-10 rounded-lg"
+                            style={{ backgroundColor: servicio.color }}
+                          />
+                        </span>
+
+                        {/* Tooltip */}
+                        {activo === servicio.id && (
+                          <div
+                            ref={menuRef}
+                            className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2
               bg-gray-900 text-white text-xs font-bold
               px-3 py-2 rounded-lg shadow-xl whitespace-nowrap
               animate-fade-in">
-                          {servicio.nombre}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            {servicio.nombre}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* NOMBRE + MENÚ */}
-          <div className="relative mt-10 text-right">
+          <div id="title-user" className="relative mt-10 text-right">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-2 text-3xl font-bold p-2 hover:bg-blue-800/40 rounded-lg transition">
@@ -421,8 +442,15 @@ function PantallaOperador() {
             {/* DROPDOWN */}
             {menuOpen && (
               <div
+                id="Menu-usuario"
                 ref={menuRef}
                 className="absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-lg shadow-xl overflow-hidden z-50">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100 transition">
+                  <HelpingHandIcon className="w-5 h-5 text-cyan-600" />
+                  Ayuda
+                </button>
                 <button
                   onClick={handleEdit}
                   className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100 transition">
@@ -442,10 +470,21 @@ function PantallaOperador() {
         </div>
       </div>
 
+      <TutorialModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        tutorials={tutorialConfig}
+      />
+      <SelectorGuia
+        activar={runTour}
+        setActivar={setRunTour}
+        guia={Guia_paso}
+      />
+
       <div className="max-w-7xl mx-auto p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Ticket actual */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div id="atencion-tk" className="bg-white rounded-2xl shadow-lg p-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <Bell className="w-6 h-6 text-blue-600" />
               Ticket Actual
@@ -466,50 +505,55 @@ function PantallaOperador() {
                     ID: {ticketActual.identificacion}
                   </div>
                 )}
-                <div className="text-sm text-gray-500 mb-6">
-                  Llamado {ticketActual.llamado_veces || 1}{" "}
-                  {ticketActual.llamado_veces === 1 ? "vez" : "veces"}
+                <div id="llamar-tk-again-number" className="text-sm text-gray-500 mb-6">
+                  Llamado <span>{ticketActual.llamado_veces || 1}{" "}
+                  {ticketActual.llamado_veces === 1 ? "vez" : "veces"}</span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 mt-8">
-                  <button
-                    onClick={handleReLlamar}
-                    className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-                    <PhoneCall className="w-6 h-6" />
-                    Llamar de Nuevo
-                  </button>
-                  <button
-                    onClick={handleAtendido}
-                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-                    <Check className="w-6 h-6" />
-                    Atendido
-                  </button>
-                  <button
-                    onClick={handleNoPresento}
-                    className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-                    <X className="w-6 h-6" />
-                    No se Presentó
-                  </button>
-                  <button
-                    onClick={handleMasTarde}
-                    className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-800 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-                    <ClockIcon className="w-6 h-6" />
-                    Volver mas tarde.
-                  </button>
-                  <button
-                    onClick={abrirModalTransferir}
-                    className="flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
-                    <ArrowRightLeftIcon className="w-6 h-6" />
-                    Transferir
-                  </button>
-
-                  <textarea
-                    id="message"
-                    rows="3"
-                    value={comentario}
-                    onChange={(e) => setComentario(e.target.value)}
-                    className="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full p-3.5 shadow-xs placeholder:text-body"
-                    placeholder="Agrega un comentario aqui..."></textarea>
+                <div>
+                  <div id="btns-tk" className="grid grid-cols-1 gap-3 mt-8">
+                    <button
+                    id="llamar-tk-again"
+                      onClick={handleReLlamar}
+                      className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                      <PhoneCall className="w-6 h-6" />
+                      Llamar de Nuevo
+                    </button>
+                    <button
+                      onClick={handleAtendido}
+                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                      <Check className="w-6 h-6" />
+                      Atendido
+                    </button>
+                    <button
+                      onClick={handleNoPresento}
+                      className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                      <X className="w-6 h-6" />
+                      No se Presentó
+                    </button>
+                    <button
+                      onClick={handleMasTarde}
+                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-800 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                      <ClockIcon className="w-6 h-6" />
+                      Volver mas tarde.
+                    </button>
+                    <button
+                    id="llamar-tk-transfer"
+                      onClick={abrirModalTransferir}
+                      className="flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+                      <ArrowRightLeftIcon className="w-6 h-6" />
+                      Transferir
+                    </button>
+                  </div>
+                  <div id="message-box" className=" mt-2">
+                    <textarea
+                      id="message"
+                      rows="3"
+                      value={comentario}
+                      onChange={(e) => setComentario(e.target.value)}
+                      className=" gap-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-sm focus:ring-brand focus:border-brand block w-full p-3.5 shadow-xs placeholder:text-body"
+                      placeholder="Agrega un comentario aqui..."></textarea>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -528,7 +572,7 @@ function PantallaOperador() {
           </div>
 
           {/* Cola de espera */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div id="espera-tk" className="bg-white rounded-2xl shadow-lg p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800">
                 Tickets en Espera
@@ -550,6 +594,7 @@ function PantallaOperador() {
             )}
 
             <button
+              id="llamar-tk"
               onClick={handleLlamarSiguiente}
               disabled={
                 ticketsEspera.length === 0 ||
@@ -630,7 +675,7 @@ function PantallaOperador() {
       {/* Modal de Transferencia */}
       {showTransferModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+          <div id="modal-transferir" className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
             <div className="text-center mb-6">
               <div className="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ArrowRightLeftIcon className="w-8 h-8 text-cyan-600" />
@@ -646,11 +691,11 @@ function PantallaOperador() {
               </p>
             </div>
 
-            <div className="mb-6">
+            <div  className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Seleccionar Servicio de Destino
               </label>
-              <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+              <div id="modal-transferir-items" className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                 {todosServicios.map((servicio) => (
                   <label
                     key={servicio.id}
@@ -695,6 +740,7 @@ function PantallaOperador() {
                 Cancelar
               </button>
               <button
+              id="modal-transferir-confirm"
                 onClick={handleConfirmarTransferencia}
                 disabled={!servicioSeleccionado}
                 className="flex-1 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl font-bold transition-colors">

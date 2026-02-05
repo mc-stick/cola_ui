@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
-export default function GuiaUsuario({ activar, setActivar }) {
+export default function GuiaAdmin({ activar, setActivar }) {
   useEffect(() => {
     if (activar) {
       const driverObj = driver({

@@ -11,18 +11,35 @@ export default function GuiaPaso2({ activar, setActivar }) {
         nextBtnText: "Siguiente",
         prevBtnText: "Anterior",
         doneBtnText: "Finalizar",
-        // Resetea el estado al cerrar
+
+        // Se ejecuta cuando el tour se cierra o finaliza
         onDestroyed: () => setActivar(false),
+
         steps: [
           {
             element: "#grid-opcion1",
             popover: {
-              title: "Selecciona La opción teléfono.",
+              title: "Selecciona la opción teléfono.",
               description:
-                "RECUERDA: Primero realiza la acción y luego presiona el boton siguiente.",
+                "Toca el boton para continuar.",
               side: "top",
             },
-          },{
+
+            
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
+            },
+          },
+          {
             element: "#btn-delete",
             popover: {
               title: "Elimina un dígito",
@@ -48,12 +65,13 @@ export default function GuiaPaso2({ activar, setActivar }) {
                 "Puedes volver atrás para cambiar el método de identificación.",
               side: "right",
             },
-          }, {
+          },
+          {
             element: "#visualizador-id",
             popover: {
               title: "Crear ticket.",
               description:
-                "Ingresa tu número. Recuerda que debe ser un número que sea propio y válido de Rep. Dom. (Evita usar un número que no sea propio)",
+                "Ingresa tu número. Recuerda que debe ser un número que sea propio y válido de Rep. Dom. (Evita usar un número que no sea propio), presiona 'siguiente' para continuar.",
               side: "top",
             },
           },
@@ -61,9 +79,21 @@ export default function GuiaPaso2({ activar, setActivar }) {
             element: "#btn-accept",
             popover: {
               title: "Continuemos creando un ticket.",
-              description:
-                "Presiona aqui para continuar.",
+              description: "Presiona aqui para continuar.",
               side: "right",
+            },
+
+          
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                   setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                },
+                { once: true }
+              );
             },
           },
           {
@@ -74,18 +104,41 @@ export default function GuiaPaso2({ activar, setActivar }) {
                 "Presiona el servicio que necesitas para continuar.",
               side: "bottom",
             },
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                   setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                },
+                { once: true }
+              );
+            },
           },
           {
             element: "#ticket-creado",
             popover: {
               title: "Felicidades, ticket creado con éxito.",
               description:
-                "Ahora solo espera a que tu número de ticket sea llamado en la pantalla. \n\n Aquí finaliza el tutorial, presiona aceptar para que otra persona pueda crear un ticket.",
+                "Ahora solo espera a que tu número de ticket sea llamado en la pantalla.\n\nAquí finaliza el tutorial, presiona aceptar para que otra persona pueda crear un ticket.",
               side: "bottom",
+            },
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                   setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                },
+                { once: true }
+              );
             },
           },
         ],
       });
+
       driverObj.drive();
     }
   }, [activar, setActivar]);

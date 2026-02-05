@@ -9,6 +9,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 import SelectorGuia from "./helpers/GuiaSelect";
+import { EvaluacionTicket } from "./components/common/Rating";
 
 function App() {
   useEffect(() => {
@@ -44,6 +45,8 @@ function App() {
 
   return (
     <div>
+      <div id="center-ghost-element"></div>
+
        <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -61,6 +64,7 @@ function App() {
           <Route path="/" element={<MenuInicial />} />
 
           <Route path="/anuncios" element={<PantallaAnuncios />} />
+          <Route path="/evaluar/:id" element={<EvaluacionTicket />} />
           <Route path="/cliente" element={<PantallaCliente />} />
           <Route path="/admin" element={<PantallaAdmin />} />
           <Route path="/operador" element={<PantallaOperador />} />

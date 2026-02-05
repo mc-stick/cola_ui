@@ -1,10 +1,9 @@
 import { Phone, CreditCard, User, HelpCircleIcon, Info, BookOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SliderModal, TutorialModal } from "../common/infoSliderModal";
-import GuiaUsuario from "../../helpers/cliente/GuiaCliente";
 import { getTutorialDeAcceso } from "../../helpers/Tutoriales";
-import GuiaPaso2 from "../../helpers/cliente/guiaPaso2";
 import SelectorGuia from "../../helpers/GuiaSelect";
+import TicketQR from "../common/Qr";
 
 export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
   const [inputValue, setInputValue] = useState("");
@@ -48,20 +47,6 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
   return (
     <div className="fixed w-screen h-screen overflow-hidden bg-gradient-to-br from-blue-200 to-blue-300 flex flex-col items-center pt-32">
       
-      {/* Lógica de Driver.js (Tour guiado)
-      <GuiaUsuario activar={runTour} setActivar={setRunTour} /> 
-       <GuiaPaso2 activar={runTour} setActivar={setRunTour} /> */}
-
-      {/* Botones de Soporte Superiores */}
-      {/* <div className="fixed top-6 right-6 flex gap-4 z-20">
-        <button 
-          onClick={() => setRunTour(true)}
-          className="flex items-center gap-2 bg-white/40 backdrop-blur-md p-3 rounded-full hover:bg-white/60 transition-all shadow-lg text-blue-900 border border-white/50"
-        >
-          <Info className="w-6 h-6" />
-          <span className="text-sm font-bold pr-1">Guía rápida</span>
-        </button>
-      </div> */}
 
       <div className="max-w-4xl w-full p-2">
         <div id="titulo-paso" className="animation-fade-in text-center">
@@ -106,6 +91,8 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
         </div>
       </div>
 
+     
+
       {/* Renderizado del Tutorial Avanzado */}
       <TutorialModal
         isOpen={isModalOpen}
@@ -118,6 +105,8 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
       guia={Guia_paso} // El estado que te dice si estás en el 1 o 2
     />
 
+
+      {/* <TicketQR value={"qwertyuioqr"} /> */}
       <footer className="fixed bottom-10 w-full text-center">
         <button
           id="btn-ayuda"

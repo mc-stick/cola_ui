@@ -1,7 +1,8 @@
 import GuiaUsuario from "./cliente/GuiaCliente";
 import GuiaInvitado from "./cliente/GuiaInvitado";
 import GuiaMatricula from "./cliente/GuiaMatricula";
-import GuiaPaso2 from "./cliente/guiaPaso2";
+import GuiaPaso2 from "./cliente/GuiaTelefono";
+import GuiaOperador from "./operator/GuiaOperador";
 
 
 export default function SelectorGuia({ activar, setActivar, guia }) {
@@ -15,6 +16,8 @@ export default function SelectorGuia({ activar, setActivar, guia }) {
       return <GuiaMatricula activar={activar} setActivar={setActivar} />;
     case 4:
       return <GuiaInvitado activar={activar} setActivar={setActivar} />;
+    case 5:
+      return <GuiaOperador activar={activar} setActivar={setActivar} />;
     default:
       return null;
   }

@@ -1,9 +1,8 @@
 export const getTutorialDeAcceso = (onGuide) => [
   {
-    title: "¡Hola! Bienvenido",
+    title: "¡Bienvenido! ",
     content: [
-      "Aquí podrás ver toda la ayuda y tutoriales necesarios para el uso de este equipo.",
-      "Para salir de un tutorial da un toque en un lugar oscuro de la pantalla."
+      "Aquí podrás ver toda la ayuda y tutoriales necesarios para el uso de este equipo."
     ],
     action: {
       label: "Iniciar Guía Rápida",
@@ -36,16 +35,30 @@ export const getTutorialDeAcceso = (onGuide) => [
   }
 ];
 
-export const getTutorialDeAdmin = (onGuide) => [
+export const getTutorialDeAdmin = (onGuide,user="") => [
   {
-    title: "¡Hola! Bienvenido",
+    title: `¡Bienvenido ${user?user:""}! `,
     content: [
       "Aquí podrás ver toda la ayuda y tutoriales necesarios para el uso de este equipo.",
       "Para salir de un tutorial da un toque en un lugar oscuro de la pantalla."
     ],
     action: {
       label: "Iniciar Guía Rápida",
-      onClick: ()=>onGuide(1)
+      onClick: ()=>onGuide(5)
+    }
+  },
+];
+
+export const getTutorialDeOperador = (onGuide,user="") => [
+  {
+    title: `¡Bienvenido ${user?user:""} !`,
+    content: [
+      "Aquí podrás ver toda la ayuda y tutoriales necesarios para el uso de este equipo.",
+      "Para salir de un tutorial da un toque en un lugar oscuro de la pantalla."
+    ],
+    action: {
+      label: "Iniciar Guía Rápida",
+      onClick: ()=>onGuide(5)
     }
   },
 ];

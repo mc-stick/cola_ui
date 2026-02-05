@@ -82,7 +82,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-xl w-full p-8 relative animate-in zoom-in-95 duration-300 min-h-[550px] flex flex-col">
+      <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-2xl w-full p-20 relative animate-in zoom-in-95 duration-300 min-h-[550px] flex flex-col">
         
         {/* Botón Cerrar Superior */}
         <button onClick={onClose} className="absolute top-8 right-8 text-gray-400 hover:text-red-500 transition-colors z-20 p-2 hover:bg-red-50 rounded-full">
@@ -135,7 +135,6 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
               )}
             </div>
 
-            {/* Botón de acción específico del slide (opcional) */}
             {currentSlide.action && (
               <button 
                 onClick={currentSlide.action.onClick}
@@ -149,7 +148,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
 
         {/* Footer: Indicadores y Botón Principal */}
         <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="flex justify-center gap-2 mb-6">
+          <div className="flex justify-center gap-2 mb-1">
             {tutorials.map((_, index) => (
               <div 
                 key={index} 
@@ -157,7 +156,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
               />
             ))}
           </div>
-          
+          {/* 
           <button 
             onClick={nextSlide} 
             className={`w-full flex items-center justify-center gap-2 font-black py-5 rounded-2xl transition-all shadow-lg active:scale-[0.98] ${
@@ -171,8 +170,8 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             ) : (
               'SIGUIENTE PASO'
             )}
-          </button>
-        </div>
+          </button>*/}
+        </div> 
       </div>
     </div>
   );

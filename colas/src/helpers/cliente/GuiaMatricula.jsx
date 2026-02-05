@@ -17,18 +17,23 @@ export default function GuiaMatricula({ activar, setActivar }) {
           {
             element: "#grid-opcion2",
             popover: {
-              title: "Selecciona La opción Matricula.",
+              title: "Selecciona la opción Matricula.",
               description:
-                "RECUERDA: Primero realiza la acción y luego presiona el boton siguiente.",
+                "Presiona para continuar.",
               side: "top",
             },
-          },{
-            element: "#btn-delete",
-            popover: {
-              title: "Elimina un dígito",
-              description:
-                "Usa este boton para eliminar los dígitos que no sean necesarios. ( justo ahora está deshabilitado porque no hay nada que borrar ).",
-              side: "left",
+             
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
             },
           },
           {
@@ -36,16 +41,7 @@ export default function GuiaMatricula({ activar, setActivar }) {
             popover: {
               title: "Continuar al paso siguiente",
               description:
-                "Cuando ingreses un teléfono correcto se habilitará el botón, de lo contrario no podrás continuar.",
-              side: "right",
-            },
-          },
-          {
-            element: "#btn-regresar",
-            popover: {
-              title: "¿No quieres usar tu teléfono?",
-              description:
-                "Puedes volver atrás para cambiar el método de identificación.",
+                "Cuando ingreses tu matricula se habilitará el botón, de lo contrario no podrás continuar.",
               side: "right",
             },
           }, {
@@ -65,6 +61,19 @@ export default function GuiaMatricula({ activar, setActivar }) {
                 "Presiona aqui para continuar.",
               side: "right",
             },
+             
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
+            },
           },
           {
             element: "#table-service",
@@ -73,6 +82,18 @@ export default function GuiaMatricula({ activar, setActivar }) {
               description:
                 "Presiona el servicio que necesitas para continuar.",
               side: "bottom",
+            }, 
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
             },
           },
           {
@@ -82,6 +103,18 @@ export default function GuiaMatricula({ activar, setActivar }) {
               description:
                 "Ahora solo espera a que tu número de ticket sea llamado en la pantalla. \n\n Aquí finaliza el tutorial, presiona aceptar para que otra persona pueda crear un ticket.",
               side: "bottom",
+            }, 
+            onHighlightStarted: (element) => {
+              element.addEventListener(
+                "click",
+                () => {
+                  setTimeout(() => {
+                    driverObj.moveNext();
+                  }, 500);
+                  
+                },
+                { once: true }
+              );
             },
           },
         ],

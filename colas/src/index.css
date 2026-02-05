@@ -24,3 +24,14 @@
     }
   }
 }
+
+#center-ghost-element {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+}
