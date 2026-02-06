@@ -45,12 +45,12 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
   };
 
   return (
-    <div className="fixed w-screen h-screen overflow-hidden bg-gradient-to-br from-blue-200 to-blue-300 flex flex-col items-center pt-32">
+    <div className="fixed w-screen h-screen overflow-hidden bg-primary flex flex-col items-center pt-32">
       
 
       <div className="max-w-4xl w-full p-2">
         <div id="titulo-paso" className="animation-fade-in text-center">
-          <h2 className="text-4xl font-black text-gray-800 mb-12 drop-shadow-sm">
+          <h2 className="text-4xl font-black text-white mb-12 drop-shadow-sm">
             ¿Cómo deseas identificarte?
           </h2>
 
@@ -106,7 +106,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
     />
 
 
-      {/* <TicketQR value={"qwertyuioqr"} /> */}
+      {/* <TicketQR value={"http://localhost:5173/cola/evaluar/114"} /> */}
       <footer className="fixed bottom-10 w-full text-center">
         <button
           id="btn-ayuda"

@@ -56,7 +56,7 @@ function MenuInicial() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-700 to-blue-900 flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen  bg-gradient-primary flex flex-col items-center justify-center p-8">
       <div className="text-center text-white mb-16">
         <h1 className="flex text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
           {config?.logo_url && (

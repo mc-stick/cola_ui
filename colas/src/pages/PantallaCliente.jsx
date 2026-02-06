@@ -7,7 +7,7 @@ import { usePantallaCliente } from "../hooks/UsePantallaCliente";
 
 export const HeaderIndex = ({ config }) => {
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-6 shadow-lg">
+    <div className=" bg-gradient-primary text-white px-8 py-6 shadow-lg">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold flex items-center gap-3">
           {config?.logo_url && (

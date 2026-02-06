@@ -1,0 +1,9 @@
+este es un backup del servidor funcional.
+
+hasta aqui ya funciona evaluar pero aun hay que eliminar ticketqr de pantalla y ponerlo en el printer server solo se muestra como qr en pantalla react.
+
+backup original: solo server original y modulos, borrar server.js y SRC. 
+
+backup estructurado: borrar solo server original sin src copy.
+
+ambos backups funcionan solo que uno de ellos ya esta estructurado.

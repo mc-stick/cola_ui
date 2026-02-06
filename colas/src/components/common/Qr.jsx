@@ -1,4 +1,5 @@
 import {QRCodeCanvas, QRCodeSVG} from 'qrcode.react';
+const PAGE_URL = import.meta.env.VITE_PAGE_URL;
 
 /**
  * Componente para generar un QR a partir de un valor dinámico
@@ -12,7 +13,7 @@ export default function TicketQR({ value, size = 100 }) {
   return (
     <div style={{ textAlign: "center" }}>
       <QRCodeCanvas
-        value={value}
+        value={PAGE_URL+value}
         size={size}
         level="H"
       />

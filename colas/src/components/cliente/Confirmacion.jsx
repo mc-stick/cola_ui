@@ -1,6 +1,9 @@
 import { Check } from "lucide-react";
+import TicketQR from "../common/Qr";
+
 
 export default function PasoConfirmacion({ ticket, servicio, onReset, tipo }) {
+  console.log(ticket)
   return (
     <>
       <div  className="animation-fade-in text-center">
@@ -27,6 +30,8 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo }) {
                 Tu número de ticket se envio por SMS a tu teléfono.
               </div>
             )}
+
+            <TicketQR value={ticket.id} />
 
             <button
               className="bg-blue-600 hover:bg-blue-700 mt-10 text-white px-12 py-4 rounded-xl font-bold text-xl transition-colors"

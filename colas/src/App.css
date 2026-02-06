@@ -1,167 +1,45 @@
 :root {
-  --azul-principal: #1E40AF;
-  --azul-oscuro: #1E3A8A;
-  --azul-claro: #3B82F6;
-  --azul-muy-claro: #DBEAFE;
-  --azul-hover: #2563EB;
-  --blanco: #FFFFFF;
-  --gris-claro: #F3F4F6;
-  --gris: #9CA3AF;
-  --gris-oscuro: #4B5563;
-  --negro: #1F2937;
-  --verde: #10B981;
-  --rojo: #EF4444;
-  --amarillo: #F59E0B;
-  --naranja: #F97316;
+  --color-primary-blue: #1e2a4f;
+  --color-primary-red: #cc132c;
+  --color-primary-yellow: #Fad824;
+  --color-primary-green: #499c35;
+
+  --color-secondary-blue-dark: #006ca1;
+  --color-secondary-blue-light: #4ec2eb;
+  --color-secondary-yellow-light: #f9e200;
+  --color-secondary-yellow-dark: #f4db6c;
+  --color-secondary-green-dark: #47772e;
+  --color-secondary-green-light: #bbb90a;
+
+
+  --color-mono-black: #000000;
+  --color-mono-white: #ffffff;
+  --color-mono-gold: #daab00;
+  --color-mono-silver: #b2b2b2;
+
+
+
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.bg-primary{
+   background: var(--color-secondary-blue-dark);
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--gris-claro);
+
+/* Gradiente de primary a primary-dark */
+.bg-gradient-primary {
+  background: linear-gradient(325deg, var(--color-primary-blue), var(--color-secondary-blue-dark));
+}
+.bg-gradient-primary-light {
+  background: radial-gradient( var(--color-secondary-blue-light), var(--color-secondary-blue-dark));
 }
 
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+/* Gradiente de secondary a secondary-dark */
+.bg-gradient-secondary {
+  background: linear-gradient(180deg, var(--color-secondary), var(--color-secondary-dark));
 }
 
-.btn-primary {
-  background-color: var(--azul-principal);
-  color: var(--blanco);
-}
-
-.btn-primary:hover {
-  background-color: var(--azul-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
-}
-
-.btn-secondary {
-  background-color: var(--gris);
-  color: var(--blanco);
-}
-
-.btn-success {
-  background-color: var(--verde);
-  color: var(--blanco);
-}
-
-.btn-danger {
-  background-color: var(--rojo);
-  color: var(--blanco);
-}
-
-.btn-large {
-  padding: 20px 40px;
-  font-size: 20px;
-  border-radius: 12px;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.card {
-  background: var(--blanco);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-}
-
-.input-field {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--gris-claro);
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--azul-principal);
-}
-
-.header {
-  background: linear-gradient(135deg, var(--azul-principal) 0%, var(--azul-oscuro) 100%);
-  color: var(--blanco);
-  padding: 20px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-
-.header-nombre {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.header-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.header-fecha {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.header-hora {
-  font-size: 32px;
-  font-weight: 700;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 16px;
-  }
+/* Gradiente custom (puedes mezclar con success y primary) */
+.bg-gradient-success-primary {
+  background: linear-gradient(180deg, var(--color-success), var(--color-primary));
 }

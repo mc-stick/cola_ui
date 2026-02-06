@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 require('dotenv').config();
 
 const { pool, testConnection } = require('./src/config/database');
-const { msgtw } = require('./src/twilio/apiTwi.js');
+const { msgtw } = require('./twilio/apiTwi.js');
 
 const authRoutes = require('./src/routes/auth.routes');
 const configRoutes = require('./src/routes/config.routes');

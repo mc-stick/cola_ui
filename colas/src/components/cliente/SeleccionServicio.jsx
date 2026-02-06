@@ -8,7 +8,7 @@ export default function PasoSeleccionServicio({ servicios, onSelect, setPaso, se
     }
   return (
     <>
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-6xl bg-primary mx-auto p-8">
         <div id="table-service" className="animation-fade-in">
           <h2 className="text-3xl font-bold text-gray-800 m-8 text-center">
             Selecciona el servicio

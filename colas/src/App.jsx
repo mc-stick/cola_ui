@@ -10,6 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 import SelectorGuia from "./helpers/GuiaSelect";
 import { EvaluacionTicket } from "./components/common/Rating";
+import "./App.css"
 
 function App() {
   useEffect(() => {
@@ -44,7 +45,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className="bg-primary" >
       <div id="center-ghost-element"></div>
 
        <ToastContainer
