@@ -31,6 +31,10 @@ export default function GuiaUsuario({ activar, setActivar }) {
             popover: { title: 'Invitado', description: 'Continua como invitado sin registrarte en el sistema.', side: "top"} 
           },
           { 
+            element: '#btn-tk', 
+            popover: { title: '¿Ya tienes un ticket?', description: 'Si tu ticket fue marcado para volver mas tarde, puedo asignarte un turno lo mas próximo posible.', side: "top"} 
+          },
+          { 
             element: '#btn-ayuda', 
             popover: { title: '¿Dudas?', description: 'Haz clic aquí para ver el manual de uso en cualquier momento.', side: "top"} 
           }

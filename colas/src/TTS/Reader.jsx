@@ -17,7 +17,7 @@ const TextSpeaker = forwardRef((props, ref ) => {  //arreglar la declaracion de 
         const audio = audioRef.current;
         if (!audio) return setTimeout(resolve, 1000);
 
-        audio.currentTime = 0.5;
+        audio.currentTime = 0;
         const startTime = Date.now();
 
         const cleanup = () => {

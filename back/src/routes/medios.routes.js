@@ -58,6 +58,10 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     }
 
+    const connection = await pool.getConnection();
+    
+    await connection.query("SET GLOBAL max_allowed_packet=1073741824");
+
     const [result] = await pool.query(
       `INSERT INTO medios 
        (tipo, url, nombre, orden, es_local, tamano_kb) 

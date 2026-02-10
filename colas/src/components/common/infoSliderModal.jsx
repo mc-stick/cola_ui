@@ -40,10 +40,10 @@ export const SliderModal = ({ isOpen, onClose, slides }) => {
         <div className="mt-auto">
           <div className="flex justify-center gap-3 mb-8">
             {slides.map((_, index) => (
-              <div key={index} className={`h-2 transition-all duration-300 rounded-full ${currentIndex === index ? 'bg-blue-600 w-8' : 'bg-gray-200 w-2'}`} />
+              <div key={index} className={`h-2 transition-all duration-300 rounded-full ${currentIndex === index ? 'bg-primary w-8' : 'bg-gray-200 w-2'}`} />
             ))}
           </div>
-          <button onClick={onClose} className="w-full bg-blue-600 text-white font-semibold py-5 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200">
+          <button onClick={onClose} className="w-full bg-primary text-white font-semibold py-5 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200">
             Aceptar
           </button>
         </div>
@@ -97,7 +97,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
                 <ChevronLeft size={32} strokeWidth={3} />
               </button>
             )}
-            <button onClick={nextSlide} className="absolute -right-6 top-1/2 -translate-y-1/2 p-4 bg-blue-600 shadow-xl rounded-full text-white z-10 hover:scale-110 transition-transform hidden md:block">
+            <button onClick={nextSlide} className="absolute -right-6 top-1/2 -translate-y-1/2 p-4 bg-primary shadow-xl rounded-full text-white z-10 hover:scale-110 transition-transform hidden md:block">
               <ChevronRight size={32} strokeWidth={3} />
             </button>
           </>
@@ -138,7 +138,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             {currentSlide.action && (
               <button 
                 onClick={currentSlide.action.onClick}
-                className="mt-6 px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-all"
+                className="mt-6 px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all"
               >
                 {currentSlide.action.label}
               </button>
@@ -152,7 +152,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             {tutorials.map((_, index) => (
               <div 
                 key={index} 
-                className={`h-2 transition-all duration-500 rounded-full ${currentIndex === index ? 'bg-blue-600 w-10' : 'bg-gray-200 w-2'}`} 
+                className={`h-2 transition-all duration-500 rounded-full ${currentIndex === index ? 'bg-primary w-10' : 'bg-gray-200 w-2'}`} 
               />
             ))}
           </div>
@@ -162,7 +162,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             className={`w-full flex items-center justify-center gap-2 font-black py-5 rounded-2xl transition-all shadow-lg active:scale-[0.98] ${
               currentIndex === tutorials.length - 1 
               ? 'bg-green-600 text-white shadow-green-100' 
-              : 'bg-blue-600 text-white shadow-blue-100'
+              : 'bg-primary text-white shadow-blue-100'
             }`}
           >
             {currentIndex === tutorials.length - 1 ? (

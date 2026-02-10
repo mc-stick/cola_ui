@@ -117,7 +117,7 @@ function AuditoriaSection({
               className="w-full px-3 py-2 border-2 rounded-lg">
               <option value="">Todos</option>
               {usuarios.map((user) =>
-                user.rol === "admin" ? (
+                user.id !== 1 ? (
                   <option key={user.id} value={user.id}>
                     {user.nombre}
                   </option>
@@ -132,7 +132,7 @@ function AuditoriaSection({
         <div className="flex gap-3 mt-4">
           <button
             onClick={handleBuscar}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold">
+            className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg font-semibold">
             <Search className="w-5 h-5" />
             Buscar
           </button>
@@ -171,7 +171,7 @@ function AuditoriaSection({
                     <Monitor className="w-4 h-4" />
                     {log.modulo} · {log.accion}
                   </h3>
-                  <div className="bg-orange-100 rounded-md p-2">
+                  <div className="bg-warning rounded-md p-2">
                     <p className="text-sm font-bold">
                       Detalles: {" "}
                       <span className="text-sm font-normal italic text-gray-600 mt-1">

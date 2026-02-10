@@ -503,6 +503,8 @@ class API {
       
       const data = await response.json();
       
+      console.log("API JS: LOGIN: ", data)
+      
       if (!response.ok) {
         toast.error(data.error || 'Error en login');
         return { success: false, error: data.error || 'Error en login' };
@@ -1025,6 +1027,39 @@ class API {
       throw error;
     }
   }
+  async getTicketsEvaluadoTotal() {
+    try {
+      const response = await fetch(`${API_URL}/tickets/evaluado-stats`);
+      if (!response.ok) {
+        toast.error('Error al obtener tickets  evaluado');
+        throw new Error('Error al obtener tickets  evaluado');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error en getTickets evaluado:', error);
+      if (!error.message.includes('toast')) {
+        toast.error('Error al cargar tickets  evaluado');
+      }
+      throw error;
+    }
+  }
+
+  async getTicketsEvaluadoUser() {
+    try {
+      const response = await fetch(`${API_URL}/tickets/evaluado-user`);
+      if (!response.ok) {
+        toast.error('Error al obtener tickets  evaluado user');
+        throw new Error('Error al obtener tickets  evaluado user');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error en getTickets evaluado user:', error);
+      if (!error.message.includes('toast')) {
+        toast.error('Error al cargar tickets  evaluado user');
+      }
+      throw error;
+    }
+  }
   
   async getTicketsByOperador(usuarioId) {
     try {
@@ -1055,6 +1090,30 @@ class API {
         throw new Error('No autorizado');
       }
       
+      const result = await response.json();
+      
+      if (!response.ok) {
+        toast.error(result.error || 'Error al llamar ticket');
+        throw new Error(result.error || 'Error al llamar ticket');
+      }
+      
+      toast.success('Ticket llamado correctamente');
+      return result;
+    } catch (error) {
+      console.error('Error en llamarTicket:', error);
+      if (!error.message.includes('toast') && !error.message.includes('autorizado')) {
+        toast.error('Error al llamar ticket');
+      }
+      throw error;
+    }
+  }
+
+  async llamarVolver(id) {
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
+        method: 'POST',
+      });
+
       const result = await response.json();
       
       if (!response.ok) {
@@ -1196,12 +1255,12 @@ async GetTicketEvaluationState(ticketId) {
     }
   }
 
-  async transferirTicket(id, servicio_id, comentario) {
+  async transferirTicket(ticketactual, servicio_id, comentario, servicio_nm) {
     try {
-      const response = await fetch(`${API_URL}/tickets/${id}/transferir`, {
+      const response = await fetch(`${API_URL}/tickets/${ticketactual.id}/transferir`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ servicio_id: servicio_id, comentario: comentario })
+        body: JSON.stringify({ servicio_id: servicio_id, comentario: comentario, serv_ant:ticketactual.servicio_nombre, servicio_nm:servicio_nm })
       });
       
       if (this.handleAuthError(response)) {

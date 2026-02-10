@@ -114,9 +114,9 @@ export function AlertToUI({ title = "Confirmar", action = "info" }) {
 export function DotsLoader() {
   return (
     <div className="flex space-x-2">
-      <span className="h-3 w-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-      <span className="h-3 w-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-      <span className="h-3 w-3 bg-blue-500 rounded-full animate-bounce" />
+      <span className="h-3 w-3 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+      <span className="h-3 w-3 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+      <span className="h-3 w-3 bg-primary rounded-full animate-bounce" />
     </div>
   );
 }

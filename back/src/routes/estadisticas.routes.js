@@ -126,31 +126,84 @@ router.get('/operadores', async (req, res) => {
     const { fecha_inicio, fecha_fin } = req.query;
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const fin = fecha_fin || new Date().toISOString().split('T')[0];
-        
+        // ORIGINAL 
+
+    // const query = `
+    //   SELECT 
+    //     u.id, u.nombre, p.numero AS puesto_numero,
+    //     COALESCE(COUNT(t.id), 0) AS total_tickets,
+    //     COALESCE(SUM(CASE WHEN t.estado = 'atendido' THEN 1 END), 0) AS atendidos,
+    //     COALESCE(SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END), 0) AS no_presentados,
+    //     AVG(
+    //       CASE 
+    //         WHEN t.estado = 'atendido'
+    //         AND t.llamado_at IS NOT NULL
+    //         AND t.finalizado_at IS NOT NULL
+    //         AND t.finalizado_at > t.llamado_at
+    //         THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
+    //       END
+    //     ) AS tiempo_promedio_servicio
+    //   FROM usuarios u
+    //   LEFT JOIN puestos p ON u.puesto_id = p.id
+    //   LEFT JOIN tickets t 
+    //     ON u.id = t.usuario_id
+    //     AND DATE(t.created_at) >= ?
+    //     AND DATE(t.finalizado_at) <= ?
+    //   WHERE u.rol = 'operador' AND u.activo = TRUE
+    //   GROUP BY u.id, u.nombre, p.numero
+    //   ORDER BY total_tickets DESC
+    // `;
+
+    //NUEVO GENERADO
     const query = `
       SELECT 
-        u.id, u.nombre, p.numero AS puesto_numero,
-        COALESCE(COUNT(t.id), 0) AS total_tickets,
-        COALESCE(SUM(CASE WHEN t.estado = 'atendido' THEN 1 END), 0) AS atendidos,
-        COALESCE(SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END), 0) AS no_presentados,
-        AVG(
-          CASE 
-            WHEN t.estado = 'atendido'
-            AND t.llamado_at IS NOT NULL
-            AND t.finalizado_at IS NOT NULL
-            AND t.finalizado_at > t.llamado_at
-            THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
-          END
-        ) AS tiempo_promedio_servicio
-      FROM usuarios u
-      LEFT JOIN puestos p ON u.puesto_id = p.id
-      LEFT JOIN tickets t 
-        ON u.id = t.usuario_id
-        AND DATE(t.created_at) >= ?
-        AND DATE(t.finalizado_at) <= ?
-      WHERE u.rol = 'operador' AND u.activo = TRUE
-      GROUP BY u.id, u.nombre, p.numero
-      ORDER BY total_tickets DESC
+    u.id,
+    u.nombre,
+    p.numero AS puesto_numero,
+    COALESCE(COUNT(t.id), 0) AS total_tickets,
+    COALESCE(SUM(CASE WHEN t.estado = 'atendido' THEN 1 END), 0) AS atendidos,
+    COALESCE(SUM(CASE WHEN t.estado = 'no_presentado' THEN 1 END), 0) AS no_presentados,
+    AVG(
+      CASE 
+        WHEN t.estado = 'atendido'
+          AND t.llamado_at IS NOT NULL
+          AND t.finalizado_at IS NOT NULL
+          AND t.finalizado_at > t.llamado_at
+        THEN TIMESTAMPDIFF(MINUTE, t.llamado_at, t.finalizado_at)
+      END
+    ) AS tiempo_promedio_servicio,
+
+    ev.evaluados,
+    ev.promedio_evaluacion
+
+FROM usuarios u
+LEFT JOIN puestos p ON u.puesto_id = p.id
+LEFT JOIN tickets t 
+  ON u.id = t.usuario_id
+  AND DATE(t.created_at) >= ?
+  AND DATE(t.finalizado_at) <= ?
+
+LEFT JOIN (
+    SELECT 
+        usuario_id,
+        COUNT(*) AS evaluados,
+        ROUND(AVG(evaluation), 2) AS promedio_evaluacion
+    FROM tickets
+    WHERE evaluation != 0
+      AND estado = 'atendido'
+    GROUP BY usuario_id
+) ev ON ev.usuario_id = u.id
+
+WHERE u.rol = 'operador'
+  AND u.activo = TRUE
+GROUP BY 
+    u.id,
+    u.nombre,
+    p.numero,
+    ev.evaluados,
+    ev.promedio_evaluacion
+ORDER BY total_tickets DESC;
+
     `;
     
     const [rows] = await pool.query(query, [inicio, fin]);

@@ -1,7 +1,7 @@
 :root {
   --color-primary-blue: #1e2a4f;
   --color-primary-red: #cc132c;
-  --color-primary-yellow: #Fad824;
+  --color-primary-yellow: #fad824;
   --color-primary-green: #499c35;
 
   --color-secondary-blue-dark: #006ca1;
@@ -11,35 +11,54 @@
   --color-secondary-green-dark: #47772e;
   --color-secondary-green-light: #bbb90a;
 
-
   --color-mono-black: #000000;
   --color-mono-white: #ffffff;
   --color-mono-gold: #daab00;
   --color-mono-silver: #b2b2b2;
-
-
-
 }
 
-.bg-primary{
-   background: var(--color-secondary-blue-dark);
+.bg-primary {
+  background: var(--color-secondary-blue-dark);
 }
-
+.bg-danger {
+  background: var(--color-primary-red);
+}
+.bg-warning {
+  background: var(--color-primary-yellow);
+}
+.bg-success {
+  background: var(--color-primary-green);
+}
 
 /* Gradiente de primary a primary-dark */
 .bg-gradient-primary {
-  background: linear-gradient(325deg, var(--color-primary-blue), var(--color-secondary-blue-dark));
+  background: linear-gradient(
+    325deg,
+    var(--color-primary-blue),
+    var(--color-secondary-blue-dark)
+  );
 }
 .bg-gradient-primary-light {
-  background: radial-gradient( var(--color-secondary-blue-light), var(--color-secondary-blue-dark));
+  background: radial-gradient(
+    var(--color-secondary-blue-light),
+    var(--color-secondary-blue-dark)
+  );
 }
 
 /* Gradiente de secondary a secondary-dark */
 .bg-gradient-secondary {
-  background: linear-gradient(180deg, var(--color-secondary), var(--color-secondary-dark));
+  background: linear-gradient(
+    180deg,
+    var(--color-secondary),
+    var(--color-secondary-dark)
+  );
 }
 
 /* Gradiente custom (puedes mezclar con success y primary) */
 .bg-gradient-success-primary {
-  background: linear-gradient(180deg, var(--color-success), var(--color-primary));
+  background: linear-gradient(
+    180deg,
+    var(--color-success),
+    var(--color-primary)
+  );
 }

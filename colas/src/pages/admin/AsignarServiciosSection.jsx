@@ -87,7 +87,7 @@ function AsignarServiciosSection({
                   onClick={() => handleSeleccionarOperador(operador)}
                   className={`p-4 rounded-xl cursor-pointer transition-all ${
                     operadorSeleccionado?.id === operador.id
-                      ? "bg-blue-600 text-white shadow-lg"
+                      ? "bg-primary text-white shadow-lg"
                       : "bg-gray-50 hover:bg-gray-100"
                   }`}>
                   <div className="flex items-start justify-between">

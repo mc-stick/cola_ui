@@ -39,7 +39,7 @@ function PuestosSection({
         </h2>
         <button
           onClick={handleCrearPuesto}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+          className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
           <Plus className="w-5 h-5" />
           Nuevo Puesto
         </button>
@@ -143,7 +143,7 @@ function PuestosSection({
                       setEditando(puesto.id);
                       setFormulario(puesto);
                     }}
-                    className="p-2 bg-blue-600 ml-2 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    className="p-2 bg-primary ml-2 hover:bg-blue-700 text-white rounded-lg transition-colors">
                     <Edit className="w-4 h-4" />
                   </button>
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   BarChartHorizontalBig,
   Calendar,
@@ -22,7 +22,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { useEffect } from "react";
+import { AnimatedRating, StarRating } from "../../components/common/Rating";
 
 function EstadisticasSection({
   LoadingSpin,
@@ -60,7 +60,8 @@ function EstadisticasSection({
   useEffect(() => {
     cargarEstadisticas()
   }, [])
-  
+
+
 
   return (
     <div className="space-y-6">
@@ -98,7 +99,7 @@ function EstadisticasSection({
             <div className="flex gap-2 ">
             <button
               onClick={cargarEstadisticas}
-              className={`flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
+              className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
               ${estadisticasRango && estadisticasRango?.length > 0 ? "" : "bg-green-600 animate-pulse font-black"}`}>
               <span
                 className={` ${estadisticasRango && estadisticasRango?.length > 0 ? "" : "animate-bounce mt-2"}`}>
@@ -269,6 +270,8 @@ function EstadisticasSection({
                       </div>
                     </div>
                     <div className="flex gap-8 text-center">
+                      <AnimatedRating value={operador.promedio_evaluacion || 0} />
+
                       <div>
                         <div className="text-2xl font-bold text-blue-600">
                           {operador.total_tickets || 0}
@@ -280,6 +283,12 @@ function EstadisticasSection({
                           {operador.atendidos || 0}
                         </div>
                         <div className="text-xs text-gray-600">Atendidos</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-red-600">
+                          {(operador.total_tickets-operador.atendidos) || 0}
+                        </div>
+                        <div className="text-xs text-gray-600">No atendidos</div>
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-yellow-600">
@@ -386,7 +395,7 @@ function EstadisticasSection({
                 </h3>
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br animate-pulse from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Total Tickets
@@ -399,7 +408,7 @@ function EstadisticasSection({
                   <p className="text-sm opacity-75">Tickets procesados</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
+                <div style={{animationDelay:'200ms'}} className="bg-gradient-to-br animate-pulse from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Atendidos
@@ -420,7 +429,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
+                <div style={{animationDelay:'400ms'}} className="bg-gradient-to-br animate-pulse from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Tiempo de Atención
@@ -436,7 +445,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
+                <div style={{animationDelay:'600ms'}} className="bg-gradient-to-br animate-pulse from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Tiempo de Espera
@@ -452,7 +461,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
+                <div style={{animationDelay:'800ms'}} className="bg-gradient-to-br animate-pulse from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       No Atendido
@@ -473,7 +482,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
+                <div style={{animationDelay:'1000ms'}} className="bg-gradient-to-br animate-pulse from-cyan-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Transferidos

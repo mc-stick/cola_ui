@@ -42,8 +42,8 @@ function MenuInicial() {
       titulo: "Pantalla Admin",
       descripcion: "Configuración del sistema",
       icon: Settings,
-      color: "bg-orange-600",
-      colorHover: "hover:bg-orange-700",
+      color: "bg-warning",
+      colorHover: "hover:bg-warning",
     },
     {
       path: "/operador",

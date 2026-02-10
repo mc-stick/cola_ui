@@ -65,7 +65,7 @@ function HistorialSection({
         label: "Llamado",
       },
       en_atencion: {
-        bg: "bg-orange-100",
+        bg: "bg-warning",
         text: "text-orange-700",
         icon: AlertCircle,
         label: "En Atención",
@@ -255,7 +255,7 @@ function HistorialSection({
         <div className="flex gap-3 mt-4">
           <button
             onClick={handleCargarHistorial}
-            className={`flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
+            className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
              ${historial.length > 0 ? "" : "bg-green-600"}`}>
             <span
               className={`${historial.length > 0 ? "" : "animate-bounce font-bold mt-1"}`}>

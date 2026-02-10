@@ -6,7 +6,7 @@ export default function DemoSpeaker({ number="", text="", song=false }) {
 
   const handleSpeak = () => {
     if (speakerRef.current) {
-      speakerRef.current.speak(`¡, ${number}, " " ${text} !`);
+      speakerRef.current.speak(`¡ tíket: ${number}, ", a: " ${text} !`);
     }
   };
 

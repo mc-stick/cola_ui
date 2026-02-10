@@ -66,7 +66,7 @@ export default function PasoIngresoId({
 
           {/* Línea decorativa inferior */}
           <div
-            className={`h-1.5 w-[25%] mt-4 mb-2 rounded-full transition-all duration-500 ${identificacion ? "bg-blue-600" : "bg-gray-300/50"}`}
+            className={`h-1.5 w-[25%] mt-4 mb-2 rounded-full transition-all duration-500 ${identificacion ? "bg-primary" : "bg-gray-300/50"}`}
           />
       </div>
 

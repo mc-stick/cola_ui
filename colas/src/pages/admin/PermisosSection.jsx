@@ -83,7 +83,7 @@ function PermisosSection({
                     onClick={() => handleSeleccionaradmin(admin)}
                     className={`p-4 rounded-xl cursor-pointer transition-all ${
                       adminSeleccionado?.id === admin.id
-                        ? "bg-orange-600 text-white shadow-lg"
+                        ? "bg-warning text-white shadow-lg"
                         : "bg-gray-50 hover:bg-gray-100"
                     }`}>
                     <div className="flex items-start justify-between">
@@ -111,7 +111,7 @@ function PermisosSection({
                         className={`px-2 py-1 rounded-full text-xs font-bold ${
                           adminSeleccionado?.id === admin.id
                             ? "bg-white/20 text-white"
-                            : "bg-orange-100 text-orange-700"
+                            : "bg-warning text-orange-700"
                         }`}>
                         {permisosCount}
                       </div>
@@ -127,7 +127,7 @@ function PermisosSection({
                               className={`px-2 py-1 rounded text-xs font-semibold ${
                                 adminSeleccionado?.id === admin.id
                                   ? "bg-white/20 text-white"
-                                  : "bg-orange-100 text-orange-700"
+                                  : "bg-warning text-orange-700"
                               }`}>
                               {MENU_ITEMS.find(
                                 (item) =>

@@ -58,7 +58,7 @@ function ServiciosSection({
         <button
           onClick={handleCrearServicio}
           disabled={LoadingSpin}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+          className="flex items-center gap-2 bg-primary hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors">
           <Plus className="w-5 h-5" />
           Nuevo Servicio
         </button>
@@ -221,7 +221,7 @@ function ServiciosSection({
                     setEditando(servicio.id);
                     setFormulario(servicio);
                   }}
-                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                  className="p-2 bg-primary hover:bg-blue-700 text-white rounded-lg transition-colors">
                   <Edit className="w-5 h-5" />
                 </button>
 

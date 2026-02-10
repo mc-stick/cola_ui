@@ -115,7 +115,7 @@ function MediosSection({
         </h2>
         <button
           onClick={handleCrearMedio}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+          className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
           <Plus className="w-5 h-5" />
           Nuevo Medio
         </button>
@@ -317,7 +317,7 @@ function MediosSection({
                         );
                       }
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
+                    className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
                     <ImageIcon className="w-4 h-4" />
                     Ver
                   </button>

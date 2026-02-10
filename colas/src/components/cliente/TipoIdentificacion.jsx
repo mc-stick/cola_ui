@@ -1,4 +1,4 @@
-import { Phone, CreditCard, User, HelpCircleIcon, Info, BookOpen } from "lucide-react";
+import { Phone, CreditCard, User, HelpCircleIcon, Info, BookOpen, TicketIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SliderModal, TutorialModal } from "../common/infoSliderModal";
 import { getTutorialDeAcceso } from "../../helpers/Tutoriales";
@@ -70,7 +70,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
               id="grid-opcion2"
               className="bg-white p-8 rounded-[2rem] shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 group"
               onClick={() => Select("identificacion")}>
-              <div className="bg-blue-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
+              <div className="bg-primary w-20 h-20 rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform">
                 <CreditCard className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800">Matrícula</h3>
@@ -109,11 +109,24 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
       {/* <TicketQR value={"http://localhost:5173/cola/evaluar/114"} /> */}
       <footer className="fixed bottom-10 w-full text-center">
         <button
+          id="btn-tk"
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex mr-6 items-center gap-3 px-8 py-3 bg-yellow-500/70 animate-pulse backdrop-blur-md rounded-full border border-white/40 hover:bg-white/80 transition-all group shadow-md active:scale-95"
+        >
+          <div className="bg-primary p-1.5 rounded-full text-white  group-hover:animate-none">
+            <TicketIcon size={20} />
+          </div>
+          <span className="text-blue-900 font-extrabold tracking-wide uppercase text-sm">
+            ¿Ya tienes un ticket?
+          </span>
+        </button>
+
+        <button
           id="btn-ayuda"
           onClick={() => setIsModalOpen(true)}
           className="inline-flex items-center gap-3 px-8 py-3 bg-white/60 animate-pulse backdrop-blur-md rounded-full border border-white/40 hover:bg-white/80 transition-all group shadow-md active:scale-95"
         >
-          <div className="bg-blue-600 p-1.5 rounded-full text-white  group-hover:animate-none">
+          <div className="bg-primary p-1.5 rounded-full text-white  group-hover:animate-none">
             <HelpCircleIcon size={20} />
           </div>
           <span className="text-blue-900 font-extrabold tracking-wide uppercase text-sm">

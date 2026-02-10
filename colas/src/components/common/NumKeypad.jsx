@@ -13,7 +13,7 @@ export default function NumericKeypad({
         <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
+              className="bg-primary hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
               key={n}
               onClick={() => onAdd(n.toString())}>
               {n}
@@ -28,7 +28,7 @@ export default function NumericKeypad({
           </button>
           <button
           
-            className="bg-blue-600 hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
+            className="bg-primary hover:bg-blue-700 text-white text-3xl font-bold py-6 rounded-xl transition-colors"
             onClick={() => onAdd("0")}>
             0
           </button>

@@ -14,7 +14,7 @@ function PantallaAnuncios() {
   const [ticketNuevo, setTicketNuevo] = useState(null);
   const [ticketEspera, setTicketEspera] = useState([]);
   const [historialTickets, setHistorialTickets] = useState({});
-  
+
   // ← NUEVO: Guardar el ID del ticket que fue llamado nuevamente
   const [ticketRellamado, setTicketRellamado] = useState(null);
 
@@ -95,14 +95,19 @@ function PantallaAnuncios() {
 
           // ← MODIFICADO: Detectar SOLO el ticket específico que fue rellamado
           tickets.forEach((ticket) => {
-            const ticketAnterior = ticketsAnteriores.find(ta => ta.id === ticket.id);
-            if (ticketAnterior && ticket.llamado_veces > ticketAnterior.llamado_veces) {
+            const ticketAnterior = ticketsAnteriores.find(
+              (ta) => ta.id === ticket.id,
+            );
+            if (
+              ticketAnterior &&
+              ticket.llamado_veces > ticketAnterior.llamado_veces
+            ) {
               // Guardar el ticket que fue rellamado con timestamp
               setTicketRellamado({
                 id: ticket.id,
-                timestamp: Date.now()
+                timestamp: Date.now(),
               });
-              
+
               // Limpiar después de 5 segundos
               setTimeout(() => {
                 setTicketRellamado(null);
@@ -211,9 +216,9 @@ function PantallaAnuncios() {
   const ticketActual = ticketsLlamados.length > 0 ? ticketsLlamados[0] : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
+    <div className="min-h-screen bg-primary relative">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-5 py-3 shadow-lg">
+      <div className="bg-gradient-primary text-white px-5 py-3 shadow-lg">
         <div className="mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             {config?.logo_url && (
@@ -243,16 +248,16 @@ function PantallaAnuncios() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl animate-bounce-in">
             <div className="text-center">
-              <div className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
+              <div className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
                 TURNO SIGUIENTE
               </div>
-              <div className="bg-blue-500 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <div className="bg-primary w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
                 <BellRing
                   color="orange"
                   className="w-10 h-10 sm:w-12 sm:h-12 text-white"
                 />
               </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold text-gray-800 mb-4">
+              <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 text-blue-900">
                 ¡Turno Llamado!
               </h2>
               <div
@@ -260,10 +265,13 @@ function PantallaAnuncios() {
                 style={{ color: ticketNuevo.servicio_color }}>
                 {ticketNuevo.numero}
               </div>
-              <div className="text-2xl sm:text-3xl text-gray-700 mb-4">
+              {/* <div className="text-2xl sm:text-3xl text-gray-700 mb-4">
                 {ticketNuevo.servicio_nombre}
+              </div> */}
+              <div className="mt-1 p-4">
+                <hr className="border-2" style={{ borderColor: ticketNuevo.servicio_color }} />
               </div>
-              <div className="text-3xl sm:text-4xl font-bold text-blue-700">
+              <div className="text-5xl sm:text-6xl font-extrabold text-blue-900">
                 {ticketNuevo.puesto_nombre}
               </div>
               <DemoSpeaker
@@ -282,7 +290,7 @@ function PantallaAnuncios() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100vh-100px)]">
             {/* Columna principal: Servicios con tickets - Siempre centrado */}
             <div className="lg:col-span-5 overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 uppercase justify-center flex items-center gap-2 sticky top-0 bg-gray-50 pb-3 z-10">
+              <h2 className="text-2xl font-bold text-white mb-4 uppercase justify-center flex items-center gap-2 sticky top-0 pb-3 z-10">
                 atendiendo los siguientes tickets
               </h2>
               <hr className="border-2 border-gray-500" />
@@ -346,11 +354,19 @@ function PantallaAnuncios() {
                                   </div>
                                   {index === 0 &&
                                   ticketActual?.id === ticket.id ? (
-                                    <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                    <div
+                                      className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full"
+                                      style={{
+                                        color: "--color-secondary-blue-dark",
+                                      }}>
                                       AHORA
                                     </div>
                                   ) : (
-                                    <div className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                    <div
+                                      className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full"
+                                      style={{
+                                        color: "--color-secondary-green-dark",
+                                      }}>
                                       ATENDIENDO
                                     </div>
                                   )}
@@ -361,18 +377,20 @@ function PantallaAnuncios() {
                                     {ticket.puesto_nombre}
                                   </div>
                                   {ticket.llamado_veces > 1 && (
-                                    <div className="text-xs flex justify-center items-center text-white bg-orange-600 border-2 font-bold rounded-xl pr-2">
+                                    <div className="text-xs flex justify-center items-center text-white bg-orange-500 border-2 font-bold rounded-xl pr-2">
                                       <AlertTriangle className="w-8 h-8 p-1 m-1" />
-                                      llamado ({ticket.llamado_veces}ª vez)
-                                      {/* ← SOLUCIÓN: Solo reproducir si este ticket fue rellamado */}
-                                      {ticketRellamado && ticketRellamado.id === ticket.id && (
-                                        <DemoSpeaker
-                                          //key={`speaker-${ticket.id}-${ticketRellamado.timestamp}`}
-                                          number={ticket.numero}
-                                          text={ticket.puesto_nombre}
-                                          song={false}
-                                        />
-                                      )}
+                                      llamado 
+                                      {/* ({ticket.llamado_veces}ª vez) */}
+                                      
+                                      {ticketRellamado &&
+                                        ticketRellamado.id === ticket.id && (
+                                          <DemoSpeaker
+                                            //key={`speaker-${ticket.id}-${ticketRellamado.timestamp}`}
+                                            number={ticket.numero}
+                                            text={ticket.puesto_nombre}
+                                            song={true}
+                                          />
+                                        )}
                                     </div>
                                   )}
                                 </div>

@@ -76,6 +76,41 @@ router.get('/llamados', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/evaluado-stats', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN evaluation != 0 THEN 1 ELSE 0 END) AS evaluados,
+        SUM(CASE WHEN evaluation = 0 THEN 1 ELSE 0 END) AS no_evaluados
+      FROM tickets;
+
+`
+    );
+    
+    res.json(rows);
+  } catch (error) {
+    console.error('Error obteniendo tickets llamados:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+router.get('/evaluado-user', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      ` SELECT 
+          usuario_id,
+          evaluation
+      FROM tickets
+      WHERE evaluation != 0 AND estado ='atendido'
+      ORDER BY llamado_at DESC`
+    );
+    
+    res.json(rows);
+  } catch (error) {
+    console.error('Error obteniendo tickets llamados:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * GET /api/tickets/operador/:usuario_id
@@ -113,6 +148,37 @@ router.post('/:id/llamar', authenticateToken, async (req, res) => {
       'CALL llamar_ticket(?, ?, ?)',
       [id, usuario_id, puesto_id]
     );
+    
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 'LLAMAR TICKET',
+      modulo: 'Tickets',
+      detalles: `Ticket ID: ${id}, Puesto ID: ${puesto_id}`,
+      req
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error llamando ticket:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/volver', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuario_id, puesto_id } = req.body;
+    
+    await pool.query(
+      `UPDATE tickets SET estado = CASE
+  WHEN created_at < NOW() - INTERVAL 12 HOUR THEN 'atendido'
+  ELSE 'espera'
+END
+WHERE numero = ?
+  AND estado = 'pendiente"
+ `,
+      [id]
+    ); // modificar consulta.
     
     await registrarAuditoria({
       usuarioId: req.user.id,
@@ -191,7 +257,7 @@ router.post('/:id/finalizar', authenticateToken, async (req, res) => {
 router.post('/:id/transferir', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { servicio_id, comentario } = req.body;
+    const { servicio_id, comentario,serv_ant,servicio_nm } = req.body;
     
     await pool.query(
       'UPDATE tickets SET servicio_id=?, notes=?, estado="espera", puesto_id=null, usuario_id=null, transferido=1 WHERE id=?',
@@ -202,7 +268,7 @@ router.post('/:id/transferir', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'TRANSFERIR TICKET',
       modulo: 'Tickets',
-      detalles: `Ticket ID: ${id}, Nuevo Servicio ID: ${servicio_id}`,
+      detalles: `Ticket ID: "${id}", Transferido de: "${serv_ant}", hasta: "${servicio_nm}"`,
       req
     });
     

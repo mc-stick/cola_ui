@@ -66,7 +66,7 @@ function UsuariosSection({
         </h2>
         <button
           onClick={handleCrearUsuario}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+          className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
           <Plus className="w-5 h-5" />
           Nuevo Usuario
         </button>
@@ -212,7 +212,7 @@ function UsuariosSection({
               key={usuario.id}
               className={`flex items-center justify-between p-6 ${
                 usuario.rol === "admin"
-                  ? "bg-orange-100 text-orange-700"
+                  ? "bg-warning text-orange-700"
                   : "bg-blue-100 text-blue-700"
               } rounded-xl`}>
               <div>
@@ -231,7 +231,7 @@ function UsuariosSection({
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-semibold ${
                       usuario.rol === "admin"
-                        ? "bg-orange-100 text-orange-700"
+                        ? "bg-warning text-orange-700"
                         : "bg-blue-100 text-blue-700"
                     }`}>
                     {usuario.rol === "admin" ? "Administrador" : "Operador"}
@@ -263,7 +263,7 @@ function UsuariosSection({
                     setEditando(usuario.id);
                     setFormulario({ ...usuario, password: "" });
                   }}
-                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                  className="p-2 bg-primary hover:bg-blue-700 text-white rounded-lg transition-colors">
                   <Edit className="w-5 h-5" />
                 </button>
                 <button

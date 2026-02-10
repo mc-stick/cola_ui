@@ -25,6 +25,26 @@
   }
 }
 
+@keyframes star-wave {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.star-wave {
+  animation: star-wave 450ms ease-out;
+}
+
+
 #center-ghost-element {
   position: fixed;
   top: 50%;

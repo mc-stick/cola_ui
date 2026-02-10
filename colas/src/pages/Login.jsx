@@ -159,7 +159,7 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-${getColorAccent()}-600 hover:bg-${getColorAccent()}-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors`}>
+            className={`w-full bg-green-600 hover:bg-${getColorAccent()}-700 disabled:bg-gray-400 text-white py-3 px-6 rounded-lg font-bold text-lg transition-colors`}>
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>

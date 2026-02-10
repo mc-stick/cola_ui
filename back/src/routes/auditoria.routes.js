@@ -10,7 +10,6 @@ const router = express.Router();
 router.get('/auditoria', async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin, usuario_id } = req.query;
-    
     let query = `
       SELECT *
       FROM view_auditoria
