@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo medios:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -132,7 +132,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error actualizando medio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -160,7 +160,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error eliminando medio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -199,7 +199,7 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
     res.json({ success: true, medio_active: nuevoValor });
   } catch (error) {
     console.error('Error modificando medio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

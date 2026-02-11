@@ -30,7 +30,7 @@ router.get('/operadores/:usuario_id/servicios', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo servicios del operador:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 
@@ -60,7 +60,7 @@ router.post('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken,
     res.json({ success: true });
   } catch (error) {
     console.error('Error asignando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 
@@ -88,7 +88,7 @@ router.delete('/operadores/:usuario_id/servicios/:servicio_id', authenticateToke
     res.json({ success: true });
   } catch (error) {
     console.error('Error desasignando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 
@@ -123,7 +123,7 @@ router.get('/operadores-servicios', async (req, res) => {
     res.json(operadores);
   } catch (error) {
     console.error('Error obteniendo operadores con servicios:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'error del servidor' });
   }
 });
 

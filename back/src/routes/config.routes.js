@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     res.json(rows[0] || {});
   } catch (error) {
     console.error('Error obteniendo configuración:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -44,7 +44,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error actualizando configuración:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

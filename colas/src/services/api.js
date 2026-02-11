@@ -519,7 +519,7 @@ class API {
     } catch (error) {
       console.error('Error en login:', error);
       toast.error('Error de conexión');
-      return { success: false, error: error.message };
+      return { success: false, error: "error del servidor"};
     }
   }
   
@@ -1457,6 +1457,7 @@ async GetTicketEvaluationState(ticketId) {
 
   async PrintTicket(ticket, servicio) {
     try {
+      
       const response = await fetch(`${API_PRINT}/print`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1475,7 +1476,7 @@ async GetTicketEvaluationState(ticketId) {
     } catch (error) {
       console.error('Error en PrintTicket:', error);
       toast.error('Error al conectar con la impresora');
-      return { success: false, error: error.message };
+      return { success: false, error: "error del servidor"};
     }
   }
 

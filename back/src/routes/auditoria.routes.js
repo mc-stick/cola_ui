@@ -38,7 +38,7 @@ router.get('/auditoria', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo auditoría:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 
@@ -92,7 +92,7 @@ router.get('/historial', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo historial:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 

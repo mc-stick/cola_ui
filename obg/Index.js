@@ -20,7 +20,7 @@
 //     console.error('Error:', error.message);
 //     res.status(500).json({ 
 //       success: false,
-//       error: error.message 
+//       error: "error del servidor"
 //     });
 //   }
 // });
@@ -54,7 +54,7 @@ import { imprimirTexto } from './Printservice.js';  // Asumiendo que tienes una 
 
 const app = express();
 const PORT = 8080;
-const externalWsUrl = 'ws://ip:3001'; // Cambia esto con la URL de tu WebSocket externo
+const externalWsUrl = 'ws://150.136.118.43:3001'; // Cambia esto con la URL de tu WebSocket externo
 let externalWs = null;
 
 // Middleware
@@ -82,7 +82,7 @@ function connectToExternalWs() {
         // Llamar a la función de impresión
         console.log('Imprimiendo ticket con los datos:', parsedMessage.data);
         // Aquí puedes agregar la lógica para imprimir
-        imprimirTexto({ logo: "UCNE", description: 'des.', turno: parsedMessage.data.ticket, servicio: parsedMessage.data.servicio, footer: "pie de pagina" });
+        imprimirTexto({ logo: "UCNE", description: 'Universidad Católica Nordestana.', turno: parsedMessage.data.ticket, servicio: parsedMessage.data.servicio, footer: "pie de pagina" });
       }
     } catch (error) {
       console.error('Error al procesar el mensaje:', error);

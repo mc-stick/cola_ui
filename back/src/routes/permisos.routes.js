@@ -35,7 +35,7 @@ router.get('/permisos/todos', async (req, res) => {
 
   } catch (error) {
     console.error('Error obteniendo admins con permisos:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -57,7 +57,7 @@ router.get('/:id/permisos', async (req, res) => {
     res.json(rows.map(r => r.id));
   } catch (error) {
     console.error('Error obteniendo permisos:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -94,7 +94,7 @@ router.post('/permisos', authenticateToken, async (req, res) => {
     }
 
     console.error('Error asignando permiso:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -150,7 +150,7 @@ router.put('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res
 
   } catch (error) {
     console.error('Error gestionando permiso:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -183,7 +183,7 @@ router.delete('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, 
     res.json({ message: 'Permiso removido del usuario' });
   } catch (error) {
     console.error('Error removiendo permiso:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

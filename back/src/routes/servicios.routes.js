@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo servicios:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -45,7 +45,7 @@ router.post('/', authenticateToken, async (req, res) => {
     res.json({ id: result.insertId, success: true });
   } catch (error) {
     console.error('Error creando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -80,7 +80,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error actualizando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -103,7 +103,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error eliminando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -140,7 +140,7 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
     res.json({ success: true, service_active: nuevoValor });
   } catch (error) {
     console.error('Error modificando servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

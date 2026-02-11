@@ -31,6 +31,8 @@ export function usePantallaCliente() {
       identificacion: identificacion || null,
     });
 
+    console.log(ticket,"ticket creado")
+
     setTicketGenerado(ticket);
     setPaso(4);
 
@@ -38,7 +40,7 @@ export function usePantallaCliente() {
       SendTwilioSms("mensaje a enviar", identificacion);
     }else{
       console.log("PRINTING",ticket.numero,servicio.nombre)
-      //await API.PrintTicket("ticket",servicio.nombre)
+      await API.PrintTicket(ticket,servicio.nombre)
     }
   };
 

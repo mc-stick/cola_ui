@@ -15,7 +15,7 @@ app.post('/api/print', async (req, res) => {
     
     res.json({ id: result.insertId, success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

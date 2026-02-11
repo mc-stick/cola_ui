@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creando ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -53,7 +53,7 @@ router.get('/espera', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets en espera:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -73,7 +73,7 @@ router.get('/llamados', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets llamados:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 router.get('/evaluado-stats', async (req, res) => {
@@ -91,7 +91,7 @@ router.get('/evaluado-stats', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets llamados:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 router.get('/evaluado-user', async (req, res) => {
@@ -108,7 +108,7 @@ router.get('/evaluado-user', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets llamados:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -131,7 +131,7 @@ router.get('/operador/:usuario_id', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets del operador:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -160,7 +160,7 @@ router.post('/:id/llamar', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error llamando ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -191,7 +191,7 @@ WHERE numero = ?
     res.json({ success: true });
   } catch (error) {
     console.error('Error llamando ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -217,7 +217,7 @@ router.post('/:id/atender', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error atendiendo ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -246,7 +246,7 @@ router.post('/:id/finalizar', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error finalizando ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -275,7 +275,7 @@ router.post('/:id/transferir', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error transfiriendo ticket:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

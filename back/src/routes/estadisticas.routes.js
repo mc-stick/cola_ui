@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -67,7 +67,7 @@ router.get('/rango', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por rango:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -113,7 +113,7 @@ router.get('/servicios', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por servicio:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -211,7 +211,7 @@ ORDER BY total_tickets DESC;
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por operador:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -241,7 +241,7 @@ router.get('/horas', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por hora:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -295,7 +295,7 @@ router.get('/resumen', async (req, res) => {
 
   } catch (error) {
     console.error('Error obteniendo resumen general:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

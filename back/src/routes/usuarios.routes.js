@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo usuarios:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -38,7 +38,7 @@ router.get('/:user', async (req, res) => {
     res.json(usuario);
   } catch (error) {
     console.error('Error', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -70,7 +70,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error creando usuario:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -102,7 +102,7 @@ router.put('/:user/change', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -142,7 +142,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error actualizando usuario:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -189,7 +189,7 @@ router.put('/:id/operator', authenticateToken, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error actualizando usuario:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -241,7 +241,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error eliminando usuario:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -291,7 +291,7 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
     res.json({ success: true, activo: nuevoValor });
   } catch (error) {
     console.error('Error modificando usuario:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

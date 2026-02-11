@@ -11,8 +11,8 @@ const { pool } = require('../config/database');
  */
 async function registrarAuditoria({ usuarioId, accion, modulo, detalles, req }) {
   const fecha = new Date();
-  const fechaStr = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
-  const horaStr = fecha.toTimeString().split(' ')[0]; // HH:MM:SS
+  const fechaStr = fecha.toISOString().split('T')[0];
+  const horaStr = fecha.toTimeString().split(' ')[0];
 
   try {
     await pool.query(

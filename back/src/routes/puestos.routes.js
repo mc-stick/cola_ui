@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo puestos:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -66,7 +66,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error creando puesto:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -107,7 +107,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error actualizando puesto:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -158,7 +158,7 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Error modificando puesto:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "error del servidor"});
   }
 });
 

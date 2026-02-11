@@ -59,6 +59,18 @@ wss.on('connection', (ws, req) => {
   });
 });
 
+app.post('/print', async (req, res) => {
+  try {
+
+    wss.emit("print-ticket",req.body);
+    
+    res.json({success:true});
+  } catch (error) {
+    console.error('Error obteniendo print local:', error);
+    res.status(500).json({ error: "error del servidor"});
+  }
+});
+
 global.notificarCambio = (tipo, data) => {
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
