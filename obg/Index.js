@@ -82,7 +82,7 @@ function connectToExternalWs() {
         // Llamar a la función de impresión
         console.log('Imprimiendo ticket con los datos:', parsedMessage.data);
         // Aquí puedes agregar la lógica para imprimir
-        imprimirTexto({ logo: "UCNE", description: 'Universidad Católica Nordestana.', turno: parsedMessage.data.ticket, servicio: parsedMessage.data.servicio, footer: "pie de pagina" });
+        imprimirTexto({ logo: "UCNE", description: 'des.', turno: parsedMessage.data.ticket, servicio: parsedMessage.data.servicio, footer: "pie de pagina" });
       }
     } catch (error) {
       console.error('Error al procesar el mensaje:', error);
