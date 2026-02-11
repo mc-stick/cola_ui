@@ -54,7 +54,7 @@ import { imprimirTexto } from './Printservice.js';  // Asumiendo que tienes una 
 
 const app = express();
 const PORT = 8080;
-const externalWsUrl = 'ws://ip:3001'; // Cambia esto con la URL de tu WebSocket externo
+const externalWsUrl = 'ws://150.136.118.43:3001'; // Cambia esto con la URL de tu WebSocket externo
 let externalWs = null;
 
 // Middleware
