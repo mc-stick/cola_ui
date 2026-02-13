@@ -123,7 +123,7 @@ function PantallaOperador() {
       </div>
 
       {/* Modal de edición */}
-      {EditOpen && (
+      {/* {EditOpen && (
         <EditModal
           usuario={usuario}
           formulario={formulario}
@@ -133,7 +133,7 @@ function PantallaOperador() {
           handleGuardarUsuario={handleGuardarUsuario}
           setEditOpen={setEditOpen}
         />
-      )}
+      )} */}
 
       {/* Modal de transferencia */}
       <TransferModal

@@ -16,6 +16,7 @@ import {
   History,
   BarChart3,
   ShieldAlertIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 
 import { AlertToUI, Spinner } from "../components/loading";
@@ -47,7 +48,7 @@ function PantallaAdmin() {
   const [adminServicios, setAdminServicios] = useState([]);
   const [operadoresServicios, setOperadoresServicios] = useState([]);
   const [historial, setHistorial] = useState([]);
-   const [auditoria, setAuditoria] = useState([]);
+  const [auditoria, setAuditoria] = useState([]);
 
   // Estados de UI
   const [LoadingSpin, setLoadingSpin] = useState(false);
@@ -271,7 +272,6 @@ function PantallaAdmin() {
           // Las estadísticas se cargan con el botón "Actualizar"
           break;
         case "9": // AUDITORIA
-          
           const usuariosData3 = await API.getUsuarios();
           setUsuarios(usuariosData3);
           break;
@@ -505,7 +505,6 @@ function PantallaAdmin() {
       if (filtros.usuario_id) params.usuario_id = filtros.usuario_id;
 
       const response = await API.getAuditoria(params);
-     
 
       setAuditoria(response);
     } catch (error) {
@@ -632,9 +631,6 @@ function PantallaAdmin() {
     );
   };
 
- 
-
-
   // ============================================
   // RENDERIZADO PRINCIPAL
   // ============================================
@@ -677,20 +673,33 @@ function PantallaAdmin() {
                     Panel de Administración
                   </h2>
                 </div>
-                <div className="space-y-6">
-                  <hr />
-                  <p>
-                    Aquí podrás ver y administrar la configuración de la
-                    aplicación.
-                  </p>
-                  <p className="flex">
-                    <Menu />
-                    <span className="ml-4">
-                      Usa el menú de la izquierda para navegar por la
-                      configuración.
-                    </span>
-                  </p>
-                </div>
+                {menuFiltrado > 0 ? (
+                  <div className="space-y-6">
+                    <hr />
+                    <p>
+                      Aquí podrás ver y administrar la configuración de la
+                      aplicación.
+                    </p>
+                    <p className="flex">
+                      <Menu />
+                      <span className="ml-4">
+                        Usa el menú de la izquierda para navegar por la
+                        configuración.
+                      </span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <hr />
+                    <p className="flex">
+                      <AlertCircleIcon className="w-10 h-10 text-red-500" />
+                      <span className="ml-4 text-2xl italic">
+                        No puedes administrar ninguna configuración, pídele a un
+                      administrados que te asigne alguna configuración.
+                      </span>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

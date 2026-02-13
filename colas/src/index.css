@@ -55,3 +55,65 @@
   pointer-events: none;
   opacity: 0;
 }
+
+/* Contenedor principal */
+.bg-login-animated {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Capa de burbujas (MUY atrás) */
+.bubbles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Fondo azul oscuro semi-transparente encima */
+.blue-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(5, 15, 40, 0.82),
+    rgba(10, 25, 70, 0.85)
+  );
+  z-index: 1;
+}
+
+/* Burbujas base */
+.bubble {
+  position: absolute;
+  bottom: -200px;
+  border-radius: 50%;
+  opacity: 0.85;
+  filter: blur(2px);
+  animation: rise linear infinite;
+}
+
+/* Glow fuerte */
+.bubble::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  box-shadow: 0 0 160px currentColor,
+              0 0 200px currentColor,
+              0 0 240px currentColor;
+  opacity: 0.9;
+}
+
+/* Animación */
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-140vh) scale(2.5);
+    opacity: 0;
+  }
+}

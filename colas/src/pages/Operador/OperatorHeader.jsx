@@ -49,7 +49,7 @@ export const OperatorHeader = ({
             </div>
 
             <span className="px-4 py-1 rounded-lg text-lg font-extrabold uppercase tracking-wide bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md">
-              {usuario.puesto_nombre}
+              {usuario.puesto_nombre ? <span>{usuario.puesto_nombre}</span> : <span>--</span>}
             </span>
           </div>
 
@@ -133,7 +133,8 @@ export const OperatorHeader = ({
                 <HelpingHandIcon className="w-5 h-5 text-cyan-600" />
                 Ayuda
               </button>
-              <button
+              
+              {/* <button
                 onClick={() => {
                   onEdit();
                   setMenuOpen(false);
@@ -141,7 +142,7 @@ export const OperatorHeader = ({
                 className="w-full flex items-center gap-2 px-4 py-3 hover:bg-gray-100 transition">
                 <Settings2Icon className="w-5 h-5 text-cyan-600" />
                 Configuración
-              </button>
+              </button> */}
 
               <button
                 onClick={() => {
