@@ -6,7 +6,8 @@ import {
   Trash2Icon,
   User,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 export function Spinner({ timeout = 1000, onClose }) {
   useEffect(() => {
@@ -27,6 +28,20 @@ export function Spinner({ timeout = 1000, onClose }) {
 }
 
 export function TabSpinner({ timeout = 1000, onClose }) {
+  const [config, setConfig] = useState(null);
+  
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const [configData] = await Promise.all([api.getConfiguracion()]);
+        setConfig(configData);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+    cargarDatos();
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose?.();
@@ -38,7 +53,9 @@ export function TabSpinner({ timeout = 1000, onClose }) {
   return (
     <div className=" inset-0 backdrop-blur-sm  items-center justify-center m-10 z-50 animate-fade-in">
       <div className="flex items-center justify-center">
-        <div className="h-20 w-20 animate-spin rounded-full border-8 border-gray-300 border-t-blue-500"></div>
+        <div className="animate-spin">
+        <div className="h-20 w-20  rounded-full border-8  animate-spinColors"></div>
+        </div>
       </div>
       <div className=" flex items-center justify-center m-10 font-bold">
         Cargando...
@@ -112,49 +129,70 @@ export function AlertToUI({ title = "Confirmar", action = "info" }) {
 }
 
 export function DotsLoader() {
+  const [config, setConfig] = useState(null);
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const [configData] = await Promise.all([api.getConfiguracion()]);
+        setConfig(configData);
+      } catch (error) {
+        console.error("Error cargando datos:", error);
+      }
+    };
+    cargarDatos();
+  }, []);
+  const logos = new Array(3).fill(config?.logo_url);
   return (
     <div className="flex space-x-2">
-      <span className="h-3 w-3 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-      <span className="h-3 w-3 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-      <span className="h-3 w-3 bg-primary rounded-full animate-bounce" />
+      {logos.map((logo, index) => (
+        <span
+          key={index}
+          className={`h-10 w-10 rounded-full animate-bounce`}
+          style={{ animationDelay: `-${0.3 - index * 0.15}s`}}>
+          {logo && (
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-10 h-10 drop-shadow-lg object-contain rounded-lg p-1 mr-10"
+            />
+          )}
+        </span>
+      ))}
     </div>
   );
 }
 
 export function CardLoader() {
   return (
+    <div className="bg-gray-50 rounded-xl p-5 border-l-4 border-gray-300 animate-pulse w-full">
+      <div className="flex items-start justify-between gap-4 w-full">
+        <div className="flex items-start gap-4 flex-1 w-full">
+          <div className="flex-shrink-0 space-y-2">
+            <div className="h-10 w-10 rounded bg-gray-200"></div>
+            <div className="h-2 w-12 rounded bg-gray-200"></div>
+          </div>
 
-<div className="bg-gray-50 rounded-xl p-5 border-l-4 border-gray-300 animate-pulse w-full">
-  <div className="flex items-start justify-between gap-4 w-full">
-    <div className="flex items-start gap-4 flex-1 w-full">
-      <div className="flex-shrink-0 space-y-2">
-        <div className="h-10 w-10 rounded bg-gray-200"></div>
-        <div className="h-2 w-12 rounded bg-gray-200"></div>
-      </div>
+          <div className="flex-1 space-y-4 w-full">
+            <div className="h-4 w-full rounded bg-gray-200"></div>
+            <div className="h-3 w-3/4 rounded bg-gray-200"></div>
+            <div className="h-3 w-full rounded bg-gray-200"></div>
+            <div className="h-3 w-1/2 rounded bg-gray-200"></div>
+          </div>
+        </div>
 
-      <div className="flex-1 space-y-4 w-full">
-        <div className="h-4 w-full rounded bg-gray-200"></div>
-        <div className="h-3 w-3/4 rounded bg-gray-200"></div>
-        <div className="h-3 w-full rounded bg-gray-200"></div>
-        <div className="h-3 w-1/2 rounded bg-gray-200"></div>
+        <div className="flex-shrink-0 space-y-3 text-right">
+          <div className="h-3 w-16 rounded bg-gray-200"></div>
+          <div className="h-3 w-20 rounded bg-gray-200"></div>
+          <div className="h-3 w-24 rounded bg-gray-200"></div>
+          <div className="h-3 w-12 rounded bg-gray-200"></div>
+        </div>
       </div>
     </div>
-
-    <div className="flex-shrink-0 space-y-3 text-right">
-      <div className="h-3 w-16 rounded bg-gray-200"></div>
-      <div className="h-3 w-20 rounded bg-gray-200"></div>
-      <div className="h-3 w-24 rounded bg-gray-200"></div>
-      <div className="h-3 w-12 rounded bg-gray-200"></div>
-    </div>
-  </div>
-</div>
-
-
   );
 }
 
 export function InfoModal({ ticket = {}, modal = () => {} }) {
- 
   return (
     <div className="fixed inset-0 bg-gray-800/10  flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-xl w-full mx-4 shadow-xl animate-bounce-in">

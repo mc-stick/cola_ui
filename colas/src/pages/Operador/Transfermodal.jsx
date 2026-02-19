@@ -38,7 +38,9 @@ export const TransferModal = ({
           <div
             id="modal-transferir-items"
             className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-            {todosServicios.map((servicio) => (
+            {todosServicios
+            .filter(t => t.service_active === 1)
+            .map((servicio) => (
               <label
                 key={servicio.id}
                 className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${

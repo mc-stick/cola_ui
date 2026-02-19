@@ -15,11 +15,23 @@
   --color-mono-white: #ffffff;
   --color-mono-gold: #daab00;
   --color-mono-silver: #b2b2b2;
+
+  margin: 0;
+  padding: 0;
 }
 
 .bg-primary {
   background: var(--color-secondary-blue-dark);
 }
+
+.bg-primary-2 {
+  background: var(--color-secondary-blue-light);
+}
+.bg-gold {
+  background: var(--color-mono-gold);
+}
+
+
 .bg-danger {
   background: var(--color-primary-red);
 }

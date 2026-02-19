@@ -45,7 +45,7 @@ function App() {
   };
 
   return (
-    <div className="bg-primary" >
+    <div className="bg-primary font-karla" >
       <div id="center-ghost-element"></div>
 
        <ToastContainer

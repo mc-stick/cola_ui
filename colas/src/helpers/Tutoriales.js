@@ -10,6 +10,16 @@ export const getTutorialDeAcceso = (onGuide) => [
     }
   },
   {
+    title: "Ya tienes un ticket para mas tarde?",
+    content: [
+      "Te mostraré como colocarte en la fila lo mas pronto posible, este paso solo se puede realizar si tu ticket fue marcado para volver mas tarde."
+    ],
+    action: {
+      label: "Verificar si mi tickt aun funciona",
+      onClick: ()=>onGuide(6)
+    }
+  },
+  {
     title: "Crea un ticket usando tu Teléfono",
     content: ["Te ayudaré a crear un ticket usando tu número de teléfono."],
     action: {
@@ -18,8 +28,8 @@ export const getTutorialDeAcceso = (onGuide) => [
     }
   },
   {
-    title: "Crea un ticket usando tu Matricula",
-    content: ["Te ayudaré a crear un ticket usando tu número de matricula."],
+    title: "Crea un ticket usando tu ID",
+    content: ["Te ayudaré a crear un ticket usando tu número de ID."],
     action: {
       label: "Crear un ticket",
       onClick: ()=>onGuide(3) 

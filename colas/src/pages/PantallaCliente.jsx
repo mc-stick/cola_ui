@@ -29,7 +29,7 @@ export const BackBtnCli = ({ step }) => {
     <button
     id="btn-regresar"
       onClick={step}
-      className="bg-gray-500 hover:bg-gray-700 mt-10 text-white px-12 py-4 rounded-xl font-bold text-xl  transition-colors ">
+      className="bg-[--color-mono-silver] hover:bg-[--color-mono-gold] mt-10 text-white px-12 py-4 rounded-xl font-bold text-xl  transition-colors ">
       <div className="flex justify-center text-center gap-4 ">
         <span className=""><ArrowLeftCircleIcon className="w-10 h-10 flex" /></span>
         <span className="m-1">Volver</span>

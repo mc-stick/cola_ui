@@ -173,7 +173,8 @@ function ServiciosSection({
             </p>
           </div>
         ) : (
-          servicios.map((servicio) => (
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            {servicios.map((servicio) => (
             <div
               key={servicio.id}
               className="flex items-center justify-between p-6 bg-gray-50 rounded-xl border-l-4"
@@ -232,7 +233,7 @@ function ServiciosSection({
                 </button>
               </div>
             </div>
-          ))
+          ))}</div>
         )}
 
         <ConfirmModal

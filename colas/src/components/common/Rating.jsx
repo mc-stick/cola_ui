@@ -151,7 +151,8 @@ export function AnimatedRating({ value = 0 }) {
           ? "Buena"
           : numericValue >= 2
             ? "Regular"
-            : "Mala";
+            : numericValue == 0
+            ? "No Evaluado" : "Mala";
 
   const color =
     numericValue >= 4.5
@@ -162,7 +163,8 @@ export function AnimatedRating({ value = 0 }) {
           ? "text-amber-500"
           : numericValue >= 2
             ? "text-orange-500"
-            : "text-red-500";
+            : numericValue == 0
+            ? "text-gray-500":"text-red-500";
 
   const matrixText = useMatrixText(label, showLabel);
 

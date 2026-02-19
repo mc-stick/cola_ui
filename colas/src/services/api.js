@@ -503,8 +503,6 @@ class API {
       
       const data = await response.json();
       
-      console.log("API JS: LOGIN: ", data)
-      
       if (!response.ok) {
         toast.error(data.error || 'Error en login');
         return { success: false, error: data.error || 'Error en login' };
@@ -1108,29 +1106,21 @@ class API {
     }
   }
 
-  async llamarVolver(id) {
-    try {
-      const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
-        method: 'POST',
-      });
+async llamarVolver(id) {
+  try {
+    const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
+      method: 'POST',
+    });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        toast.error(result.error || 'Error al llamar ticket');
-        throw new Error(result.error || 'Error al llamar ticket');
-      }
-      
-      toast.success('Ticket llamado correctamente');
-      return result;
-    } catch (error) {
-      console.error('Error en llamarTicket:', error);
-      if (!error.message.includes('toast') && !error.message.includes('autorizado')) {
-        toast.error('Error al llamar ticket');
-      }
-      throw error;
+    if (!response.ok) {
+      throw new Error(errorMessage);
     }
+
+    return await response.json();
+  } catch (error) {
   }
+}
+
 
   async SendEvaluation(ticketId, rating) {
   try {

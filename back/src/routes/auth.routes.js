@@ -271,9 +271,23 @@ router.post("/login", async (req, res) => {
       // 4️⃣ Existe → ACTUALIZAR si cambió algo (ej: rol)
       const existingUser = rows[0];
 
+      if (!(existingUser.activo && existingUser.user_active)) {
+        console.log(existingUser.activo, existingUser.user_active)
+        await pool.query(
+          `UPDATE usuarios 
+           SET activo = 1, user_active = 0
+           WHERE id = ?`,
+          [existingUser.id],
+        );
+
+        return res.status(401).json({
+          error: "Usuario inactivo.",
+        });
+      }
+
       await pool.query(
         `UPDATE usuarios 
-         SET nombre = ?, rol = ?, mail = ?
+         SET nombre = ?, rol = ?, mail = ?,activo=1
          WHERE id = ?`,
         [userData.nombre, userData.rol, userData.mail, existingUser.id],
       );
@@ -282,6 +296,20 @@ router.post("/login", async (req, res) => {
         ...existingUser,
         ...userData,
       };
+
+      if (!existingUser.user_active) {
+        return res.status(401).json({
+          error: "Usuario inactivo.",
+        });
+      }
+    }
+
+    if (userDB.rol !== "admin") {
+      if (userDB.puesto_id == null || userDB.puesto_id === "") {
+        return res.status(401).json({
+          error: "No tienes un puesto asignado.",
+        });
+      }
     }
 
     // 5️⃣ Generar token
@@ -332,13 +360,20 @@ router.get("/me", authenticateToken, async (req, res) => {
               p.nombre as puesto_nombre, p.numero as puesto_numero 
        FROM usuarios u
        LEFT JOIN puestos p ON u.puesto_id = p.id
-       WHERE u.id = ?`,
+       WHERE u.id = ? and u.user_active=1 and u.activo =1`,
       [req.user.id],
     );
+
+    console.log("userdb",usuarios[0])
 
     if (usuarios.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
+
+    if (usuarios[0].rol !== "admin") {
+    if (usuarios[0].puesto_id === null) {
+      return res.status(404).json({ error: "Puesto no asignado" });
+    }}
 
     res.json(usuarios[0]);
   } catch (error) {

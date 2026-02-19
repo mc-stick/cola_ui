@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
-export default function GuiaMatricula({ activar, setActivar }) {
+export default function GuiaVolver({ activar, setActivar }) {
   useEffect(() => {
     if (activar) {
       const driverObj = driver({
@@ -15,9 +15,9 @@ export default function GuiaMatricula({ activar, setActivar }) {
         onDestroyed: () => setActivar(false),
         steps: [
           {
-            element: "#grid-opcion2",
+            element: "#btn-tk",
             popover: {
-              title: "Selecciona la opción ID.",
+              title: "Selecciona esta opción.",
               description:
                 "Presiona para continuar.",
               side: "top",
@@ -29,59 +29,37 @@ export default function GuiaMatricula({ activar, setActivar }) {
                 () => {
                   setTimeout(() => {
                     driverObj.moveNext();
-                  }, 500);
+                  }, 600);
                   
                 },
                 { once: true }
               );
             },
+          },{
+            element: "#slider-services",
+            popover: {
+              title: "Selecciona el servicio que se muestra en tu ticket.",
+              description:
+                "Usa los botones para cambiar el tipo de servicio.",
+              side: "left",
+            },
+          },
+          {
+            element: "#modaltk",
+            popover: {
+              title: "Coloca tu número de ticket",
+              description:
+                "Ingresa los tres números restantes del ticket y presiona siguiente.",
+              side: "right",
+            },
           },
           {
             element: "#btn-accept",
             popover: {
-              title: "Continuar al paso siguiente",
+              title: "Presiona para continuar.",
               description:
-                "Cuando ingreses tu ID se habilitará el botón, de lo contrario no podrás continuar.",
-              side: "right",
-            },
-          }, {
-            element: "#visualizador-id",
-            popover: {
-              title: "Crear ticket.",
-              description:
-                "Ingresa tu número. Recuerda que debe ser un número que sea propio y válido. (Evita usar un número que no sea propio)",
+                "",
               side: "top",
-            },
-          },
-          {
-            element: "#btn-accept",
-            popover: {
-              title: "Continuemos creando un ticket.",
-              description:
-                "Presiona aqui para continuar.",
-              side: "right",
-            },
-             
-            onHighlightStarted: (element) => {
-              element.addEventListener(
-                "click",
-                () => {
-                  setTimeout(() => {
-                    driverObj.moveNext();
-                  }, 500);
-                  
-                },
-                { once: true }
-              );
-            },
-          },
-          {
-            element: "#table-service",
-            popover: {
-              title: "Selecciona un servicio.",
-              description:
-                "Presiona el servicio que necesitas para continuar.",
-              side: "bottom",
             }, 
             onHighlightStarted: (element) => {
               element.addEventListener(
@@ -97,12 +75,12 @@ export default function GuiaMatricula({ activar, setActivar }) {
             },
           },
           {
-            element: "#ticket-creado",
+            element: "#validate-tk",
             popover: {
-              title: "Felicidades, ticket creado con éxito.",
+              title: "Confirmacion.",
               description:
-                "Ahora solo espera a que tu número de ticket sea llamado en la pantalla. \n\n Aquí finaliza el tutorial, presiona aceptar para que otra persona pueda crear un ticket.",
-              side: "bottom",
+                "Aqui se mostrara si tu ticket es valido o no.\n\n Aquí finaliza el tutorial.",
+              side: "right",
             }, 
             onHighlightStarted: (element) => {
               element.addEventListener(

@@ -167,33 +167,40 @@ router.post('/:id/llamar', authenticateToken, async (req, res) => {
 router.post('/:id/volver', async (req, res) => {
   try {
     const { id } = req.params;
-    const { usuario_id, puesto_id } = req.body;
-    
+
     await pool.query(
-      `UPDATE tickets SET estado = CASE
-  WHEN created_at < NOW() - INTERVAL 12 HOUR THEN 'atendido'
-  ELSE 'espera'
-END
-WHERE numero = ?
-  AND estado = 'pendiente"
- `,
+      `UPDATE tickets 
+       SET estado = CASE
+         WHEN created_at < NOW() - INTERVAL 12 HOUR THEN 'atendido'
+         ELSE 'espera'
+       END
+       WHERE numero = ?
+       AND estado = 'pendiente'`,
       [id]
-    ); // modificar consulta.
-    
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: 'LLAMAR TICKET',
-      modulo: 'Tickets',
-      detalles: `Ticket ID: ${id}, Puesto ID: ${puesto_id}`,
-      req
+    );
+
+    const [rows] = await pool.query(
+      `SELECT numero, estado 
+       FROM tickets 
+       WHERE numero = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Ticket no encontrado" });
+    }
+
+    res.json({
+      id: rows[0].numero,
+      estado: rows[0].estado
     });
-    
-    res.json({ success: true });
+
   } catch (error) {
-    console.error('Error llamando ticket:', error);
-    res.status(500).json({ error: "error del servidor"});
+    // console.error('Error llamando ticket:', error);
+    // res.status(500).json({ error: "error del servidor" });
   }
 });
+
 
 /**
  * POST /api/tickets/:id/atender

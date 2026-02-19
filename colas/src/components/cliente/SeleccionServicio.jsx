@@ -10,8 +10,8 @@ export default function PasoSeleccionServicio({ servicios, onSelect, setPaso, se
     <>
       <div className="fixed w-screen h-screen flex flex-col items-center bg-primary pt-16 pb-8 px-8">
   <div id="table-service" className="animation-fade-in text-center">
-    <h2 className="text-3xl font-bold text-gray-800 m-8">
-      Selecciona el servicio
+    <h2 className="text-3xl font-bold text-white m-8">
+      Selecciona un servicio
     </h2>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

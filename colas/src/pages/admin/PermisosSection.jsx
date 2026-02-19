@@ -81,9 +81,9 @@ function PermisosSection({
                   <div
                     key={admin.id}
                     onClick={() => handleSeleccionaradmin(admin)}
-                    className={`p-4 rounded-xl cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl cursor-pointer transition-all border border-black ${
                       adminSeleccionado?.id === admin.id
-                        ? "bg-warning text-white shadow-lg"
+                        ? "bg-[--color-mono-gold] text-white shadow-lg"
                         : "bg-gray-50 hover:bg-gray-100"
                     }`}>
                     <div className="flex items-start justify-between">

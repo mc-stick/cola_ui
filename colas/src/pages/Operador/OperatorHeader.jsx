@@ -20,6 +20,8 @@ export const OperatorHeader = ({
   const [activo, setActivo] = useState(false);
   const menuRef = useRef(null);
 
+  // console.log(usuario)
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -49,7 +51,7 @@ export const OperatorHeader = ({
             </div>
 
             <span className="px-4 py-1 rounded-lg text-lg font-extrabold uppercase tracking-wide bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md">
-              {usuario.puesto_nombre ? <span>{usuario.puesto_nombre}</span> : <span>--</span>}
+              {usuario.puesto_nombre && <span>{usuario.puesto_nombre || "--"}</span>}
             </span>
           </div>
 

@@ -14,6 +14,7 @@ export const useAuth = () => {
 
         if (result.success && result.user.rol === "operador") {
           setUsuario(result.user);
+          console.log(result.user,"result await")
 
           const servicios = await API.getOperadorServicios(result.user.id);
           const asignados = servicios.filter((s) => s.asignado);
@@ -32,8 +33,9 @@ export const useAuth = () => {
   };
 
   const handleLoginSuccess = (user, servicios) => {
-    setUsuario(user);
+     setUsuario(user);
     setServiciosAsignados(servicios);
+    restaurarSesion();
   };
 
   const handleLogout = () => {

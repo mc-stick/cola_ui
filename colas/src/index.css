@@ -75,45 +75,487 @@
 .blue-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(5, 15, 40, 0.82),
-    rgba(10, 25, 70, 0.85)
-  );
+  background:rgba(30, 42, 79);
   z-index: 1;
 }
 
 /* Burbujas base */
+
+
+
+/* ////// CSS /////// */
+
+body {
+    font-family: 'Karla', sans-serif;
+    min-height: 100vh;
+    min-width: 100vh;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+body:has(.scroll-body) {
+    overflow-y: scroll;
+}
+
+/* Animación de fondo con burbujas */
+.animated-bg {
+    position: fixed;
+    inset: 0;
+    background-color: #1e2a4f;  
+    overflow: hidden;
+    z-index: -2;
+}
+
 .bubble {
-  position: absolute;
-  bottom: -200px;
-  border-radius: 50%;
-  opacity: 0.85;
-  filter: blur(2px);
-  animation: rise linear infinite;
+    position: absolute;
+    bottom: -30%;
+    border-radius: 50%;
+    opacity: 0.22;
+    filter: blur(30px);
+    animation: rise 120s ease-in-out infinite;
+    will-change: transform;
+    mix-blend-mode: screen;
 }
 
-/* Glow fuerte */
-.bubble::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: inherit;
-  box-shadow: 0 0 160px currentColor,
-              0 0 200px currentColor,
-              0 0 240px currentColor;
-  opacity: 0.9;
+
+.bubble.red {
+    background: #cc132c;
+    width: 420px;
+    height: 420px;
+    left: 10%;
 }
 
-/* Animación */
+.bubble.yellow {
+    background: #fad824;
+    width: 500px;
+    height: 500px;
+    left: 60%;
+}
+
+.bubble.delay {
+    left: 35%;
+    width: 280px;
+    height: 280px;
+    animation-delay: 6s;
+    opacity: 0.18;
+}
+
+.bubble.delay2 {
+    left: 80%;
+    width: 320px;
+    height: 320px;
+    animation-delay: 12s;
+    opacity: 0.16;
+}
+
 @keyframes rise {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
+    0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.22;
+    }
+
+    30% {
+        transform: translateY(-40vh) translateX(40px) scale(1.03);
+    }
+
+    50% {
+        transform: translateY(-75vh) translateX(-35px) scale(1.06);
+    }
+
+    70% {
+        transform: translateY(-110vh) translateX(30px) scale(1.08);
+    }
+
+    100% {
+        transform: translateY(-150vh) translateX(0px) scale(1.1);
+        opacity: 0;
+    }
+}
+
+
+/* Contenedor principal */
+#pswrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.book-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+    max-width: 1000px;
+    max-height: calc(100vh - 8em);
+    aspect-ratio: 1000 / 640;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+
+
+@media (max-width: 968px) {
+    .book-container {
+        max-height: calc(100vh - 6em);
+        aspect-ratio: auto;
+    }
+}
+
+form { 
+display:flex; flex-direction:column;
+justify-content: center; /* eje horizontal */
+ align-items: center;     /* eje vertical */
+} 
+
+/* ============================= */
+/* Lado izquierdo - Welcome (Glass Azul) */
+/* ============================= */
+
+
+@keyframes gradientShift {
+    0%   { --angle: 120deg; }
+    50%  { --angle: 160deg; }
+    100% { --angle: 120deg; }
+}
+
+
+.welcome-page {
+    --angle: 120deg;
+
+    background: linear-gradient(
+        var(--angle),
+        #1e2a4f 0%,
+        #18213f 100%
+    );
+
+    backdrop-filter: blur(50px) saturate(180%);
+    -webkit-backdrop-filter: blur(50px) saturate(180%);
+
+    padding: 4em 3em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    position: relative;
+    overflow: hidden;
+
+    border-radius: 20px 0 0 20px;
+
+    animation: gradientShift 12s ease-in-out infinite;
+}
+
+
+/* Brillo interno superior (glass highlight) */
+.welcome-page::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 40%;
+    bottom: 40%;
+
+    background: radial-gradient(
+        ellipse at top left,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(255, 255, 255, 0.25) 30%,
+        rgba(255, 255, 255, 0.12) 50%,
+        transparent 70%
+    );
+
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(22px);
+    animation: shimmer 3s ease-in-out infinite alternate;
+}
+
+/* Sombra inferior azul */
+.welcome-page::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 150px;
+
+    background: linear-gradient(
+        to top,
+        rgba(20, 50, 120, 0.5) 0%,
+        rgba(30, 70, 150, 0.25) 50%,
+        transparent 100%
+    );
+
+    pointer-events: none;
+}
+
+/* ============================= */
+/* Responsive - Mobile */
+/* ============================= */
+@media (max-width: 968px) {
+    .welcome-page {
+        border-radius: 20px 20px 0 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.8;
+    }
+}
+
+.welcome-content {
+    max-width: 400px;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-page h1 {
+    margin: 0 0 2em 0;
+    text-align: center;
+}
+
+.welcome-page h1 img {
+    max-width: 90%;
+    height: auto;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+}
+
+.welcome-page h2 {
+    color: #FFFFFF;
+    font-size: 2.0em;
+    font-weight: 700;
+    margin-bottom: 0.3em;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
+    line-height: 1.2;
+}
+
+.welcome-page p {
+    color: #FFFFFF;
+    font-size: 1em;
+    opacity: 0.98;
+    line-height: 1.6;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    font-weight: 400;
+}
+
+/* ============================= */
+/* Lado derecho - Login (Glass) */
+/* ============================= */
+
+.login-page {
+    background: #ffffffb8;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px) /*saturate(160%) */;
+
+    padding: 0em 3em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+
+    border-radius: 0 20px 20px 0;
+
+    /* Borde tipo iOS */
+   /* border: 1px solid rgba(255, 255, 255, 0.45);*/
+
+
+    /* Profundidad */
+  /*  box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);*/
+
+    overflow: auto;
+}
+
+ @keyframes riseRight {
+    0% {
+      transform: translateY(0);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(-110vh);
+      opacity: 0;
+    }
   }
-  100% {
-    transform: translateY(-140vh) scale(2.5);
-    opacity: 0;
+
+  @keyframes riseLeft {
+    0% {
+      transform: translateY(0);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateY(-110vh);
+      opacity: 0;
+    }
   }
+
+/* Brillo superior tipo vidrio */
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.55),
+        rgba(255, 255, 255, 0.18),
+        transparent
+    );
+    pointer-events: none;
+}
+
+/* Sutil glow interno inferior */
+.login-page::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 25%;
+    background: radial-gradient(
+        ellipse at bottom,
+        rgba(30, 112, 221, 0.08),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+/* Asegura que el contenido quede encima */
+.login-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* ============================= */
+/* Responsive - Mobile */
+/* ============================= */
+@media (max-width: 968px) {
+    .login-page {
+        border-radius: 0 0 20px 20px;
+        border-left: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+}
+
+/* Inputs */
+.ps_box-control {
+    margin-bottom: 0.2em;
+    position: relative;
+}
+
+.ps_label-show {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+.ps_label-show label {
+    color: #000000;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+input[type="text"], 
+input[type="password"],
+select {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    color: #000000;
+    font-family: 'Karla', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+    padding: 0.9em 3em 0.9em 1em;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, 
+input[type="password"]:focus,
+select:focus {
+    outline: none;
+    border-color: #1e70dd;
+    box-shadow: 
+        0 0 0 4px rgba(30, 112, 221, 0.15),
+        0 4px 12px rgba(30, 112, 221, 0.2);
+}
+
+input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.ps_box-button {
+    margin-top: 1.5em;
+}
+
+.ps-button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    width: 100%;
+    padding: 1em;
+    background: #6a7076;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ps-button:hover, .ps-button:focus {
+ text-shadow:0px 0px 0px #3a3a3a;
+ background: #246FC7; 
+ background: #65778d;  
+ border-color: #000;
+ outline: 1px dotted; /* 859 - WCAG */
+ outline-offset: -3px; /* 859 - WCAG */
+}
+
+.ps-button:not(:disabled) {
+    background: linear-gradient(135deg, #f7d917 0%, #fad824 100%);
+    color: #00008b;
+    cursor: pointer;
+   /* box-shadow: 0 6px 20px rgba(247, 217, 23, 0.4);*/
+}
+
+.ps-button:not(:disabled):hover {
+    transform: translateY(-2px);
+    /* box-shadow: 0 8px 25px rgba(247, 217, 23, 0.5);*/
+}
+
+.ps-button:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #1e70dd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
 }

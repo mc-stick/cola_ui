@@ -160,7 +160,7 @@ function AuditoriaSection({
           <CardLoader />
         </div>
       ) : (
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
           {auditoria.map((log) => (
             <div
               key={log.auditoria_id}
@@ -182,15 +182,20 @@ function AuditoriaSection({
                 </div>
 
                 <div className="text-xs text-right ">
-                  <div className="italic ">
+                  {/* <div className="italic ">
                     IP: {"("}
                     {log.ip}
                     {")"}
-                  </div>
+                  </div> */}
 
                   <span className="flex items-center text-sm font-bold text-blue-500 gap-1">
                     <User className="w-3 h-3" />
-                    {log.usuario_nombre} ({log.usuario_rol})
+                    {log.usuario_nombre} 
+                    <br />
+                  </span>
+                  <span className="flex items-center text-sm font-bold text-blue-500 gap-1">
+                    
+                    ({log.usuario_rol})
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />

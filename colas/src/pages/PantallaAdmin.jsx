@@ -120,45 +120,6 @@ function PantallaAdmin() {
   };
 
   const validarUsuario = (form, esNuevo) => {
-    if (!form.nombre || form.nombre.trim() === "") {
-      toast.error("El nombre completo es obligatorio");
-      return false;
-    }
-    if (!form.username || form.username.trim() === "") {
-      toast.error("El nombre de usuario es obligatorio");
-      return false;
-    }
-    if (form.username.length < 4) {
-      toast.error("El nombre de usuario debe tener al menos 4 caracteres");
-      return false;
-    }
-    if (!form.tel) {
-      toast.error("Agregue un número teléfono (obligatorio).");
-      return false;
-    }
-    if (form.tel.length < 10) {
-      toast.error("Agregue un número teléfono correcto.");
-      return false;
-    }
-    if (esNuevo === "nuevo") {
-      if (!form.password || form.password.trim() === "") {
-        toast.error("La contraseña es obligatoria");
-        return false;
-      }
-      if (form.password.length < 4) {
-        toast.error("La contraseña debe tener al menos 4 caracteres");
-        return false;
-      }
-    } else {
-      if (
-        form.password &&
-        form.password.length > 0 &&
-        form.password.length < 4
-      ) {
-        toast.error("La contraseña debe tener al menos 4 caracteres");
-        return false;
-      }
-    }
     if (!form.rol || form.rol === "") {
       toast.error("Debes seleccionar un rol");
       return false;
@@ -397,6 +358,13 @@ function PantallaAdmin() {
   };
 
   const handleDeleteUser = async (id) => {
+     const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar este usuario?");
+    
+    // Si el usuario confirma (presiona "Aceptar"), llamar a onDeleteUser
+    if (!confirmDelete) {
+      return;
+    }
+    
     try {
       await API.deleteUser(id);
       toast.success("Usuario eliminado exitosamente");
@@ -588,6 +556,7 @@ function PantallaAdmin() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUsuario(null);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -661,9 +630,10 @@ function PantallaAdmin() {
 
       <div className="max-w-7xl mx-auto p-8">
         <div className="flex gap-8">
-          <MenuLateral />
+          {menuFiltrado.length > 0 && <MenuLateral /> }
+          
 
-          <div className="flex-1">
+          <div  className="flex-1 scroll-body">
             {/* SECCIÓN PRINCIPAL */}
             {seccion === "indx" && (
               <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -673,7 +643,7 @@ function PantallaAdmin() {
                     Panel de Administración
                   </h2>
                 </div>
-                {menuFiltrado > 0 ? (
+                {menuFiltrado && menuFiltrado.length > 0 ? (
                   <div className="space-y-6">
                     <hr />
                     <p>
@@ -695,7 +665,7 @@ function PantallaAdmin() {
                       <AlertCircleIcon className="w-10 h-10 text-red-500" />
                       <span className="ml-4 text-2xl italic">
                         No puedes administrar ninguna configuración, pídele a un
-                      administrados que te asigne alguna configuración.
+                      administrador que te asigne alguna configuración.
                       </span>
                     </p>
                   </div>
