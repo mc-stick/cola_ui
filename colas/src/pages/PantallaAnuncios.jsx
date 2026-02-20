@@ -216,9 +216,9 @@ function PantallaAnuncios() {
   const ticketActual = ticketsLlamados.length > 0 ? ticketsLlamados[0] : null;
 
   return (
-    <div className="min-h-screen bg-primary relative">
+    <div className="min-h-screen bg-[var(--color-primary-blue)] relative">
       {/* Header */}
-      <div className="bg-gradient-primary text-white px-5 py-3 shadow-lg">
+      <div className="bg-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-primary-green)] text-white px-5 py-3 shadow-lg">
         <div className="mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             {config?.logo_url && (
@@ -228,15 +228,15 @@ function PantallaAnuncios() {
                 className="w-16 h-16 drop-shadow-lg object-contain rounded-lg p-1"
               />
             )}
-            <h1 className="flex items-center gap-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
+            <h1 className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold">
               {config?.nombre_empresa || "MI EMPRESA"}
             </h1>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-2 text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-1">
+            <div className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl font-bold mb-1">
               <span className="capitalize">{fecha}</span>
             </div>
-            <div className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
+            <div className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl font-extrabold">
               <span>{hora}</span>
             </div>
           </div>
@@ -246,36 +246,32 @@ function PantallaAnuncios() {
       {/* Modal de ticket nuevo */}
       {ticketNuevo && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl animate-bounce-in">
+          <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl border-4 border-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-primary-yellow)] animate-bounce-in">
             <div className="text-center">
-              <div className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-3">
+              <div className="bg-[var(--color-primary-yellow)] text-[var(--color-mono-black)] text-sm font-bold px-4 py-2 rounded-full inline-block mb-3">
                 TURNO SIGUIENTE
               </div>
-              <div className="bg-primary w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                <BellRing
-                  color="orange"
-                  className="w-10 h-10 sm:w-12 sm:h-12 text-white"
-                />
+              <div className="bg-[var(--color-primary-green)] w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                <BellRing className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
               </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 text-blue-900">
+              <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 text-[var(--color-primary-blue)]">
                 ¡Turno Llamado!
               </h2>
               <div
-                className="text-6xl sm:text-8xl font-extrabold mb-6"
+                className="text-7xl sm:text-8xl font-extrabold mb-6"
                 style={{ color: ticketNuevo.servicio_color }}>
                 {ticketNuevo.numero}
               </div>
-              {/* <div className="text-2xl sm:text-3xl text-gray-700 mb-4">
-                {ticketNuevo.servicio_nombre}
-              </div> */}
-              <div className="mt-1 p-4">
-                <hr className="border-2" style={{ borderColor: ticketNuevo.servicio_color }} />
+              <div className="mt-2 p-4">
+                <hr
+                  className="border-2"
+                  style={{ borderColor: ticketNuevo.servicio_color }}
+                />
               </div>
-              <div className="text-5xl sm:text-6xl font-extrabold text-blue-900">
+              <div className="text-6xl sm:text-7xl font-extrabold text-[var(--color-primary-red)]">
                 {ticketNuevo.puesto_nombre}
               </div>
               <DemoSpeaker
-                // key={`modal-${ticketNuevo.id}-${Date.now()}`}
                 number={ticketNuevo.numero}
                 text={ticketNuevo.puesto_nombre}
                 song={true}
@@ -285,20 +281,17 @@ function PantallaAnuncios() {
         </div>
       )}
 
+      {/* Contenedor principal de tickets */}
       {ticketsLlamados.length > 0 ? (
-        <div className="p-2 sm:p-4 md:p-6">
+        <div className="p-4 sm:p-6 md:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100vh-100px)]">
-            {/* Columna principal: Servicios con tickets - Siempre centrado */}
             <div className="lg:col-span-5 overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold text-white mb-4 uppercase justify-center flex items-center gap-2 sticky top-0 pb-3 z-10">
-                atendiendo los siguientes tickets
+              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-mono-white)] mb-4 uppercase flex justify-center items-center gap-2 sticky top-0 pb-3 z-10">
+                Atendiendo los siguientes tickets
               </h2>
-              <hr className="border-2 border-gray-500" />
-              <br />
+              <hr className="border-2 border-gray-400 mb-4" />
 
-              {/* Contenedor con flex para centrar el grid */}
               <div className="flex justify-center w-full">
-                {/* Grid de columnas por servicio - Centrado automáticamente */}
                 <div
                   className={`grid gap-4 w-full ${
                     Object.keys(ticketsPorServicio).length === 1
@@ -315,120 +308,109 @@ function PantallaAnuncios() {
                     ([servicioNombre, data]) => (
                       <div
                         key={servicioNombre}
-                        className="bg-white rounded-xl p-4 shadow-lg flex flex-col h-fit">
-                        {/* Título del servicio */}
-                        <div
-                          className="flex flex-col gap-2 mb-3 pb-2 border-b-4"
-                          style={{ borderBottomColor: data.color }}>
+                        className="bg-[var(--color-mono-white)] rounded-xl p-4 shadow-lg flex flex-col h-fit border-t-8"
+                        style={{ borderTopColor: data.color }}>
+                        <div className="flex flex-col items-center gap-2 mb-3 pb-2 border-b-2 border-gray-200">
                           <div className="flex items-center gap-2">
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: data.color }}></div>
                             <h3
-                              className="text-lg font-bold flex-1 uppercase"
+                              className="text-3xl font-bold flex-1 uppercase"
                               style={{ color: data.color }}>
                               {servicioNombre}
                             </h3>
                           </div>
-                          <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold w-fit">
+                          {data.tickets.length ?
+                          <span className="bg-green-500 text-white  px-2 py-1 rounded-full text-xs font-bold w-fit">
                             {data.tickets.length} activos
-                          </span>
+                          </span>:
+                          <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-bold w-fit">
+                            {data.tickets.length} activos
+                          </span>}
                         </div>
 
-                        {/* Lista de tickets activos en columna */}
-                        <div className="space-y-2 mb-3 flex-1">
-                          {data.tickets.length > 0 ? (
-                            data.tickets.map((ticket, index) => (
-                              <div
-                                key={ticket.id}
-                                className={`flex flex-col p-3 rounded-lg border-2 transition-all ${
-                                  index === 0 && ticketActual?.id === ticket.id
-                                    ? "border-blue-500 bg-blue-50 shadow-md"
-                                    : "border-green-500 bg-green-50 hover:border-gray-300"
-                                }`}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div
-                                    className="text-3xl font-extrabold"
-                                    style={{ color: data.color }}>
+                        {/* Tickets activos */}
+                        <ul
+                          role="list"
+                          className="divide-y divide-white/10 space-y-3 mb-3">
+                          {data.tickets.map((ticket, index) => (
+                            <li
+                              key={ticket.id}
+                              className={`flex justify-between gap-x-4 p-4 rounded-2xl shadow-md border-2 transition-all
+        ${
+          index === 0 && ticketActual?.id === ticket.id
+            ? "bg-gradient-to-r from-[var(--color-secondary-yellow-light)] to-[var(--color-primary-yellow)] border-[var(--color-primary-yellow)]"
+            : index === 1
+              ? "bg-gradient-to-r from-[var(--color-secondary-green-light)] to-[var(--color-primary-green)] border-[var(--color-primary-green)]"
+              : "bg-gradient-to-r from-[var(--color-secondary-blue-light)] to-[var(--color-primary-blue)] border-[var(--color-primary-blue)]"
+        }`}>
+                              <div className="flex min-w-0 gap-x-4 items-center">
+                                <div className="min-w-0 flex-auto">
+                                  <div className=" min-w-0 flex-auto font-bold text-[var(--color-mono-black)] text-3xl">
                                     {ticket.numero}
                                   </div>
                                   {index === 0 &&
                                   ticketActual?.id === ticket.id ? (
-                                    <div
-                                      className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full"
-                                      style={{
-                                        color: "--color-secondary-blue-dark",
-                                      }}>
+                                    <div className="px-3 py-1 rounded-full font-bold text-sm text-[var(--color-mono-white)] bg-[var(--color-primary-green)] shadow-md">
                                       AHORA
                                     </div>
                                   ) : (
-                                    <div
-                                      className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full"
-                                      style={{
-                                        color: "--color-secondary-green-dark",
-                                      }}>
+                                    <div className="px-3 py-1 rounded-full font-bold text-sm text-[var(--color-mono-white)] bg-[var(--color-primary-blue)] shadow">
                                       ATENDIENDO
                                     </div>
                                   )}
                                 </div>
-
-                                <div className="flex justify-around text-center border-t pt-2">
-                                  <div className="text-sm font-bold text-gray-600">
-                                    {ticket.puesto_nombre}
-                                  </div>
-                                  {ticket.llamado_veces > 1 && (
-                                    <div className="text-xs flex justify-center items-center text-white bg-orange-500 border-2 font-bold rounded-xl pr-2">
-                                      <AlertTriangle className="w-8 h-8 p-1 m-1" />
-                                      llamado 
-                                      {/* ({ticket.llamado_veces}ª vez) */}
-                                      
-                                      {ticketRellamado &&
-                                        ticketRellamado.id === ticket.id && (
-                                          <DemoSpeaker
-                                            //key={`speaker-${ticket.id}-${ticketRellamado.timestamp}`}
-                                            number={ticket.numero}
-                                            text={ticket.puesto_nombre}
-                                            song={true}
-                                          />
-                                        )}
-                                    </div>
-                                  )}
-                                </div>
                               </div>
-                            ))
-                          ) : (
-                            <></>
-                          )}
-                        </div>
 
-                        {/* Historial - Últimos 5 atendidos */}
+                              <div className="flex flex-col items-end gap-2 shrink-0">
+                                <p className="text-xl font-bold text-[var(--color-mono-black)] truncate">
+                                  {ticket.puesto_nombre}
+                                </p>
+
+                                {ticket.llamado_veces > 1 && (
+                                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-primary-yellow)] text-[var(--color-mono-black)] text-xs font-bold">
+                                    <AlertTriangle className="w-8 h-8" />
+                                    <p className="text-lg text-black/70">
+                                      {ticket.llamado_veces} Llamado
+                                      {ticket.llamado_veces ? "s" : ""}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* Historial */}
                         {historialTickets[servicioNombre] &&
                           historialTickets[servicioNombre].length > 0 && (
-                            <div className="pt-3 border-t-2 border-gray-200 mt-auto">
+                            <div className="pt-3 border-t-2 border-white/10">
                               <div className="flex items-center gap-2 mb-2">
-                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                <h4 className="text-xs font-bold text-gray-600 uppercase">
+                                <CheckCircle className="w-4 h-4 text-[var(--color-primary-green)]" />
+                                <h4 className="text-xs font-bold text-bkacl/80 uppercase">
                                   Últimos Atendidos
                                 </h4>
                               </div>
-                              <div className="flex flex-col gap-2">
+
+                              <ul
+                                role="list"
+                                className="divide-y divide-white/10 space-y-2">
                                 {historialTickets[servicioNombre].map(
                                   (ticket) => (
-                                    <div
+                                    <li
                                       key={`hist-${ticket.id}-${ticket.finalizado_at}`}
-                                      className="flex flex-row items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200 flex-1 min-w-[60px]">
-                                      <div
-                                        className="text-xl font-bold line-through opacity-50"
-                                        style={{ color: data.color }}>
+                                      className="flex justify-between items-center p-3 rounded-2xl shadow-inner border-2 border-white/10 bg-gradient-to-tl from-[var(--color-secondary-blue-dark)] to-[var(--color-primary-blue)]">
+                                      <div className="text-xl font-bold line-through text-white/70">
                                         {ticket.numero}
                                       </div>
-                                      <div className="text-sm font-bold text-gray-500">
-                                        P{ticket.puesto_numero}
+                                      <div className="text-sm font-bold line-through text-white/80">
+                                        {ticket.puesto_nombre}
                                       </div>
-                                    </div>
+                                    </li>
                                   ),
                                 )}
-                              </div>
+                              </ul>
                             </div>
                           )}
                       </div>
@@ -440,7 +422,7 @@ function PantallaAnuncios() {
           </div>
         </div>
       ) : (
-        // Pantalla de medios cuando no hay tickets
+        // Pantalla de medios
         <div
           className="flex items-center justify-center pt-1"
           style={{ height: "calc(100vh - 90px)" }}>
@@ -471,11 +453,7 @@ function PantallaAnuncios() {
                     {medios.map((_, index) => (
                       <div
                         key={index}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          index === mediaIndex
-                            ? "w-8 bg-gray-400/70"
-                            : "w-2 bg-gray-800"
-                        }`}
+                        className={`h-2 rounded-full transition-all duration-300 ${index === mediaIndex ? "w-8 bg-[var(--color-primary-yellow)]" : "w-2 bg-gray-800"}`}
                       />
                     ))}
                   </div>

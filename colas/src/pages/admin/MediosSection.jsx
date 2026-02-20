@@ -11,13 +11,13 @@ import {
 import { toast } from "react-toastify";
 import { TabSpinner, Spinner } from "../../components/loading";
 
-function MediosSection({ 
-  medios, 
+function MediosSection({
+  medios,
   LoadingSpin,
   onGuardarMedio,
   onEliminarMedio,
   onSwitchMedio,
-  validarMedio
+  validarMedio,
 }) {
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState({});
@@ -38,12 +38,13 @@ function MediosSection({
     const file = e.target.files[0];
     if (!file) return;
 
-    const maxSize = formulario.tipo === "imagen" ? 5 * 1024 * 1024 : 20 * 1024 * 1024;
+    const maxSize =
+      formulario.tipo === "imagen" ? 5 * 1024 * 1024 : 20 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error(
         `El archivo es demasiado grande. Máximo: ${
           formulario.tipo === "imagen" ? "5MB" : "20MB"
-        }`
+        }`,
       );
       e.target.value = "";
       return;
@@ -58,19 +59,13 @@ function MediosSection({
     ];
     const validVideoTypes = ["video/mp4", "video/webm", "video/ogg"];
 
-    if (
-      formulario.tipo === "imagen" &&
-      !validImageTypes.includes(file.type)
-    ) {
+    if (formulario.tipo === "imagen" && !validImageTypes.includes(file.type)) {
       toast.error("Tipo de archivo no válido. Solo: JPG, PNG, GIF, WebP");
       e.target.value = "";
       return;
     }
 
-    if (
-      formulario.tipo === "video" &&
-      !validVideoTypes.includes(file.type)
-    ) {
+    if (formulario.tipo === "video" && !validVideoTypes.includes(file.type)) {
       toast.error("Tipo de archivo no válido. Solo: MP4, WebM, OGG");
       e.target.value = "";
       return;
@@ -107,11 +102,11 @@ function MediosSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <ImageIcon className="w-8 h-8 text-orange-600" />
-          Medios (Imágenes/Videos)
+    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+          <ImageIcon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
+            Medios (Imágenes/Videos)
         </h2>
         <button
           onClick={handleCrearMedio}
@@ -120,7 +115,8 @@ function MediosSection({
           Nuevo Medio
         </button>
       </div>
-
+<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
+      {/* Formulario de edición/agregar medio */}
       {editando && (
         <div className="bg-gray-50 p-6 rounded-xl mb-6">
           <h3 className="text-xl font-bold mb-4">Agregar Medio</h3>
@@ -140,6 +136,7 @@ function MediosSection({
                 <option value="video">Video</option>
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Nombre
@@ -242,9 +239,12 @@ function MediosSection({
         </div>
       )}
 
+      {/* Lista de medios */}
       <div
         className={`${
-          LoadingSpin ? "" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          LoadingSpin
+            ? ""
+            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         }`}>
         {LoadingSpin ? (
           <TabSpinner />
@@ -280,8 +280,12 @@ function MediosSection({
                     preload="metadata"
                   />
                 )}
-                {medio.medio_active === 1 ?"":<div className="absolute inset-0 bg-gray-500/90"></div>}
-                
+                {medio.medio_active === 1 ? (
+                  ""
+                ) : (
+                  <div className="absolute inset-0 bg-gray-500/90"></div>
+                )}
+
                 <span
                   className={`px-3 py-1 rounded text-xs font-semibold text-white absolute top-2 left-2 bg-black/70 ${
                     medio.medio_active === 1 ? "bg-green-600" : "bg-red-600"
@@ -290,10 +294,12 @@ function MediosSection({
                     ? "Mostrando en pantalla"
                     : "No se muestra en pantalla"}
                 </span>
+
                 <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold capitalize">
                   {medio.tipo}
                 </div>
               </div>
+
               <div className="p-4">
                 <h3
                   className="font-bold text-gray-800 truncate"
@@ -303,17 +309,22 @@ function MediosSection({
                 <p className="text-sm text-gray-600 capitalize mb-3">
                   {medio.tipo} {medio.url.startsWith("data:") && "(Local)"}
                 </p>
+
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
-                      const modal = window.open("", "_blank", "width=800,height=600");
+                      const modal = window.open(
+                        "",
+                        "_blank",
+                        "width=800,height=600",
+                      );
                       if (medio.tipo === "imagen") {
                         modal.document.write(
-                          `<img src="${medio.url}" style="max-width:100%; height:auto;">`
+                          `<img src="${medio.url}" style="max-width:100%; height:auto;">`,
                         );
                       } else {
                         modal.document.write(
-                          `<video src="${medio.url}" controls autoplay style="max-width:100%;"></video>`
+                          `<video src="${medio.url}" controls autoplay style="max-width:100%;"></video>`,
                         );
                       }
                     }}
@@ -328,6 +339,7 @@ function MediosSection({
                     Eliminar
                   </button>
                 </div>
+
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => onSwitchMedio(medio.id, medio.medio_active)}

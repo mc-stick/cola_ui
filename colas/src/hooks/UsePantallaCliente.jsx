@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import API from "../services/api";
 import { SendTwilioSms } from "../twilio/TwMsg";
+import api from "../services/api";
 
 export function usePantallaCliente() {
   const [paso, setPaso] = useState(1);
@@ -14,13 +15,18 @@ export function usePantallaCliente() {
 
   useEffect(() => {
     API.getConfiguracion().then(setConfig);
-    cargarServicios();
+    API.getServicios().then((servicios) => {
+      const activos = servicios.filter((s) => s.service_active === 1);
+      setServicios(activos);
+    });
+    //cargarServicios();
   }, []);
 
-  const cargarServicios = async () => {
-    const data = await API.getServicios();
-    setServicios(data.filter((s) => s.service_active === 1));
-  };
+  // const cargarServicios = async () => {
+  //   console.log("cargar serv")
+  //   const data = await API.getServicios();
+  //   setServicios(data.filter((s) => s.service_active === 1));
+  // };
 
   const seleccionarServicio = async (servicio) => {
     setServicioSeleccionado(servicio);
@@ -31,22 +37,20 @@ export function usePantallaCliente() {
       identificacion: identificacion || null,
     });
 
-    console.log(ticket,"ticket creado")
+    console.log(ticket, "ticket creado");
 
     setTicketGenerado(ticket);
     setPaso(4);
 
     if (tipoId === "telefono") {
       SendTwilioSms("mensaje a enviar", identificacion);
-    }else{
-      console.log("PRINTING",ticket.numero,servicio.nombre)
-      await API.PrintTicket(ticket,servicio.nombre)
+    } else {
+      console.log("PRINTING", ticket.numero, servicio.nombre);
+      await API.PrintTicket(ticket, servicio.nombre);
     }
   };
 
   const reiniciar = () => {
-
-
     reset();
   };
 

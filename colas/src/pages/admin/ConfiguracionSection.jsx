@@ -51,169 +51,186 @@ function ConfiguracionSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-          <Building2Icon className="w-8 h-8 text-orange-600" />
-          Configuración General
-        </h2>
+    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+  <div className="flex justify-between items-center mb-8">
+    <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+      <Building2Icon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
+      Configuración General
+    </h2>
+    
+  </div>
+  <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
+
+  {LoadingSpin ? (
+    <TabSpinner />
+  ) : (
+    <div className="space-y-8">
+      
+      {/* Nombre Empresa */}
+      <div>
+        <label className="block text-sm font-semibold text-[var(--color-primary-blue)] mb-2">
+          Nombre de la Empresa
+        </label>
+        <input
+          type="text"
+          value={configuracion.nombre_empresa || ""}
+          onChange={(e) =>
+            setConfiguracion({
+              ...configuracion,
+              nombre_empresa: e.target.value,
+            })
+          }
+          className="w-full px-4 py-3 border-2 border-[var(--color-mono-silver)] rounded-xl focus:outline-none focus:border-[var(--color-primary-blue)] focus:ring-2 focus:ring-[var(--color-secondary-blue-light)]/40 text-lg transition"
+          placeholder="MI EMPRESA"
+        />
       </div>
       
-      {LoadingSpin ? (
-        <TabSpinner />
-      ) : (
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Nombre de la Empresa
-            </label>
+
+      {/* Logo Upload */}
+      <div className="bg-[var(--color-secondary-blue-light)]/10 p-8 rounded-2xl border border-[var(--color-secondary-blue-light)]/30">
+        <h3 className="text-xl font-bold mb-6 text-[var(--color-primary-blue)]">
+          Agregar Logo
+        </h3>
+
+        <label className="block text-sm font-semibold text-[var(--color-primary-blue)] mb-3">
+          Seleccionar Archivo
+        </label>
+
+        <div className="flex flex-wrap items-start gap-8">
+          <div className="border-2 border-dashed border-[var(--color-secondary-blue-dark)] rounded-2xl p-8 text-center hover:border-[var(--color-primary-green)] transition-colors bg-[var(--color-mono-white)] shadow-sm">
             <input
-              type="text"
-              value={configuracion.nombre_empresa || ""}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
+            />
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer inline-flex flex-col items-center"
+            >
+              <ImageIcon className="w-10 h-10 text-[var(--color-primary-green)] mb-2" />
+              <span className="text-sm font-semibold text-[var(--color-primary-blue)]">
+                Click para seleccionar una imagen
+              </span>
+              <span className="text-xs text-[var(--color-mono-black)]/60 mt-1">
+                PNG, JPG, GIF hasta 5MB
+              </span>
+            </label>
+          </div>
+
+          {configuracion.logo_url && (
+            <div className="p-6 bg-[var(--color-mono-white)] rounded-2xl shadow-md border border-[var(--color-mono-silver)]/40">
+              <p className="text-sm font-semibold text-[var(--color-primary-blue)] mb-3">
+                Vista previa:
+              </p>
+              <img
+                src={configuracion.logo_url}
+                alt="Logo preview"
+                className="w-28 h-28 object-contain bg-[var(--color-mono-white)] rounded-xl p-3 border-2 border-[var(--color-mono-gold)]"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "block";
+                }}
+              />
+              <p
+                className="text-[var(--color-primary-red)] text-sm mt-2"
+                style={{ display: "none" }}
+              >
+                No se pudo cargar la imagen
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tiempo Rotación */}
+      <div>
+        <label className="block text-sm font-semibold text-[var(--color-primary-blue)] mb-2">
+          Tiempo de Rotación de Medios (milisegundos)
+        </label>
+        <input
+          type="number"
+          value={configuracion.tiempo_rotacion || 5000}
+          onChange={(e) =>
+            setConfiguracion({
+              ...configuracion,
+              tiempo_rotacion: parseInt(e.target.value),
+            })
+          }
+          className="w-full px-4 py-3 border-2 border-[var(--color-mono-silver)] rounded-xl focus:outline-none focus:border-[var(--color-primary-blue)] focus:ring-2 focus:ring-[var(--color-secondary-blue-light)]/40 transition"
+          min="1000"
+          step="1000"
+        />
+        <p className="text-sm text-[var(--color-mono-black)]/60 mt-2">
+          Recomendado: 5000ms (5 segundos)
+        </p>
+      </div>
+
+      {/* Opciones */}
+      <div className="border-t-2 border-[var(--color-mono-silver)]/40 pt-8">
+        <h3 className="text-xl font-bold text-[var(--color-primary-blue)] mb-6">
+          Opciones de Visualización
+        </h3>
+
+        <div className="space-y-5">
+          <div className="flex items-center gap-3 bg-[var(--color-secondary-green-light)]/10 p-4 rounded-xl border border-[var(--color-secondary-green-dark)]/30">
+            <input
+              type="checkbox"
+              id="mostrar_imagenes"
+              checked={configuracion.mostrar_imagenes || false}
               onChange={(e) =>
                 setConfiguracion({
                   ...configuracion,
-                  nombre_empresa: e.target.value,
+                  mostrar_imagenes: e.target.checked,
                 })
               }
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 text-lg"
-              placeholder="MI EMPRESA"
+              className="w-5 h-5 text-[var(--color-primary-green)] rounded focus:ring-2 focus:ring-[var(--color-primary-green)]"
             />
+            <label
+              htmlFor="mostrar_imagenes"
+              className="font-semibold text-[var(--color-primary-blue)] cursor-pointer"
+            >
+              Mostrar imágenes en pantalla de anuncios
+            </label>
           </div>
 
-          {/* Logo Upload */}
-          <div className="bg-gray-50 p-6 rounded-xl mb-6">
-            <h3 className="text-xl font-bold mb-4">Agregar Logo</h3>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Seleccionar Archivo
-            </label>
-            <div className="mb-4 flex">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 m-5 text-center hover:border-blue-500 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer inline-flex flex-col items-center">
-                  <ImageIcon className="w-10 h-10 text-green-900" />
-                  <span className="text-sm text-gray-600 font-semibold">
-                    Click para seleccionar Una imagen
-                  </span>
-                  <span className="text-xs text-gray-500 mt-1">
-                    PNG, JPG, GIF hasta 5MB
-                  </span>
-                </label>
-              </div>
-
-              {configuracion.logo_url && (
-                <div className="mt-3 p-4 ml-20 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
-                    Vista previa:
-                  </p>
-                  <img
-                    src={configuracion.logo_url}
-                    alt="Logo preview"
-                    className="w-24 h-24 object-contain bg-white rounded-lg p-2 border-2 border-gray-200"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                      e.target.nextSibling.style.display = "block";
-                    }}
-                  />
-                  <p
-                    className="text-red-600 text-sm mt-2"
-                    style={{ display: "none" }}>
-                    No se pudo cargar la imagen
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Tiempo de Rotación de Medios (milisegundos)
-            </label>
+          <div className="flex items-center gap-3 bg-[var(--color-secondary-yellow-light)]/20 p-4 rounded-xl border border-[var(--color-secondary-yellow-dark)]">
             <input
-              type="number"
-              value={configuracion.tiempo_rotacion || 5000}
+              type="checkbox"
+              id="mostrar_videos"
+              checked={configuracion.mostrar_videos || false}
               onChange={(e) =>
                 setConfiguracion({
                   ...configuracion,
-                  tiempo_rotacion: parseInt(e.target.value),
+                  mostrar_videos: e.target.checked,
                 })
               }
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-              min="1000"
-              step="1000"
+              className="w-5 h-5 text-[var(--color-primary-yellow)] rounded focus:ring-2 focus:ring-[var(--color-primary-yellow)]"
             />
-            <p className="text-sm text-gray-500 mt-1">
-              Recomendado: 5000ms (5 segundos)
-            </p>
-          </div>
-
-          <div className="border-t-2 border-gray-200 pt-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              Opciones de Visualización
-            </h3>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="mostrar_imagenes"
-                  checked={configuracion.mostrar_imagenes || false}
-                  onChange={(e) =>
-                    setConfiguracion({
-                      ...configuracion,
-                      mostrar_imagenes: e.target.checked,
-                    })
-                  }
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-600"
-                />
-                <label
-                  htmlFor="mostrar_imagenes"
-                  className="text-gray-700 font-semibold cursor-pointer">
-                  Mostrar imágenes en pantalla de anuncios
-                </label>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="mostrar_videos"
-                  checked={configuracion.mostrar_videos || false}
-                  onChange={(e) =>
-                    setConfiguracion({
-                      ...configuracion,
-                      mostrar_videos: e.target.checked,
-                    })
-                  }
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-600"
-                />
-                <label
-                  htmlFor="mostrar_videos"
-                  className="text-gray-700 font-semibold cursor-pointer">
-                  Mostrar videos en pantalla de anuncios
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-6">
-            <button
-              onClick={onGuardar}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-lg">
-              <Save className="w-6 h-6" />
-              Guardar Configuración
-            </button>
+            <label
+              htmlFor="mostrar_videos"
+              className="font-semibold text-[var(--color-primary-blue)] cursor-pointer"
+            >
+              Mostrar videos en pantalla de anuncios
+            </label>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Botón Guardar */}
+      <div className="pt-6">
+        <button
+          onClick={onGuardar}
+          className="flex items-center gap-3 bg-[var(--color-primary-green)] hover:bg-[var(--color-secondary-green-dark)] text-[var(--color-mono-white)] px-10 py-3 rounded-2xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg"
+        >
+          <Save className="w-6 h-6" />
+          Guardar Configuración
+        </button>
+      </div>
     </div>
+  )}
+</div>
   );
 }
 

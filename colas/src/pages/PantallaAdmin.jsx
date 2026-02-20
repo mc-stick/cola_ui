@@ -358,13 +358,15 @@ function PantallaAdmin() {
   };
 
   const handleDeleteUser = async (id) => {
-     const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar este usuario?");
-    
+    const confirmDelete = window.confirm(
+      "¿Estás seguro de que quieres eliminar este usuario?",
+    );
+
     // Si el usuario confirma (presiona "Aceptar"), llamar a onDeleteUser
     if (!confirmDelete) {
       return;
     }
-    
+
     try {
       await API.deleteUser(id);
       toast.success("Usuario eliminado exitosamente");
@@ -611,63 +613,67 @@ function PantallaAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-orange-700 to-orange-900 text-white px-8 py-6 shadow-lg">
+    <div className="min-h-screen bg-[var(--color-mono-silver)]/20">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-secondary-blue-dark)] text-[var(--color-mono-white)] px-8 py-6 shadow-xl">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-4xl font-bold flex items-center gap-3">
-            <Settings className="w-10 h-10" />
+          <h1 className="text-4xl font-extrabold flex items-center gap-3 tracking-tight">
+            <Settings className="w-10 h-10 text-[var(--color-primary-yellow)]" />
             Panel de Administración
           </h1>
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition-colors">
+            className="flex items-center gap-2 bg-[var(--color-primary-red)] hover:bg-[var(--color-secondary-yellow-light)] hover:text-[var(--color-mono-black)] px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md">
             <LogOut className="w-5 h-5" />
             Cerrar Sesión
           </button>
         </div>
       </div>
 
+      {/* Body */}
       <div className="max-w-7xl mx-auto p-8">
         <div className="flex gap-8">
-          {menuFiltrado.length > 0 && <MenuLateral /> }
-          
+          {menuFiltrado.length > 0 && <MenuLateral />}
 
-          <div  className="flex-1 scroll-body">
-            {/* SECCIÓN PRINCIPAL */}
+          <div className="flex-1 scroll-body">
             {seccion === "indx" && (
-              <div className="bg-white rounded-2xl shadow-lg p-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                    <Settings2 className="w-8 h-8 text-orange-600" />
+              <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-3xl font-bold text-[var(--color-primary-blue)] flex items-center gap-3">
+                    <Settings2 className="w-8 h-8 text-[var(--color-primary-green)]" />
                     Panel de Administración
                   </h2>
                 </div>
+
                 {menuFiltrado && menuFiltrado.length > 0 ? (
-                  <div className="space-y-6">
-                    <hr />
-                    <p>
+                  <div className="space-y-8">
+                    <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full"></div>
+
+                    <p className="text-lg text-[var(--color-mono-black)]/80">
                       Aquí podrás ver y administrar la configuración de la
                       aplicación.
                     </p>
-                    <p className="flex">
-                      <Menu />
-                      <span className="ml-4">
+
+                    <div className="flex items-center bg-[var(--color-secondary-blue-light)]/10 border border-[var(--color-secondary-blue-light)] rounded-xl p-6">
+                      <Menu className="text-[var(--color-primary-blue)] w-6 h-6" />
+                      <span className="ml-4 text-[var(--color-mono-black)]/80">
                         Usa el menú de la izquierda para navegar por la
                         configuración.
                       </span>
-                    </p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    <hr />
-                    <p className="flex">
-                      <AlertCircleIcon className="w-10 h-10 text-red-500" />
-                      <span className="ml-4 text-2xl italic">
+                  <div className="space-y-8">
+                    <div className="h-1 w-24 bg-[var(--color-primary-red)] rounded-full"></div>
+
+                    <div className="flex items-center bg-[var(--color-primary-red)]/10 border border-[var(--color-primary-red)]/30 rounded-xl p-6">
+                      <AlertCircleIcon className="w-10 h-10 text-[var(--color-primary-red)]" />
+                      <span className="ml-6 text-xl italic text-[var(--color-primary-blue)]">
                         No puedes administrar ninguna configuración, pídele a un
-                      administrador que te asigne alguna configuración.
+                        administrador que te asigne alguna configuración.
                       </span>
-                    </p>
+                    </div>
                   </div>
                 )}
               </div>

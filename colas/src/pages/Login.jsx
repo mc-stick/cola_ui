@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import API from "../services/api";
 import AnimatedBubleBackground from "../components/common/animBubbles";
+import { useNavigate } from "react-router-dom";
 
 function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
   const [username, setUsername] = useState("");
@@ -21,6 +22,7 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
   const [config, setConfig] = useState(null);
   const [viewpass, setViewPass] = useState(false);
 
+  const navigate = useNavigate();
   const UCNE_URL = import.meta.env.VITE_UCNE_URL;
 
   useEffect(() => {
@@ -37,52 +39,48 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     setLoading(true);
     setError("");
 
     try {
       const result = await API.login(username, password);
 
-      if (result.success) {
-        // Verificar que el usuario tenga el rol correcto
-        if (
-          (tipoUsuario === "admin" && result.user.rol !== "admin") ||
-          (tipoUsuario === "S_admin" && result.user.rol !== "S_admin")
-        ) {
-          setError("No tienes permisos de administrador");
-          setLoading(false);
-          return;
-        }
-
-        if (tipoUsuario === "operador" && result.user.rol !== "operador") {
-          setError("No tienes permisos de operador");
-          setLoading(false);
-          return;
-        }
-
-        // Si es operador, cargar servicios asignados
-        let serviciosAsignados = [];
-        if (tipoUsuario === "operador") {
-          const servicios = await API.getOperadorServicios(result.user.id);
-          serviciosAsignados = servicios.filter((s) => s.asignado);
-        }
-
-        // Llamar al callback de éxito
-        onLoginSuccess(result.user, serviciosAsignados);
-      } else {
+      if (!result.success) {
         setError("Credenciales inválidas");
+        setLoading(false);
+        return;
+      }
+
+      const user = result.user;
+
+      // Guardar sesión
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role", user.rol);
+
+      // Redirigir según rol
+      switch (user.rol) {
+        case "admin":
+          navigate("/admin", { replace: true });
+          window.location.reload();
+          break;
+
+        case "operador":
+          navigate("/operador", { replace: true });
+          break;
+
+        default:
+          navigate("/", { replace: true });
       }
     } catch (error) {
-      console.error("Error en login:", error);
-      setError("Error al iniciar sesión. Intenta nuevamente.");
+      console.error("Error login:", error);
+      setError("Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
   };
 
-  const getTitulo = () => {
-    return tipoUsuario === "admin" ? "Acceso Administrador" : "Acceso Operador";
-  };
+  
 
   return (
     <div className="min-h-screen flex flex-col blue-overlay overflow-hidden">
@@ -122,23 +120,16 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
                 <h2 className="text-2xl font-bold text-blackk mb-10">
                   {error ? (
                     <span className="flex flex-col items-center mb-4">
-                      {getTitulo() === "Acceso Operador" ? (
+
                         <SquareUserRoundIcon className="w-20 h-20 text-red-600" />
-                      ) : (
-                        <ShieldAlertIcon className="w-20 h-20 text-red-600" />
-                      )}
                     </span>
                   ) : (
                     <span className="flex flex-col items-center mb-4">
-                      {getTitulo() === "Acceso Operador" ? (
                         <SquareUserRoundIcon className="w-20 h-20 text-blue-900" />
-                      ) : (
-                        <ShieldIcon className="w-20 h-20 text-green-900" />
-                      )}
                     </span>
                   )}
 
-                  {getTitulo()}
+                  INICIAR SESIÓN
                 </h2>
               </div>
               <div className="login-content">

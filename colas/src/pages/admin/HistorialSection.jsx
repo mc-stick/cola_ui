@@ -15,7 +15,12 @@ import {
   Download,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { TabSpinner, InfoModal, DotsLoader, CardLoader } from "../../components/loading";
+import {
+  TabSpinner,
+  InfoModal,
+  DotsLoader,
+  CardLoader,
+} from "../../components/loading";
 import { exportarCSV } from "../../components/jsontoCsv";
 
 function HistorialSection({
@@ -81,19 +86,17 @@ function HistorialSection({
   };
 
   const handleCargarHistorial = async () => {
-    setLoadingSpin(true)
+    setLoadingSpin(true);
     if (!validarFiltrosHistorial(filtrosHistorial)) {
       return;
     }
-    try{
-    await onCargarHistorial(filtrosHistorial);
-    }
-    catch{}
-    finally{
+    try {
+      await onCargarHistorial(filtrosHistorial);
+    } catch {
+    } finally {
       setTimeout(() => {
-        setLoadingSpin(false)
+        setLoadingSpin(false);
       }, 1000);
-      
     }
   };
 
@@ -112,12 +115,12 @@ function HistorialSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-        <History className="w-8 h-8 text-orange-600" />
+    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+      <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+        <History className="w-8 h-8 text-[var(--color-primary-yellow)]" />
         Historial de Tickets
       </h2>
-
+<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
       {/* Filtros */}
       <div className="bg-gray-50 rounded-xl p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
@@ -152,15 +155,13 @@ function HistorialSection({
             <input
               type="date"
               value={filtrosHistorial.fecha_fin}
-              onChange={(e) =>{
-                
+              onChange={(e) => {
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   fecha_fin: e.target.value,
-                })
-                handleCargarHistorial()
-              }
-              }
+                });
+                handleCargarHistorial();
+              }}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
             />
           </div>
@@ -172,25 +173,24 @@ function HistorialSection({
             </label>
             <select
               value={filtrosHistorial.servicio_id}
-              onChange={(e) =>{
+              onChange={(e) => {
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   servicio_id: e.target.value,
-                })
-                setHistorial([])
-              }
-              }
+                });
+                setHistorial([]);
+              }}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
               <option value="">Todos</option>
               {servicios.map((servicio) => (
                 <option
+                  key={servicio.id}
+                  value={servicio.id}
                   className={`${
                     servicio.service_active === 1
                       ? ""
                       : "bg-red-100 text-red-700"
                   }`}
-                  key={servicio.id}
-                  value={servicio.id}
                   disabled={servicio.service_active !== 1}>
                   {servicio.codigo} - {servicio.nombre}
                 </option>
@@ -205,14 +205,13 @@ function HistorialSection({
             </label>
             <select
               value={filtrosHistorial.estado}
-              onChange={(e) =>{
+              onChange={(e) => {
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   estado: e.target.value,
-                })
-                setHistorial([])
-              }
-              }
+                });
+                setHistorial([]);
+              }}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
               <option value="">Todos</option>
               <option value="atendido">Atendido</option>
@@ -229,68 +228,72 @@ function HistorialSection({
             </label>
             <select
               value={filtrosHistorial.operador}
-              onChange={(e) =>{
+              onChange={(e) => {
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   operador: e.target.value,
-                })
-                setHistorial([])
-              }
-              }
+                });
+                setHistorial([]);
+              }}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
               <option value="">Todos</option>
-              {usuarios.map((user) =>
-                user.rol === "operador" ? (
+              {usuarios
+                .filter((u) => u.rol === "operador")
+                .map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.nombre}
                   </option>
-                ) : (
-                  ""
-                ),
-              )}
+                ))}
             </select>
           </div>
         </div>
 
+        {/* Botones de acción */}
         <div className="flex gap-3 mt-4">
           <button
             onClick={handleCargarHistorial}
-            className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
-             ${historial.length > 0 ? "" : "bg-green-600"}`}>
-            <span
-              className={`${historial.length > 0 ? "" : "animate-bounce font-bold mt-1"}`}>
-              <Search className="w-5 h-5" />
-            </span>
+            className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
+              historial.length > 0 ? "" : "bg-green-600"
+            }`}>
+            <Search className="w-5 h-5 animate-bounce font-bold mt-1" />
             Buscar
           </button>
+
           <button
-          disabled={historial.length <= 0 ? true : false}
+            disabled={historial.length <= 0}
             onClick={handleLimpiarFiltros}
-            className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors
-            ${historial.length <= 0 ? " bg-gray-400 hover:cursor-not-allowed":"bg-amber-700 hover:bg-amber-600"}`}>
+            className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
+              historial.length <= 0
+                ? "bg-gray-400 hover:cursor-not-allowed"
+                : "bg-amber-700 hover:bg-amber-600"
+            }`}>
             <PaintbrushIcon className="w-5 h-5" />
             Limpiar Filtro
           </button>
-          {!LoadingSpin &&
-          <button
-            disabled={historial.length <= 0  ? true : false}
-            onClick={()=>exportarCSV(historial)}
-            className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors
-               ${historial.length <= 0 ? " bg-gray-400 hover:cursor-not-allowed":" bg-green-600 hover:bg-green-700"}`}>
-            <span
-              className={`${historial.length <= 0 ? "" : "animate-bounce font-bold mt-1"}`}>
-              <Download className="w-5 h-5" />
-            </span>
-            Descargar CSV
-          </button>}
+
+          {!LoadingSpin && (
+            <button
+              disabled={historial.length <= 0}
+              onClick={() => exportarCSV(historial)}
+              className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
+                historial.length <= 0
+                  ? "bg-gray-400 hover:cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}>
+              <Download className="w-5 h-5 animate-bounce font-bold mt-1" />
+              Descargar CSV
+            </button>
+          )}
         </div>
       </div>
 
-      {LoadingSpin ? (<div className="flex justify-center text-center"><CardLoader /></div>
-        
+      {/* Lista de tickets */}
+      {LoadingSpin ? (
+        <div className="flex justify-center text-center">
+          <CardLoader />
+        </div>
       ) : (
         <>
-          {/* Contador */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-gray-600">
               Mostrando{" "}
@@ -301,8 +304,19 @@ function HistorialSection({
             </p>
           </div>
 
-          
           <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+            {historial.length === 0 && (
+              <div className="text-center py-16 text-gray-500">
+                <History className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+                <p className="text-xl font-semibold">
+                  No hay tickets en el historial
+                </p>
+                <p className="text-sm mt-2">
+                  Ajusta los filtros para ver más resultados
+                </p>
+              </div>
+            )}
+
             {historial.map((ticket) => {
               const estadoInfo = getEstadoBadge(ticket.accion);
               const IconoEstado = estadoInfo.icon;
@@ -315,7 +329,7 @@ function HistorialSection({
                     borderLeftColor: ticket.servicio_color || "#6B7280",
                   }}>
                   <div className="flex items-start justify-between gap-4">
-                    {/* Columna Izquierda: Info Principal */}
+                    {/* Izquierda: info principal */}
                     <div className="flex items-start gap-4 flex-1">
                       {/* Número de Ticket */}
                       <div className="flex-shrink-0">
@@ -342,7 +356,7 @@ function HistorialSection({
                           </span>
                         </div>
 
-                        {/* Información del Cliente */}
+                        {/* Cliente */}
                         {ticket.identificacion && (
                           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                             <span className="font-semibold">Cliente:</span>
@@ -353,7 +367,7 @@ function HistorialSection({
                           </div>
                         )}
 
-                        {/* Información del Operador */}
+                        {/* Operador */}
                         {ticket.operador_nombre && (
                           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                             <Users className="w-4 h-4" />
@@ -367,6 +381,7 @@ function HistorialSection({
                           </div>
                         )}
 
+                        {/* Detalles */}
                         {ticket.detalles && (
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <PhoneCall className="w-4 h-4" />
@@ -376,7 +391,7 @@ function HistorialSection({
                       </div>
                     </div>
 
-                    {/* Columna Derecha: Fechas y Acciones */}
+                    {/* Derecha: Fechas y acciones */}
                     <div className="flex-shrink-0 text-right space-y-2">
                       <div className="space-y-1 text-xs text-gray-500 border-t pt-2 mt-2">
                         {ticket.accion !== "creado" ? (
@@ -395,6 +410,7 @@ function HistorialSection({
                             </span>
                           </div>
                         )}
+
                         <div className="flex items-center gap-2 justify-end">
                           <Clock className="w-3 h-3 text-green-500" />
                           <span className="font-bold">Creado:</span>
@@ -412,16 +428,6 @@ function HistorialSection({
                             )}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 justify-end">
-                          <button
-                            onClick={() => setModalinfo(ticket)}
-                            className="flex items-center justify-center">
-                            <ListChecksIcon className="mt-1 mr-2 w-4 h-4 text-green-500" />
-                            <span className="font-bold underline text-blue-500 hover:text-red-500">
-                              Ver más detalles
-                            </span>
-                          </button>
-                        </div>
 
                         {ticket.llamado_at && (
                           <div className="flex items-center gap-2 justify-end">
@@ -438,6 +444,7 @@ function HistorialSection({
                             </span>
                           </div>
                         )}
+
                         {ticket.atendido_at && (
                           <div className="flex items-center gap-2 justify-end">
                             <CheckCircle className="w-3 h-3" />
@@ -453,24 +460,23 @@ function HistorialSection({
                             </span>
                           </div>
                         )}
+
+                        <div className="flex items-center gap-2 justify-end">
+                          <button
+                            onClick={() => setModalinfo(ticket)}
+                            className="flex items-center justify-center">
+                            <ListChecksIcon className="mt-1 mr-2 w-4 h-4 text-green-500" />
+                            <span className="font-bold underline text-blue-500 hover:text-red-500">
+                              Ver más detalles
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               );
             })}
-
-            {historial.length === 0 && (
-              <div className="text-center py-16 text-gray-500">
-                <History className="w-20 h-20 mx-auto mb-4 text-gray-300" />
-                <p className="text-xl font-semibold">
-                  No hay tickets en el historial
-                </p>
-                <p className="text-sm mt-2">
-                  Ajusta los filtros para ver más resultados
-                </p>
-              </div>
-            )}
           </div>
         </>
       )}

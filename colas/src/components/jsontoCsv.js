@@ -1,22 +1,51 @@
-import Papa from 'papaparse';
+import Papa from "papaparse";
 
 /**
  * Genera un CSV desde un array de objetos y lo descarga en el navegador
  * @param {Array} datos - Array de objetos
  * @param {String} nombreArchivo - Nombre del CSV
  */
-export function exportarCSV(datos, nombreArchivo = 'datos.csv') {
+export function exportarCSV(datos, nombreArchivo = "datos.csv") {
   if (!Array.isArray(datos) || datos.length === 0) return;
+
+ 
+  const columnasAExcluir = ["transferido", "usuario_id","id","detalles","accion"];
+
   
+  const columnasRenombrar = {
+    usuario_nombre: "Atendido por", 
+    servicio_nombre: "Servicio solicitado",
+    created_at: "Ticket Creado",
+    finalizado_at: "Atendido",
+    numero: "identificador",
+    ticket_id: "Secuencia #",
+    notes: "Comentario del operador",
+  };
 
-  const csv = Papa.unparse(datos);
+ 
+  const datosProcesados = datos.map((fila) => {
+    const nuevaFila = {};
+    for (const key in fila) {
+      if (!columnasAExcluir.includes(key)) {
+       
+        const nombreFinal = columnasRenombrar[key] || key; 
+        nuevaFila[nombreFinal] = fila[key];
+      }
+    }
+    return nuevaFila;
+  });
 
-//   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-const bom = '\uFEFF';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
+
+  const csv = Papa.unparse(datosProcesados);
+
+ 
+  const bom = "\uFEFF";
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+
+ 
+  const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', nombreArchivo);
+  link.setAttribute("download", nombreArchivo);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -27,9 +56,9 @@ const bom = '\uFEFF';
  * @param {Array[]} jsonArrays - Array de arrays de objetos
  * @param {String} nombreArchivo - Nombre del CSV
  */
-export function exportarVariosCSV(jsonArrays, nombreArchivo = 'datos.csv') {
+export function exportarVariosCSV(jsonArrays, nombreArchivo = "datos.csv") {
   if (!Array.isArray(jsonArrays) || jsonArrays.length === 0) {
-    console.error('No hay datos para exportar');
+    console.error("No hay datos para exportar");
     return;
   }
 
@@ -37,7 +66,7 @@ export function exportarVariosCSV(jsonArrays, nombreArchivo = 'datos.csv') {
   const datosCombinados = jsonArrays.flat();
 
   if (datosCombinados.length === 0) {
-    console.error('Los arrays están vacíos');
+    console.error("Los arrays están vacíos");
     return;
   }
 
@@ -45,13 +74,13 @@ export function exportarVariosCSV(jsonArrays, nombreArchivo = 'datos.csv') {
   const csv = Papa.unparse(datosCombinados);
 
   // BOM para Excel
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+  const bom = "\uFEFF";
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
 
   // Descargar archivo
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', nombreArchivo);
+  link.setAttribute("download", nombreArchivo);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

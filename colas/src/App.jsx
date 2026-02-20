@@ -1,75 +1,122 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import MenuInicial from "./pages/MenuInicial";
 import PantallaAnuncios from "./pages/PantallaAnuncios";
 import PantallaCliente from "./pages/PantallaCliente";
 import PantallaAdmin from "./pages/PantallaAdmin";
 import PantallaOperador from "./pages/PantallaOperador";
 
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from "react";
 import SelectorGuia from "./helpers/GuiaSelect";
 import { EvaluacionTicket } from "./components/common/Rating";
-import "./App.css"
+import "./App.css";
+import LoginComponent from "./pages/Login";
+
+/* ============================= */
+/* 🔐 RUTA PROTEGIDA */
+/* ============================= */
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const role = localStorage.getItem("role");
+
+  if (!role) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+/* ============================= */
+/* 🔄 REDIRECCIÓN AUTOMÁTICA HOME */
+/* ============================= */
+const HomeRedirect = () => {
+  const role = localStorage.getItem("role");
+
+  if (role === "admin" || role === "S_admin") {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (role === "operador") {
+    return <Navigate to="/operador" replace />;
+  }
+
+  if (role === "user") {
+    return <Navigate to="/cliente" replace />;
+  }
+
+  return <MenuInicial />;
+};
 
 function App() {
+  const [paso, setPaso] = useState(1);
+  const [runTour, setRunTour] = useState(false);
+
   useEffect(() => {
-    // Bloquear clic derecho
     const handleContextMenu = (e) => e.preventDefault();
-    
-    // Bloquear inicio de selección
     const handleSelectStart = (e) => {
-      // Solo permitimos selección si el objetivo es un input o textarea
-      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
         e.preventDefault();
       }
     };
 
-    window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('selectstart', handleSelectStart);
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("selectstart", handleSelectStart);
 
     return () => {
-      window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('selectstart', handleSelectStart);
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("selectstart", handleSelectStart);
     };
   }, []);
 
-  const [paso, setPaso] = useState(1);
-  const [runTour, setRunTour] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Funciones de manejo...
-  const handleStartTour = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setRunTour(true), 300);
-  };
-
   return (
-    <div className="bg-primary font-karla" >
-      <div id="center-ghost-element"></div>
-
-       <ToastContainer
+    <div className="bg-primary font-karla">
+      <ToastContainer
         position="top-right"
         autoClose={3000}
-        hideProgressBar={true}
+        hideProgressBar
         pauseOnHover
         theme="light"
       />
-      <SelectorGuia 
-        activar={runTour} 
-        setActivar={setRunTour} 
-        pasoActual={paso} 
+
+      <SelectorGuia
+        activar={runTour}
+        setActivar={setRunTour}
+        pasoActual={paso}
       />
+
       <BrowserRouter basename="/cola/">
         <Routes>
-          <Route path="/" element={<MenuInicial />} />
+          <Route path="/login" element={<LoginComponent />} />
 
           <Route path="/anuncios" element={<PantallaAnuncios />} />
           <Route path="/evaluar/:id" element={<EvaluacionTicket />} />
+
           <Route path="/cliente" element={<PantallaCliente />} />
-          <Route path="/admin" element={<PantallaAdmin />} />
-          <Route path="/operador" element={<PantallaOperador />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "S_admin"]}>
+                <PantallaAdmin />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/operador"
+            element={
+              <ProtectedRoute allowedRoles={["operador"]}>
+                <PantallaOperador />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -71,6 +71,7 @@ function EstadisticasSection({
           <BarChartHorizontalBig className="w-8 h-8 text-orange-600" />
           Estadísticas
         </h2>
+        <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
         <div className="bg-gray-50 rounded-xl p-6 mb-2">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
@@ -107,17 +108,7 @@ function EstadisticasSection({
               </span>
               Actualizar
             </button>
-            {/* <button
-              disabled={estadisticasRango && estadisticasRango.length > 0 ? false : true}
-              onClick={() => exportarCSV([resumenGeneral])}
-              className={`flex items-center gap-2  text-white px-6 py-1 rounded-lg font-semibold transition-colors
-               ${estadisticasRango && estadisticasRango.length > 0 ? " bg-green-600 hover:bg-green-700 " : "bg-gray-400 hover:cursor-not-allowed"}`}>
-              <span
-                className={`${estadisticasRango && estadisticasRango.length > 0 ? "animate-bounce font-bold mt-1" : ""}`}>
-                <Download className="w-5 h-5" />
-              </span>
-              Todo a CSV
-            </button> */}
+         
             </div>
           </div>
         </div>
@@ -395,7 +386,7 @@ function EstadisticasSection({
                 </h3>
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br animate-pulse from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br  from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Total Tickets
@@ -408,7 +399,7 @@ function EstadisticasSection({
                   <p className="text-sm opacity-75">Tickets procesados</p>
                 </div>
 
-                <div style={{animationDelay:'200ms'}} className="bg-gradient-to-br animate-pulse from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br  from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Atendidos
@@ -429,7 +420,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div style={{animationDelay:'400ms'}} className="bg-gradient-to-br animate-pulse from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br  from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Tiempo de Atención
@@ -445,7 +436,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div style={{animationDelay:'600ms'}} className="bg-gradient-to-br animate-pulse from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br  from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Tiempo de Espera
@@ -461,7 +452,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div style={{animationDelay:'800ms'}} className="bg-gradient-to-br animate-pulse from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="bg-gradient-to-br  from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       No Atendido
@@ -482,7 +473,7 @@ function EstadisticasSection({
                   </p>
                 </div>
 
-                <div style={{animationDelay:'1000ms'}} className="bg-gradient-to-br animate-pulse from-cyan-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
+                <div  className="bg-gradient-to-br  from-cyan-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
                       Transferidos

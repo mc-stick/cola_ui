@@ -57,81 +57,89 @@ function PermisosSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-        <UserCheck2Icon className="w-8 h-8 text-orange-600" />
-        Asignación de permisos a configuración
-      </h2>
-      {LoadingSpin ? (
-        <TabSpinner />
-      ) : (<>
-        {adminServicios.length !== 0 ? (
-                
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lista de Administradores */}
+    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+  <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] mb-8 flex items-center gap-3">
+    <UserCheck2Icon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
+    Asignación de permisos a configuración
+  </h2>
+<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
+  {LoadingSpin ? (
+    <TabSpinner />
+  ) : (
+    <>
+      {adminServicios.length !== 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          
+          {/* Administradores */}
           <div className="lg:col-span-1">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
+            <h3 className="text-xl font-bold text-[var(--color-primary-blue)] mb-6">
               Administradores
             </h3>
-            <div className="space-y-3">
+
+            <div className="space-y-4">
               {adminServicios.map((admin) => {
-                const permisosCount = admin.permisos?.length
+                const permisosCount = admin.permisos?.length;
+
                 return (
-                  
                   <div
                     key={admin.id}
                     onClick={() => handleSeleccionaradmin(admin)}
-                    className={`p-4 rounded-xl cursor-pointer transition-all border border-black ${
+                    className={`p-5 rounded-2xl cursor-pointer transition-all border-2 ${
                       adminSeleccionado?.id === admin.id
-                        ? "bg-[--color-mono-gold] text-white shadow-lg"
-                        : "bg-gray-50 hover:bg-gray-100"
-                    }`}>
+                        ? "bg-[var(--color-primary-yellow)] text-white shadow-lg border-[var(--color-primary-yellow)]"
+                        : "bg-[var(--color-secondary-blue-light)]/10 border-[var(--color-mono-silver)] hover:shadow-md"
+                    }`}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4
-                          className={`font-bold ${
-                            adminSeleccionado?.id === admin.id
-                              ? "text-white"
-                              : "text-gray-800"
-                          } ${
-                            admin.user_active ? "" : "line-through text-red-500"
-                          }`}>
+                          className={`font-bold text-lg ${
+                            admin.user_active
+                              ? ""
+                              : "line-through text-[var(--color-primary-red)]"
+                          }`}
+                        >
                           {admin.nombre}
                         </h4>
+
                         <p
                           className={`text-sm ${
                             adminSeleccionado?.id === admin.id
-                              ? "text-orange-100"
-                              : "text-gray-600"
-                          }`}>
+                              ? "text-white/80"
+                              : "text-[var(--color-mono-black)]/60"
+                          }`}
+                        >
                           @{admin.username}
                         </p>
                       </div>
+
                       <div
-                        className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
                           adminSeleccionado?.id === admin.id
                             ? "bg-white/20 text-white"
-                            : "bg-warning text-orange-700"
-                        }`}>
+                            : "bg-[var(--color-primary-blue)] text-white"
+                        }`}
+                      >
                         {permisosCount}
                       </div>
                     </div>
 
                     {admin.permisos && admin.permisos.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {admin.permisos
                           .filter((p) => p.activo === 1)
                           .map((permiso) => (
                             <span
                               key={permiso.permiso_id}
-                              className={`px-2 py-1 rounded text-xs font-semibold ${
+                              className={`px-2 py-1 rounded-lg text-xs font-semibold ${
                                 adminSeleccionado?.id === admin.id
                                   ? "bg-white/20 text-white"
-                                  : "bg-warning text-orange-700"
-                              }`}>
+                                  : "bg-[var(--color-secondary-blue-light)]/30 text-[var(--color-primary-blue)]"
+                              }`}
+                            >
                               {MENU_ITEMS.find(
                                 (item) =>
-                                  item.id === String(permiso.permiso_id),
+                                  item.id === String(permiso.permiso_id)
                               )?.label || `#${permiso.permiso_id}`}
                             </span>
                           ))}
@@ -140,30 +148,27 @@ function PermisosSection({
                   </div>
                 );
               })}
-
-              
             </div>
           </div>
 
-          {/* Permisos Disponibles */}
+          {/* Permisos */}
           <div className="lg:col-span-2">
             {adminSeleccionado ? (
               <>
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold text-gray-800">
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-[var(--color-primary-blue)]">
                     Permisos para: {adminSeleccionado.nombre}
                   </h3>
-                  <p className="text-gray-600 text-sm">
-                    Selecciona los módulos a los que este administrador puede
-                    acceder
+                  <p className="text-sm text-[var(--color-mono-black)]/60">
+                    Selecciona los módulos a los que este administrador puede acceder
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-2 rounded-xl border-orange-200 p-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-2 border-[var(--color-primary-yellow)]/40 rounded-2xl p-6">
                   {MENU_ITEMS.map((menu) => {
                     const Icon = menu.icon;
                     const tienePermiso = permisosActuales.includes(
-                      Number(menu.id),
+                      Number(menu.id)
                     );
 
                     return (
@@ -173,56 +178,32 @@ function PermisosSection({
                           handleTogglePermiso(
                             adminSeleccionado.id,
                             menu.id,
-                            tienePermiso,
+                            tienePermiso
                           )
                         }
-                        className={`p-6 rounded-xl cursor-pointer transition-all border-2 ${
+                        className={`p-6 rounded-2xl cursor-pointer transition-all border-2 shadow-sm ${
                           tienePermiso
-                            ? "border-green-500 bg-green-50 shadow-md"
-                            : "border-red-200 bg-red-50 hover:border-gray-300"
-                        }`}>
+                            ? "border-[var(--color-primary-green)] bg-[var(--color-primary-green)]/10"
+                            : "border-[var(--color-primary-red)]/30 bg-[var(--color-primary-red)]/10 hover:border-[var(--color-mono-silver)]"
+                        }`}
+                      >
                         <div className="flex items-start gap-4">
                           <div className="flex-shrink-0 pt-1">
                             <div
-                              className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center text-white transition-all ${
                                 tienePermiso
-                                  ? "bg-green-500 border-green-500"
-                                  : "bg-red-500 border-red-300"
-                              }`}>
-                              {tienePermiso ? (
-                                <svg
-                                  className="w-4 h-4 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={3}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                              ) : (
-                                <svg
-                                  className="w-4 h-4 text-white"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24">
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={3}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              )}
+                                  ? "bg-[var(--color-primary-green)]"
+                                  : "bg-[var(--color-primary-red)]"
+                              }`}
+                            >
+                              {tienePermiso ? "✓" : "✕"}
                             </div>
                           </div>
 
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <Icon className="w-8 h-8 text-orange-600" />
-                              <h4 className="text-lg font-bold text-gray-800">
+                              <Icon className="w-7 h-7 text-[var(--color-primary-blue)]" />
+                              <h4 className="text-lg font-bold text-[var(--color-primary-blue)]">
                                 {menu.label}
                               </h4>
                             </div>
@@ -235,8 +216,8 @@ function PermisosSection({
               </>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center text-gray-400">
-                  <UserCheck2Icon className="w-24 h-24 mx-auto mb-4" />
+                <div className="text-center text-[var(--color-mono-silver)]">
+                  <UserCheck2Icon className="w-24 h-24 mx-auto mb-4 text-[var(--color-mono-gold)]" />
                   <p className="text-lg">
                     Selecciona un administrador para gestionar sus permisos
                   </p>
@@ -244,13 +225,18 @@ function PermisosSection({
               </div>
             )}
           </div>
-        </div>):(<div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>No hay administradores registrados</p>
-                </div>
-              )}</>
+        </div>
+      ) : (
+        <div className="text-center py-12 text-[var(--color-mono-silver)]">
+          <Users className="w-14 h-14 mx-auto mb-4 text-[var(--color-mono-gold)]" />
+          <p className="text-lg font-semibold text-[var(--color-primary-blue)]">
+            No hay administradores registrados
+          </p>
+        </div>
       )}
-    </div>
+    </>
+  )}
+</div>
   );
 }
 
