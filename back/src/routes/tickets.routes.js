@@ -332,7 +332,7 @@ router.get('/:id/estado-evaluacion', async (req, res) => {
 router.post('/:id/evaluar', async (req, res) => {
   try {
     const { id } = req.params;
-    const { evaluation } = req.body;
+    const { evaluation, comment } = req.body;
 
     const [rows] = await pool.query(
       'SELECT finalizado_at, expirado, evaluation FROM tickets WHERE id=?',
@@ -359,7 +359,7 @@ router.post('/:id/evaluar', async (req, res) => {
       return res.status(400).json({ success: false, message: "Ticket ya evaluado" });
     }
 
-    await pool.query('UPDATE tickets SET evaluation=?, expirado=1 WHERE id=?', [evaluation, id]);
+    await pool.query('UPDATE tickets SET evaluation=?, expirado=1, comment=? WHERE id=?', [evaluation,comment, id]);
 
     res.json({ success: true, message: "Evaluación registrada correctamente" });
   } catch (error) {

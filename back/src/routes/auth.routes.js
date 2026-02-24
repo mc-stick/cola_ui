@@ -39,6 +39,7 @@ function autenticarLDAP(username, password) {
           "mail",
           "sAMAccountName",
           "memberOf",
+          "employeeID"
         ],
       };
 
@@ -103,6 +104,78 @@ function autenticarLDAP(username, password) {
 
             resolve(userData);
           });
+        });
+      });
+    });
+  });
+}
+
+function ValidarLDAP(username) {
+  return new Promise((resolve, reject) => {
+    const client = ldap.createClient({ url: ldapUrl });
+
+    const serviceUser = process.env.LDAP_BIND_USER;
+    const servicePass = process.env.LDAP_BIND_PASSWORD;
+
+    // Bind con usuario de servicio
+    client.bind(serviceUser, servicePass, (err) => {
+      if (err) {
+        client.unbind();
+        return reject({
+          type: "LDAP_CONN",
+          message: "Error",
+        });
+      }
+
+      const opts = {
+        filter: `(employeeID=${username})`,
+        scope: "sub",
+        attributes: [
+          "dn",
+          "cn",
+          "displayName",
+          "employeeID"
+        ],
+      };
+
+      client.search(baseDN, opts, (err, res) => {
+        if (err) {
+          client.unbind();
+          return reject({
+            type: "LDAP_SEARCH",
+            message: "Error",
+          });
+        }
+
+        let userDN = null;
+        let userData = {};
+
+        res.on("searchEntry", (entry) => {
+          userDN = entry.pojo.objectName;
+
+          entry.pojo.attributes.forEach((attr) => {
+            
+            userData[attr.type] =
+              attr.values.length === 1 ? attr.values[0] : attr.values;
+          });
+
+          
+        });
+
+        res.on("error", () => {
+          client.unbind();
+          reject({ type: "LDAP_RESPONSE", message: "Error" });
+        });
+
+        res.on("end", () => {
+          client.unbind();
+
+          if (!userDN) {
+            return reject({ type: "NOT_IN_LDAP" });
+          }
+
+          // Ya no validamos contraseña
+          resolve(userData);
         });
       });
     });
@@ -217,6 +290,46 @@ function autenticarLDAP(username, password) {
 //     return res.status(500).json({ error: 'Error interno' });
 //   }
 // });
+
+router.post("/verificar", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    // Validación básica
+    if (!username) {
+      return res.status(400).json({
+        ok: false,
+        message: "El ID es requerido",
+      });
+    }
+    
+    
+    console.log("Validando: ",username)
+
+    const usuario = await ValidarLDAP(username);
+
+    if (!usuario) {
+      return res.status(404).json({
+        ok: false,
+        message: "Usuario no encontrado en LDAP",
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      message: "Usuario encontrado",
+      data: usuario,
+    });
+
+  } catch (error) {
+    console.error("Error en /verificar:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error interno del servidor",
+    });
+  }
+});
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;

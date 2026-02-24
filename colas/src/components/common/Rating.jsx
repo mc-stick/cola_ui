@@ -152,7 +152,8 @@ export function AnimatedRating({ value = 0 }) {
           : numericValue >= 2
             ? "Regular"
             : numericValue == 0
-            ? "No Evaluado" : "Mala";
+              ? "No Evaluado"
+              : "Mala";
 
   const color =
     numericValue >= 4.5
@@ -164,14 +165,13 @@ export function AnimatedRating({ value = 0 }) {
           : numericValue >= 2
             ? "text-orange-500"
             : numericValue == 0
-            ? "text-gray-500":"text-red-500";
+              ? "text-gray-500"
+              : "text-red-500";
 
   const matrixText = useMatrixText(label, showLabel);
 
   return (
     <div ref={ref} className="flex items-center gap-4">
-      
-
       <div className="flex flex-col items-center gap-1">
         <StarRating
           readOnly
@@ -185,10 +185,11 @@ export function AnimatedRating({ value = 0 }) {
             {display.toFixed(2)}
           </span>
           <span className="text-m font-bold text-gray-800">/ 5</span>
-        </div><span
-        className={`font-bold italic tracking-wide transition-colors ${color}`}>
-        {matrixText}
-      </span>
+        </div>
+        <span
+          className={`font-bold italic tracking-wide transition-colors ${color}`}>
+          {matrixText}
+        </span>
       </div>
     </div>
   );
@@ -214,9 +215,9 @@ export function EvaluacionTicket() {
   const [rating, setRating] = useState(0);
   const [enviado, setEnviado] = useState(false);
   const [estado, setEstado] = useState(null);
+  const [commentx, setCommentx] = useState("");
   const { id: ticketId } = useParams();
 
-  
   useEffect(() => {
     const fetchEstado = async () => {
       try {
@@ -226,7 +227,7 @@ export function EvaluacionTicket() {
         else setEstado(0);
       } catch (err) {
         console.error("Error al traer estado del ticket:", err);
-        setEstado(1); 
+        setEstado(1);
       }
     };
     fetchEstado();
@@ -236,7 +237,7 @@ export function EvaluacionTicket() {
     if (rating === 0) return;
 
     try {
-      const result = await API.SendEvaluation(ticketId, rating);
+      const result = await API.SendEvaluation(ticketId, rating, commentx);
 
       if (result.expirado) setEstado(1);
       else if (result.yaEvaluado) setEstado(2);
@@ -244,6 +245,7 @@ export function EvaluacionTicket() {
     } catch (err) {
       console.error("Error al enviar evaluación:", err);
     }
+    setCommentx("")
   };
 
   if (estado === 1) {
@@ -255,7 +257,6 @@ export function EvaluacionTicket() {
     );
   }
 
-  
   if (estado === 2) {
     return (
       <Mensaje
@@ -285,6 +286,31 @@ export function EvaluacionTicket() {
 
           <div className="flex justify-center mb-6">
             <StarRatingButton value={rating} onChange={setRating} size={36} />
+          </div>
+
+          <div>
+            <textarea
+            onChange={(e)=>setCommentx(e.target.value)}
+              placeholder="Escribe tu comentario aquí..."
+              className="
+        w-full
+        min-h-[100px]
+        p-3
+        text-sm
+        rounded-lg
+        border
+        border-gray-300
+        bg-white
+        placeholder-gray-400
+        resize-none
+        transition
+        focus:outline-none
+        focus:ring-2
+        focus:ring-blue-500
+        focus:border-blue-500
+      "
+            />
+            
           </div>
 
           <button
