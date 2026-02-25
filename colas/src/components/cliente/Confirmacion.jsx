@@ -2,8 +2,15 @@ import { Check } from "lucide-react";
 import TicketQR from "../common/Qr";
 
 
-export default function PasoConfirmacion({ ticket, servicio, onReset, tipo }) {
+export default function PasoConfirmacion({ ticket, servicio, onReset, tipo, identificacion, setIdentificacion }) {
   console.log(ticket)
+
+  const fin = () =>{
+    setIdentificacion("")
+    onReset()
+  }
+
+
   return (
     <>
       <div  className="fixed w-screen bg-primary h-screen animation-fade-in text-center">
@@ -22,11 +29,17 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo }) {
             <div className="text-2xl font-semibold italic mt-10 text-black mb-4">
               {servicio?.nombre}
             </div>
-            {tipo === "sin_id" ? (
+            {tipo === "sin_id"? (
               <div className="text-lg font-semibold italic mt-10 text-black mb-4">
                 Por favor, retira tu ticket y espera tu llamado.
               </div>
-            ) : (
+            )  : identificacion && identificacion.length === 8 ? (
+              <div className="text-lg font-semibold italic mt-10 text-black mb-4">
+                {identificacion},
+                <br />
+                 espera por tu llamado.
+              </div>
+            ): (
               <div className="text-lg font-semibold italic mt-10 text-black mb-4">
                 Tu número de ticket se envió por SMS a tu teléfono.
               </div>
@@ -36,7 +49,7 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo }) {
 
             <button
               className="bg-[--color-secondary-blue-dark] hover:bg-[--color-primary-blue] mt-10 text-white px-12 py-4 rounded-xl font-bold text-xl transition-colors"
-              onClick={onReset}>
+              onClick={fin}>
               Aceptar
             </button>
           </div>

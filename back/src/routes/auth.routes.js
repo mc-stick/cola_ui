@@ -117,7 +117,6 @@ function ValidarLDAP(username) {
     const serviceUser = process.env.LDAP_BIND_USER;
     const servicePass = process.env.LDAP_BIND_PASSWORD;
 
-    // Bind con usuario de servicio
     client.bind(serviceUser, servicePass, (err) => {
       if (err) {
         client.unbind();
@@ -425,7 +424,7 @@ router.post("/login", async (req, res) => {
       }
     }
 
-    // 5️⃣ Generar token
+ 
     const token = jwt.sign(
       {
         id: userDB.id,

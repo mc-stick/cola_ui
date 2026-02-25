@@ -16,7 +16,7 @@ export default function PasoSeleccionServicio({
 
   const Backbtn = () => {
     setPaso(1);
-    setIdentificacion("");
+    
     setShow(true)
   };
 
@@ -27,6 +27,7 @@ export default function PasoSeleccionServicio({
       setUser(data.displayName);
     } else {
       setShow(false);
+      // setIdentificacion(user);
       setTimeout(() => {
         Backbtn();
       }, 10000);

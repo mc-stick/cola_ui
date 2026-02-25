@@ -78,6 +78,7 @@ export default function PantallaCliente() {
           servicio={state.servicioSeleccionado}
           onReset={state.reiniciar}
           tipo={state.tipoId}
+          {...state}
         />
       </>
     );
