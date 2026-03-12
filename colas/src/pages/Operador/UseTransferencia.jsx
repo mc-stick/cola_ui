@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import API from "../../services/api";
 
-export const useTransferencia = (ticketActual, comentario, cargarTickets, setTicketActual, setComentario) => {
+export const useTransferencia = (
+  ticketActual,
+  comentario,
+  cargarTickets,
+  setTicketActual,
+  setComentario,
+) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [todosServicios, setTodosServicios] = useState([]);
   const [servicioSeleccionado, setServicioSeleccionado] = useState("");
@@ -16,7 +22,20 @@ export const useTransferencia = (ticketActual, comentario, cargarTickets, setTic
   };
 
   const abrirModalTransferir = () => {
+    if (!comentario || comentario.trim().length < 10) {
+      alert(
+        "Agrega información al campo comentario antes de transferir el ticket.",
+      );
+
+      // Enfocar el textarea con id="message"
+      const textarea = document.getElementById("message");
+      if (textarea) textarea.focus();
+
+      return;
+    }
+
     setShowTransferModal(true);
+
     console.log(ticketActual, "ticket actual");
     setServicioSeleccionado("");
   };
@@ -34,16 +53,16 @@ export const useTransferencia = (ticketActual, comentario, cargarTickets, setTic
 
     try {
       const serv_nm = todosServicios.filter(
-        (servicio) => servicio.id === servicioSeleccionado
+        (servicio) => servicio.id === servicioSeleccionado,
       );
       console.log(ticketActual);
       await API.transferirTicket(
         ticketActual,
         servicioSeleccionado,
         comentario,
-        serv_nm[0].nombre
+        serv_nm[0].nombre,
       );
-      
+
       setTicketActual(null);
       setComentario("");
       cerrarModalTransferir();

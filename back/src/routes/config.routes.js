@@ -26,11 +26,11 @@ router.get('/', async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion } = req.body;
-    
+    const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split } = req.body;
+    console.log('Split:', req.body)
     await pool.query(
-      'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ? WHERE id = ?',
-      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, id]
+      'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ?, Split=? WHERE id = ?',
+      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split, id]
     );
     
     await registrarAuditoria({

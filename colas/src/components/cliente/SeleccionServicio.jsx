@@ -87,7 +87,7 @@ export default function PasoSeleccionServicio({
           </div>
         )}
 
-        <BackBtnCli step={Backbtn} />
+        <BackBtnCli step={()=>{Backbtn(), setIdentificacion("")}} />
       </div>
     </>
   );

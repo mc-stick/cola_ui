@@ -1193,18 +1193,24 @@ class API {
   }
 
   async llamarVolver(id) {
-    try {
-      const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
-        method: "POST",
-      });
+    console.log(id)
+  try {
+    const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
+      method: "POST",
+    });
 
-      if (!response.ok) {
-        throw new Error(errorMessage);
-      }
-
-      return await response.json();
-    } catch (error) {}
+    if (!response.ok) { 
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error || "Error al llamar el ticket";
+      throw new Error(errorMessage);
+    } 
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error en llamarVolver:", error.message);  
+    throw error;
   }
+}
 
   async SendEvaluation(ticketId, rating, comment) {
     try {

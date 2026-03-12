@@ -86,7 +86,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
                 <CreditCard className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800">ID</h3>
-              <p className="text-gray-500 font-medium">ID de estudiante</p>
+              <p className="text-gray-500 font-medium">usa tu ID de Campus</p>
             </button>
 
             <button

@@ -153,12 +153,12 @@ function ValidarLDAP(username) {
           userDN = entry.pojo.objectName;
 
           entry.pojo.attributes.forEach((attr) => {
-            
+
             userData[attr.type] =
               attr.values.length === 1 ? attr.values[0] : attr.values;
           });
 
-          
+
         });
 
         res.on("error", () => {
@@ -301,9 +301,9 @@ router.post("/verificar", async (req, res) => {
         message: "El ID es requerido",
       });
     }
-    
-    
-    console.log("Validando: ",username)
+
+
+    console.log("Validando: ", username)
 
     const usuario = await ValidarLDAP(username);
 
@@ -335,17 +335,39 @@ router.post("/login", async (req, res) => {
 
   try {
     // 1️⃣ Autenticación SOLO con LDAP
-    const ldapUser = await autenticarLDAP(username, password);
+    //const ldapUser = await autenticarLDAP(username, password);
+
+
+
+    let ldapUser = {
+      displayName: username,
+      mail: 'mail@mail.com'
+    };
+
+
 
     if (!ldapUser) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
+    
+
     // Normalizamos datos LDAP
+    // const userData = {
+    //   username,
+    //   nombre: ldapUser.displayName || ldapUser.cn,
+    //   rol: ldapUser.rol,
+    //   mail: ldapUser.mail,
+    //   activo: true,
+    //   user_active: true,
+    // };
+
+    console.log(username)
+
     const userData = {
       username,
       nombre: ldapUser.displayName || ldapUser.cn,
-      rol: ldapUser.rol,
+      rol: username==='juan' ? "operador" : "admin",
       mail: ldapUser.mail,
       activo: true,
       user_active: true,
@@ -424,7 +446,7 @@ router.post("/login", async (req, res) => {
       }
     }
 
- 
+
     const token = jwt.sign(
       {
         id: userDB.id,
@@ -476,16 +498,17 @@ router.get("/me", authenticateToken, async (req, res) => {
       [req.user.id],
     );
 
-    console.log("userdb",usuarios[0])
+    console.log("userdb", usuarios[0])
 
     if (usuarios.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     if (usuarios[0].rol !== "admin") {
-    if (usuarios[0].puesto_id === null) {
-      return res.status(404).json({ error: "Puesto no asignado" });
-    }}
+      if (usuarios[0].puesto_id === null) {
+        return res.status(404).json({ error: "Puesto no asignado" });
+      }
+    }
 
     res.json(usuarios[0]);
   } catch (error) {

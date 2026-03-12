@@ -54,6 +54,8 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
 
       const user = result.user;
 
+      localStorage.setItem("token", result.token);
+
       // Guardar sesión
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("role", user.rol);

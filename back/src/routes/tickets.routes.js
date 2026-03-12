@@ -171,7 +171,7 @@ router.post('/:id/volver', async (req, res) => {
     await pool.query(
       `UPDATE tickets 
        SET estado = CASE
-         WHEN created_at < NOW() - INTERVAL 12 HOUR THEN 'atendido'
+         WHEN created_at < NOW() - INTERVAL 10 HOUR THEN 'atendido'
          ELSE 'espera'
        END
        WHERE numero = ?
@@ -182,11 +182,13 @@ router.post('/:id/volver', async (req, res) => {
     const [rows] = await pool.query(
       `SELECT numero, estado 
        FROM tickets 
-       WHERE numero = ?`,
+       WHERE numero = ?  ORDER by id DESC`,
       [id]
     );
 
-    if (rows.length === 0) {
+    console.log(rows)
+
+    if (rows.length === 0 || rows[0].estado!=='espera') {
       return res.status(404).json({ error: "Ticket no encontrado" });
     }
 
@@ -196,8 +198,7 @@ router.post('/:id/volver', async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('Error llamando ticket:', error);
-    // res.status(500).json({ error: "error del servidor" });
+    res.status(500).json({ error: "error del servidor" });
   }
 });
 

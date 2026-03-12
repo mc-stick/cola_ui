@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NumericKeypad from "./NumKeypad";
 import SliderUpDown from "./SliderUpDown";
 import api from "../../services/api";
@@ -87,46 +87,47 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
   );
 }
 
-export const ModalCallTK = ({ open, onClose, onConfirm }) => {
+export const ModalCallTK = ({ open, ticketId, onClose }) => {
   const [valido, setValido] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+
+    const handleReLlamar = async () => {
+      try {
+        const data = await api.llamarVolver(open);
+        console.log(data)
+        setValido(!!data?.estado);
+      } catch (error) {
+        setValido(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleReLlamar();
+  }, [open, ticketId]);
 
   if (!open) return null;
 
-  const handleReLlamar = async () => {
-    if (!open) return;
-    try {
-      const data = await api.llamarVolver(open);
-      console.log(data.estado);
-      data.estado === "pendiente" ? setValido(true) : setValido(false);
-    } catch (error) {
-      setValido(false);
-    }
-  };
-
-  handleReLlamar();
-
-  console.log(onConfirm);
-
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div id="validate-tk" className="bg-white w-[420px] rounded-2xl shadow-2xl p-6">
+      <div className="bg-white w-[420px] rounded-2xl shadow-2xl p-6">
         <div className="text-xl font-semibold mb-4 text-center flex justify-center">
-          {valido ? (
-            <div>
-              <span className="flex justify-center">
-                <BookmarkCheckIcon className="w-20 h-20 text-green-600" />
-              </span>
-              <br />
-              <p className="">Espera a ser llamado, tu turno llegara pronto.</p>
-            </div>
+          {loading ? (
+            <p>Cargando...</p>
+          ) : valido ? (
+            <>
+              <BookmarkCheckIcon className="w-20 h-20 text-green-600" />
+              <p>Espera a ser llamado, tu turno llegará pronto.</p>
+            </>
           ) : (
-            <div>
-              <span className="flex justify-center">
-                <CircleOffIcon className="w-20 h-20 text-red-600" />
-              </span>
-              <br />
-              <p className="">El ticket ya no es válido.</p>
-            </div>
+            <>
+              <CircleOffIcon className="w-10 h-10 text-red-600" />
+              <p className="ml-5 mt-2">El ticket ya expiró.</p>
+            </>
           )}
         </div>
 

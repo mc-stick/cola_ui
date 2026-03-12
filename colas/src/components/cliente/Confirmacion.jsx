@@ -41,7 +41,9 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo, iden
               </div>
             ): (
               <div className="text-lg font-semibold italic mt-10 text-black mb-4">
-                Tu número de ticket se envió por SMS a tu teléfono.
+                Aqui tienes tu número de ticket, se envió por SMS a tu movil. 
+                <br />
+                
               </div>
             )}
 

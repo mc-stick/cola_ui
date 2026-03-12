@@ -87,7 +87,7 @@ export default function PasoIngresoId({
         </div>
       </div>
       <div className="text-6xl text-center pb-20">
-        <BackBtnCli step={() => setPaso(1)} />
+        <BackBtnCli step={() => {setPaso(1), setIdentificacion("")}} />
       </div>
     </>
   );
