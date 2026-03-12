@@ -115,7 +115,7 @@ function HistorialSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
       <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
         <History className="w-8 h-8 text-[var(--color-primary-yellow)]" />
         Historial de Tickets

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserCog, Users, Briefcase } from "lucide-react";
+import { UserCog, Users, Briefcase, Check, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { DotsLoader, TabSpinner } from "../../components/loading";
 
@@ -66,14 +66,14 @@ function AsignarServiciosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
           <Users className="w-8 h-8 text-[var(--color-primary-yellow)]" />
-           Asignación de Servicios a Operadores
+          Asignación de Servicios a Operadores
         </h2>
       </div>
-<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
+      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
       {LoadingSpin ? (
         <div className="flex justify-center mt-20">
           <TabSpinner />
@@ -164,7 +164,7 @@ function AsignarServiciosSection({
 
           {/* Servicios Disponibles */}
           {loaditems ? (
-            <div className="flex justify-center mt-20">
+            <div className="flex lg:col-span-2 text-center justify-center mt-40">
               <DotsLoader />
             </div>
           ) : (
@@ -189,75 +189,52 @@ function AsignarServiciosSection({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-2 rounded-xl border-blue-200 p-3">
                       {serviciosOperador.map((servicio) => (
                         <div
+                        title={!servicio.service_active? "El servicio está deshabilitado" : servicio.descripcion}
                           key={servicio.id}
                           onClick={() => handleToggleServicio(servicio)}
-                          className={`p-4 rounded-xl cursor-pointer transition-all border-2 ${
-                            servicio.asignado
-                              ? servicio.service_active
-                                ? "border-green-500 bg-green-50 shadow-md"
-                                : "border-gray-500 bg-gray-50 shadow-md"
-                              : "border-red-200 bg-red-50 hover:border-gray-300"
-                          }`}>
-                          <div className="flex items-start gap-4">
-                            <div className="flex-shrink-0 pt-1">
-                              <div
-                                className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                                  servicio.asignado
-                                    ? servicio.service_active
-                                      ? "bg-green-500 border-green-500"
-                                      : "bg-gray-500 border-gray-500"
-                                    : "bg-red-500 border-red-300"
-                                }`}>
-                                {servicio.asignado ? (
-                                  <svg
-                                    className="w-4 h-4 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={3}
-                                      d="M5 13l4 4L19 7"
-                                    />
-                                  </svg>
-                                ) : (
-                                  <svg
-                                    className="w-4 h-4 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={3}
-                                      d="M6 18L18 6M6 6l12 12"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
+                          className={`flex shadow-md rounded ${
+                                servicio.asignado
+                                  ? servicio.service_active
+                                    ? ""
+                                    : "bg-gray-200 border-gray-200"
+                                  : ""
+                              }`}>
+                          <div className="flex gap-2">
+                            <div
+                              className={`w-6 h-6 rounded border-2 m-2 transition-all ${
+                                servicio.service_active
+                                  ? servicio.asignado
+                                    ? "bg-green-500 border-green-500"
+                                    : "bg-red-400 border-red-300"
+                                  : "bg-gray-500 border-gray-500"
+                              }`}>
+                              {servicio.asignado ? (
+                                <Check className="w-5 h-5 text-white" />
+                              ) : (
+                                <X className="w-5 h-5 text-white" />
+                              )}
                             </div>
 
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
+                            <div className=" hover:cursor-pointer"
+                            >
+                              <div
+                                className={`flex items-center gap-3 mb-2 ${!servicio.service_active ? " text-gray-400" : ""}`}>
                                 <div
                                   className="text-3xl font-extrabold"
-                                  style={{ color: servicio.color }}>
+                                  style={{
+                                    color: servicio.service_active
+                                      ? servicio.color
+                                      : "rgb(78, 78, 78, 0.2)",
+                                  }}>
                                   {servicio.codigo}
                                 </div>
-                                <h4 className="text-lg font-bold text-gray-800">
+                                <h4
+                                  
+                                  className={`flex  text-lg font-bold  ${!servicio.service_active ? " text-gray-400" : "text-gray-800"}`}>
                                   {servicio.nombre}
-                                </h4>
+                                </h4><br />
+                                
                               </div>
-
-                              {!servicio.service_active && (
-                                <p className="text-sm text-red-500 font-bold mt-2">
-                                  Servicio inhabilitado.
-                                </p>
-                              )}
-                              <p className="text-sm text-gray-600">
-                                {servicio.descripcion}
-                              </p>
                             </div>
                           </div>
                         </div>

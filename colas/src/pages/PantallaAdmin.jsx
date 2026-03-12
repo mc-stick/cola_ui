@@ -17,6 +17,7 @@ import {
   BarChart3,
   ShieldAlertIcon,
   AlertCircleIcon,
+  DoorOpenIcon,
 } from "lucide-react";
 
 import { AlertToUI, Spinner } from "../components/loading";
@@ -257,7 +258,7 @@ function PantallaAdmin() {
     }
     try {
       await API.updateConfiguracion(configuracion.id, configuracion);
-      console.log(configuracion)
+      console.log(configuracion);
       toast.success("Configuración guardada exitosamente");
       cargarDatos();
     } catch (error) {
@@ -574,31 +575,70 @@ function PantallaAdmin() {
 
   const MenuLateral = () => {
     return (
-      <div className="w-64 bg-white shadow-lg rounded-2xl p-6 h-fit sticky top-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <Settings className="w-6 h-6 text-blue-600" />
-          Admin Panel
-        </h2>
+      <div className="flex flex-col flex-shrink-0 bg-gradient-to-b from-[var(--color-primary-blue)] to-gray-800/0 text-white w-full max-w-xs md:w-64 p-4 sticky top-0">
+        {/* Logo / Header */}
+        <a
+          href="/cola/admin"
+          className="flex items-center mb-6 text-white no-underline">
+          <svg
+            className="w-10 h-8 mr-2"
+            fill="currentColor"
+            viewBox="0 0 16 16">
+            <use xlinkHref="#bootstrap" />
+          </svg>
+          <span className="flex text-2xl font-bold justify-center ">
+            Menú principal
+          </span>
+        </a>
 
-        <nav className="space-y-2">
+        <hr className="border-gray-700 mb-4" />
+
+        {/* Navigation */}
+        <ul className="flex flex-col mb-auto space-y-1">
           {menuFiltrado &&
             menuFiltrado.map((item) => {
               const Icon = item.icon;
+              const isActive = Number(seccion) === Number(item.id);
+
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setSeccion(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition-colors ${
-                    Number(seccion) === Number(item.id)
-                      ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}>
-                  <Icon className="w-5 h-5" />
-                  {item.label}
-                </button>
+                <li key={item.id} className="relative">
+                  <button
+                    onClick={() => setSeccion(item.id)}
+                    className={`flex items-center gap-3 w-full px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${
+                      isActive
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    }`}>
+                    {/* Flecha lateral */}
+                    {isActive && (
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-blue-600 rotate-45 translate-x-1.5"></span>
+                    )}
+
+                    <Icon
+                      className={`w-5 h-5 ${
+                        isActive ? "text-white" : "text-gray-300"
+                      }`}
+                    />
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                </li>
               );
             })}
-        </nav>
+        </ul>
+
+        <hr className="border-gray-700 mt-4 mb-4" />
+
+        {/* User profile */}
+        <ul onClick={handleLogout} className="flex flex-col mb-auto space-y-1 justify-center text-center text-lg text-white hover:text-[var(--color-primary-blue)] bg-red-500 p-4 rounded hover:bg-white hover:cursor-pointer">
+          <li className="relative">
+            <button
+              
+              className="flex gap-2">
+                <DoorOpenIcon/>
+              Cerrar Sesión
+            </button>
+          </li>
+        </ul>
       </div>
     );
   };
@@ -622,24 +662,24 @@ function PantallaAdmin() {
             <Settings className="w-10 h-10 text-[var(--color-primary-yellow)]" />
             Panel de Administración
           </h1>
-
+          {/* 
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 bg-[var(--color-primary-red)] hover:bg-[var(--color-secondary-yellow-light)] hover:text-[var(--color-mono-black)] px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-md">
             <LogOut className="w-5 h-5" />
             Cerrar Sesión
-          </button>
+          </button> */}
         </div>
       </div>
 
       {/* Body */}
-      <div className="max-w-7xl mx-auto p-8">
-        <div className="flex gap-8">
+      <div className=" mx-auto">
+        <div className="flex gap-2">
           {menuFiltrado.length > 0 && <MenuLateral />}
 
           <div className="flex-1 scroll-body">
             {seccion === "indx" && (
-              <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+              <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-3xl font-bold text-[var(--color-primary-blue)] flex items-center gap-3">
                     <Settings2 className="w-8 h-8 text-[var(--color-primary-green)]" />

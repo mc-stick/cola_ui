@@ -51,7 +51,7 @@ function ConfiguracionSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
           <Building2Icon className="w-8 h-8 text-[var(--color-primary-yellow)]" />

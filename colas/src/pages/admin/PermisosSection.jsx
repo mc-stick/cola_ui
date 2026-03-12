@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserCheck2Icon, Users } from "lucide-react";
+import { Check, UserCheck2Icon, Users, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { TabSpinner } from "../../components/loading";
 
@@ -57,7 +57,7 @@ function PermisosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded-3xl shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
+    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
   <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] mb-8 flex items-center gap-3">
     <UserCheck2Icon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
     Asignación de permisos a configuración
@@ -181,9 +181,9 @@ function PermisosSection({
                             tienePermiso
                           )
                         }
-                        className={`p-6 rounded-2xl cursor-pointer transition-all border-2 shadow-sm ${
+                        className={`${
                           tienePermiso
-                            ? "border-[var(--color-primary-green)] bg-[var(--color-primary-green)]/10"
+                            ? ""
                             : "border-[var(--color-primary-red)]/30 bg-[var(--color-primary-red)]/10 hover:border-[var(--color-mono-silver)]"
                         }`}
                       >
@@ -196,18 +196,18 @@ function PermisosSection({
                                   : "bg-[var(--color-primary-red)]"
                               }`}
                             >
-                              {tienePermiso ? "✓" : "✕"}
+                              {tienePermiso ? <Check className="w-5 h-5 text-white" /> : <X className="w-5 h-5 text-white" />}
                             </div>
                           </div>
 
-                          <div className="flex-1">
+                          
                             <div className="flex items-center gap-3 mb-2">
                               <Icon className="w-7 h-7 text-[var(--color-primary-blue)]" />
                               <h4 className="text-lg font-bold text-[var(--color-primary-blue)]">
                                 {menu.label}
                               </h4>
                             </div>
-                          </div>
+                          
                         </div>
                       </div>
                     );

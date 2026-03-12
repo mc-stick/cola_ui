@@ -268,7 +268,7 @@ router.post('/:id/transferir', authenticateToken, async (req, res) => {
     const { servicio_id, comentario,serv_ant,servicio_nm } = req.body;
     
     await pool.query(
-      'UPDATE tickets SET servicio_id=?, notes=?, estado="espera", puesto_id=null, usuario_id=null, transferido=1 WHERE id=?',
+      'UPDATE tickets SET servicio_id=?, notes=?,llamado_veces="0", estado="espera", puesto_id=null, usuario_id=null, transferido=1 WHERE id=?',
       [servicio_id, comentario, id]
     );
     

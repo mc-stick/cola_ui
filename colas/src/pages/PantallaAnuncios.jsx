@@ -349,17 +349,18 @@ function PantallaAnuncios() {
                       return (
                         <li
                           key={ticket.id}
-                          className={`flex justify-between items-center rounded-2xl bg-white/85 shadow-xl p-4  ${esActual?"border-8 animate-pulse":"border-l-8"} transition-all duration-300 ${
-                            esActual ? "scale-[1.02]" : ""
+                          className={`flex justify-between items-center rounded-2xl bg-white/85 shadow-xl py-2 px-4 transition-all duration-300
+                           ${
+                            esActual ? "scale-[1.02] border-4 animate-pulse" : "border-l-8"
                           }`}
                           style={{
                             borderColor: data.color,
                           }}
                         >
                           {/* IZQUIERDA */}
-                          <div className="flex">
+                          <div className="">
                             <span
-                              className="text-5xl font-extrabold leading-none"
+                              className="flex text-3xl font-extrabold leading-none"
                               style={{ color: data.color }}
                             >
                               {ticket.numero}
@@ -373,7 +374,7 @@ function PantallaAnuncios() {
                             </span> */}
 
                             {ticket.llamado_veces > 1 && (
-                              <span className="text-xs font-bold text-yellow-600">
+                              <span className="text-lg font-bold text-yellow-600">
                                 {ticket.llamado_veces} llamados
                               </span>
                             )}

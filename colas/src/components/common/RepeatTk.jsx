@@ -121,12 +121,12 @@ export const ModalCallTK = ({ open, ticketId, onClose }) => {
           ) : valido ? (
             <>
               <BookmarkCheckIcon className="w-20 h-20 text-green-600" />
-              <p>Espera a ser llamado, tu turno llegará pronto.</p>
+              <p>Espera a ser llamado, su turno llegará pronto.</p>
             </>
           ) : (
             <>
               <CircleOffIcon className="w-10 h-10 text-red-600" />
-              <p className="ml-5 mt-2">El ticket ya expiró.</p>
+              <p className="ml-5 mt-2">Su ticket no existe o ya expiró.</p>
             </>
           )}
         </div>

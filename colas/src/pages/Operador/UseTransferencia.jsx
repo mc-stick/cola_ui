@@ -24,7 +24,7 @@ export const useTransferencia = (
   const abrirModalTransferir = () => {
     if (!comentario || comentario.trim().length < 10) {
       alert(
-        "Agrega información al campo comentario antes de transferir el ticket.",
+        "Añade contexto de la solicitud antes de transferir el ticket.",
       );
 
       // Enfocar el textarea con id="message"

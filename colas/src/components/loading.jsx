@@ -148,7 +148,7 @@ export function DotsLoader() {
       {logos.map((logo, index) => (
         <span
           key={index}
-          className={`h-10 w-10 rounded-full animate-bounce`}
+          className={`h-15 w-15  rounded-full animate-bounce`}
           style={{ animationDelay: `-${0.3 - index * 0.15}s`}}>
           {logo && (
             <img
