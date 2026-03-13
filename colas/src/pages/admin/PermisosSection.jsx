@@ -57,8 +57,8 @@ function PermisosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/40">
-  <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] mb-8 flex items-center gap-3">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 ">
+  <h2 className="text-3xl font-extrabold text-white mb-8 flex items-center gap-3">
     <UserCheck2Icon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
     Asignación de permisos a configuración
   </h2>
@@ -72,8 +72,8 @@ function PermisosSection({
           
           {/* Administradores */}
           <div className="lg:col-span-1">
-            <h3 className="text-xl font-bold text-[var(--color-primary-blue)] mb-6">
-              Administradores
+            <h3 className="text-xl font-bold text-white mb-6">
+              Administradores <span className="italic text-sm">{"("}activos{")"}</span>
             </h3>
 
             <div className="space-y-4">
@@ -84,9 +84,9 @@ function PermisosSection({
                   <div
                     key={admin.id}
                     onClick={() => handleSeleccionaradmin(admin)}
-                    className={`p-5 rounded-2xl cursor-pointer transition-all border-2 ${
+                    className={`p-5 rounded-2xl cursor-pointer transition-all border ${
                       adminSeleccionado?.id === admin.id
-                        ? "bg-[var(--color-primary-yellow)] text-white shadow-lg border-[var(--color-primary-yellow)]"
+                        ? "border-4 bg-[var(--color-primary-blue)] text-white shadow-lg border-[var(--color-primary-yellow)]"
                         : "bg-[var(--color-secondary-blue-light)]/10 border-[var(--color-mono-silver)] hover:shadow-md"
                     }`}
                   >
@@ -95,7 +95,7 @@ function PermisosSection({
                         <h4
                           className={`font-bold text-lg ${
                             admin.user_active
-                              ? ""
+                              ? "text-white"
                               : "line-through text-[var(--color-primary-red)]"
                           }`}
                         >
@@ -154,7 +154,7 @@ function PermisosSection({
           {/* Permisos */}
           <div className="lg:col-span-2">
             {adminSeleccionado ? (
-              <>
+              <div className="bg-white p-4 rounded-xl">
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-[var(--color-primary-blue)]">
                     Permisos para: {adminSeleccionado.nombre}
@@ -213,11 +213,11 @@ function PermisosSection({
                     );
                   })}
                 </div>
-              </>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center text-[var(--color-mono-silver)]">
-                  <UserCheck2Icon className="w-24 h-24 mx-auto mb-4 text-[var(--color-mono-gold)]" />
+                <div className="text-center text-[var(--color-mono-white)]">
+                  <UserCheck2Icon className="w-24 h-24 mx-auto mb-4 text-[var(--color-mono-white)]" />
                   <p className="text-lg">
                     Selecciona un administrador para gestionar sus permisos
                   </p>

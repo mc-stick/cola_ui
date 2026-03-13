@@ -31,10 +31,10 @@ function PuestosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
-          <MapPin className="w-8 h-8 text-[var(--color-primary-yellow)]" />
+        <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
+          <MapPin className="w-8 h-8 text-white" />
           Puestos
         </h2>
         <button
@@ -44,7 +44,7 @@ function PuestosSection({
           Nuevo Puesto
         </button>
       </div>
-<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-10"></div>
+      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-10"></div>
       {editando && (
         <div className="bg-[var(--color-secondary-blue-light)]/10 p-6 rounded-2xl mb-6">
           <h3 className="text-xl font-bold mb-4 text-[var(--color-primary-blue)]">
@@ -116,20 +116,20 @@ function PuestosSection({
           puestos.map((puesto) => (
             <div
               key={puesto.id}
-              className="p-6 bg-[var(--color-secondary-blue-light)]/20 rounded-2xl border-l-4"
+              className="p-6 bg-[var(--color-secondary-blue-light)]/20 rounded-2xl border-2"
               style={{
-                borderLeftColor: puesto.color || "var(--color-primary-blue)",
+                borderColor: puesto.color || "var(--color-primary-blue)",
               }}>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div
                     className="text-3xl font-bold mb-2"
                     style={{
-                      color: puesto.color || "var(--color-primary-blue)",
+                      color: puesto.color || "white",
                     }}>
                     {puesto.numero}
                   </div>
-                  <h3 className="text-xl font-bold text-[var(--color-primary-blue)]">
+                  <h3 className="text-xl font-bold text-white">
                     {puesto.nombre}
                   </h3>
                 </div>
@@ -153,7 +153,7 @@ function PuestosSection({
                       setEditando(puesto.id);
                       setFormulario(puesto);
                     }}
-                    className="p-2 bg-[var(--color-primary-blue)] hover:bg-[var(--color-secondary-blue-dark)] text-[var(--color-mono-white)] rounded-lg transition-colors">
+                    className="p-2 bg-[var(--color-primary-yellow)] hover:bg-[var(--color-secondary-blue-dark)] hover:text-white text-[var(--color-mono-black)] rounded-lg transition-colors">
                     <Edit className="w-4 h-4" />
                   </button>
                 </div>

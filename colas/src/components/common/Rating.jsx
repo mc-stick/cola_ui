@@ -186,10 +186,10 @@ export function AnimatedRating({ value = 0 }) {
           </span>
           <span className="text-m font-bold text-gray-800">/ 5</span>
         </div>
-        <span
+        {/* <span
           className={`font-bold italic tracking-wide transition-colors ${color}`}>
           {matrixText}
-        </span>
+        </span> */}
       </div>
     </div>
   );

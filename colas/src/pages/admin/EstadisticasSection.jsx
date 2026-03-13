@@ -66,13 +66,13 @@ function EstadisticasSection({
   return (
     <div className="space-y-6">
       {/* Filtros de Fecha */}
-      <div className="bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+      <div className=" rounded-2xl shadow-lg p-8 pb-0">
+        <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
           <BarChartHorizontalBig className="w-8 h-8 text-orange-600" />
           Estadísticas
         </h2>
         <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
-        <div className="bg-gray-50 rounded-xl p-6 mb-2">
+        <div className="bg-gray-50 rounded-xl p-4 mb-2">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-600" />
@@ -116,9 +116,14 @@ function EstadisticasSection({
 
       {/* Gráfica de Tickets por Día */}
       {LoadingSpin ? (
+        <div div className="space-y-3 max-h-[580px] overflow-y-auto  p-6">
         <CardLoader />
+        <CardLoader />
+        <CardLoader />
+        <CardLoader />
+        </div>
       ) : (
-        <>
+        <div div className="space-y-3 max-h-[580px] overflow-y-auto  p-6">
           <div className="bg-white rounded-2xl shadow-lg p-8">
             
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
@@ -308,7 +313,7 @@ function EstadisticasSection({
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
               Detalle por Servicio
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-4">
               {estadisticasServicios && estadisticasServicios?.length > 0 ? (
                 estadisticasServicios.map((servicio) => (
                   <div
@@ -385,7 +390,7 @@ function EstadisticasSection({
                   </span>
                 </h3>
               </span>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                 <div className="bg-gradient-to-br  from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-lg font-semibold opacity-90">
@@ -496,7 +501,7 @@ function EstadisticasSection({
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

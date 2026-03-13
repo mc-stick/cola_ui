@@ -69,9 +69,9 @@ function UsuariosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+        <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
           <Users className="w-8 h-8 text-[var(--color-primary-yellow)]" />
           Usuarios
         </h2>
@@ -190,7 +190,7 @@ function UsuariosSection({
                     className={`flex items-center justify-between p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 ${
                       usuario.rol === "admin"
                         ? "bg-warning text-orange-700"
-                        : "bg-blue-100 text-blue-700"
+                        : "bg-blue-100/50 text-blue-700"
                     }`}>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
@@ -234,10 +234,10 @@ function UsuariosSection({
                         </span>
                       </p>
                       <span
-                        className={`py-1 rounded-full text-xs font-black ${
+                        className={`py-1 text-xs font-black ${
                           usuario.rol === "admin"
-                            ? "bg-warning text-orange-700"
-                            : "bg-blue-100 text-blue-700"
+                            ? " text-orange-700"
+                            : " text-blue-700"
                         }`}>
                         {usuario.rol === "admin" ? "Administrador" : "Operador"}
                       </span>

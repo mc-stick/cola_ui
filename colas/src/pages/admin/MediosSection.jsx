@@ -102,11 +102,11 @@ function MediosSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+        <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
           <ImageIcon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
-            Medios (Imágenes/Videos)
+          Medios (Imágenes/Videos)
         </h2>
         <button
           onClick={handleCrearMedio}
@@ -115,7 +115,7 @@ function MediosSection({
           Nuevo Medio
         </button>
       </div>
-<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
+      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
       {/* Formulario de edición/agregar medio */}
       {editando && (
         <div className="bg-gray-50 p-6 rounded-xl mb-6">
@@ -244,7 +244,7 @@ function MediosSection({
         className={`${
           LoadingSpin
             ? ""
-            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            : "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 max-h-[600px] overflow-y-auto pr-2"
         }`}>
         {LoadingSpin ? (
           <TabSpinner />
@@ -257,6 +257,7 @@ function MediosSection({
             </p>
           </div>
         ) : (
+          
           medios.map((medio) => (
             <div
               key={medio.id}

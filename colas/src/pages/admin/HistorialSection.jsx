@@ -115,21 +115,20 @@ function HistorialSection({
   };
 
   return (
-    <div className="bg-[var(--color-mono-white)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
-      <h2 className="text-3xl font-extrabold text-[var(--color-primary-blue)] flex items-center gap-3">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
+      <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
         <History className="w-8 h-8 text-[var(--color-primary-yellow)]" />
         Historial de Tickets
       </h2>
-<div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
+      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
       {/* Filtros */}
       <div className="bg-gray-50 rounded-xl p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-bold text-gray-800">Filtros</h3>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-gray-600" />
+            <h3 className="text-lg font-bold text-gray-800">Filtros</h3>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Fecha Inicio */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Fecha Inicio
@@ -295,19 +294,19 @@ function HistorialSection({
       ) : (
         <>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-gray-600">
+            <p className="text-white">
               Mostrando{" "}
-              <span className="font-bold text-gray-800">
+              <span className="font-bold white border-b-2 border-b-white mb-1">
                 {historial.length}
               </span>{" "}
               tickets
             </p>
           </div>
 
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {historial.length === 0 && (
-              <div className="text-center py-16 text-gray-500">
-                <History className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-16 text-white">
+                <History className="w-20 h-20 mx-auto mb-4 text-white" />
                 <p className="text-xl font-semibold">
                   No hay tickets en el historial
                 </p>
@@ -393,7 +392,7 @@ function HistorialSection({
 
                     {/* Derecha: Fechas y acciones */}
                     <div className="flex-shrink-0 text-right space-y-2">
-                      <div className="space-y-1 text-xs text-gray-500 border-t pt-2 mt-2">
+                      <div className="space-y-1 text-xs text-gray-500 ">
                         {ticket.accion !== "creado" ? (
                           <div className="flex items-center gap-2 justify-end">
                             <User className="w-3 h-3" />

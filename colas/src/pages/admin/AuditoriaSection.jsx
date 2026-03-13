@@ -69,22 +69,21 @@ function AuditoriaSection({
   }, []);
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 space-y-6">
+    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-8 space-y-6">
       {/* Título */}
-      <h2 className="text-3xl font-extrabold text-gray-800 flex items-center gap-3">
-        <ShieldAlert className="w-10 h-10 text-red-600" />
+      <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
+        <ShieldAlert className="w-10 h-10 text-[var(--color-primary-yellow)]" />
         Auditoría del Sistema
       </h2>
       <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
       {/* Filtros */}
       <div className="bg-gray-50 rounded-2xl p-6 shadow-inner">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-bold text-gray-800">Filtros</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-4">
           {/* Fecha Inicio */}
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-gray-600" />
+            <h3 className="text-lg font-bold text-gray-800">Filtros</h3>
+          </div>
           <div>
             <label className="text-sm font-semibold text-gray-700">
               Fecha Inicio
@@ -134,11 +133,8 @@ function AuditoriaSection({
                 ) : null,
               )}
             </select>
-          </div>
-        </div>
-
-        {/* Botones */}
-        <div className="flex gap-3 mt-4 flex-wrap">
+          </div> {/* Botones */}
+        <div className="flex  gap-3 mt-4 flex-row">
           <button
             onClick={handleBuscar}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-semibold shadow-md transition-colors">
@@ -164,6 +160,9 @@ function AuditoriaSection({
             CSV
           </button>
         </div>
+        </div>
+
+       
       </div>
 
       {/* Tabla / Lista de Auditoría */}
@@ -213,10 +212,10 @@ function AuditoriaSection({
               </div>
             ))
           ) : (
-            <div className="text-center py-16 text-gray-400">
-              <History className="w-20 h-20 mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-16 text-white">
+              <History className="w-20 h-20 mx-auto mb-4 text-white" />
               <p className="text-xl font-semibold">
-                No hay registros de auditoría
+                No hay registros de auditoría en las fechas filtradas
               </p>
             </div>
           )}
