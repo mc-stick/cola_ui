@@ -85,7 +85,7 @@ router.get('/evaluado-stats', async (req, res) => {
       `SELECT
         COUNT(*) AS total,
         SUM(CASE WHEN evaluation != 0 THEN 1 ELSE 0 END) AS evaluados,
-        SUM(CASE WHEN evaluation = 0 THEN 1 ELSE 0 END) AS no_evaluados
+        SUM(CASE WHEN evaluation = 0 THEN 1 ELSE 0 END) AS no_evaluados   
       FROM tickets;
 
 `
