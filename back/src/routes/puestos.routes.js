@@ -12,7 +12,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM puestos WHERE activo = TRUE ORDER BY numero'
+      'SELECT * FROM puestos WHERE activo = TRUE ORDER BY id'
     );
     res.json(rows);
   } catch (error) {
@@ -29,40 +29,40 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { numero, nombre } = req.body;
 
-    const numeroStr = numero != null ? numero.toString().trim() : '';
     const nombreStr = nombre != null ? nombre.toString().trim() : '';
 
-    if (!numeroStr || !nombreStr) {
+    if (!nombreStr) {
       return res.status(400).json({
-        error: 'Número o nombre no pueden estar vacíos'
+        error: 'nombre no puede estar vacío'
       });
     }
 
     const [existentes] = await pool.query(
-      'SELECT * FROM puestos WHERE numero = ? OR nombre = ?',
-      [numeroStr, nombreStr]
+      'SELECT * FROM puestos WHERE nombre = ?',
+      [nombreStr]
     );
 
     if (existentes.length > 0) {
       return res.status(400).json({
-        error: 'Ya existe un puesto con el mismo número o nombre'
+        error: 'Ya existe un puesto con el mismo nombre'
       });
     }
 
     const [result] = await pool.query(
-      'INSERT INTO puestos (numero, nombre) VALUES (?, ?)',
-      [numeroStr, nombreStr]
+      'INSERT INTO puestos ( nombre) VALUES (?)',
+      [nombreStr]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'CREAR PUESTO',
+      accion: 4,
       modulo: 'Puestos',
-      detalles: `Número: ${numeroStr}, Nombre: ${nombreStr}, ID: ${result.insertId}`,
+      detalles: `Nombre: ${nombreStr}, ID: ${result.insertId}`,
       req
     });
 
     res.json({ id: result.insertId, success: true });
+    
 
   } catch (error) {
     console.error('Error creando puesto:', error);
@@ -79,27 +79,31 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { numero, nombre, activo } = req.body;
 
+    console.log(numero, nombre, activo)
+
     const [existentes] = await pool.query(
-      'SELECT * FROM puestos WHERE (numero = ? OR nombre = ?) AND id != ?',
-      [numero, nombre, id]
+      'SELECT * FROM puestos WHERE (nombre = ?) AND id != ?',
+      [nombre, id]
     );
+
+    console.log(existentes,"existente")
 
     if (existentes.length > 0) {
       return res.status(400).json({
-        error: 'Ya existe otro puesto con el mismo número o nombre'
+        error: 'Ya existe otro puesto con el mismo nombre'
       });
     }
 
     await pool.query(
-      'UPDATE puestos SET numero = ?, nombre = ?, activo = ? WHERE id = ?',
+      'UPDATE puestos SET nombre = ?, activo = ? WHERE id = ?',
       [numero, nombre, activo, id]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'ACTUALIZAR PUESTO',
+      accion: 3,
       modulo: 'Puestos',
-      detalles: `ID: ${id}, Número: ${numero}, Nombre: ${nombre}`,
+      detalles: `ID: ${id}, Nombre: ${nombre}`,
       req
     });
 
@@ -148,7 +152,7 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: nuevoValor ? 'ACTIVAR PUESTO' : 'DESACTIVAR PUESTO',
+      accion:  3,
       modulo: 'Puestos',
       detalles: `ID: ${puestoId}, NOMBRE: ${name}`,
       req

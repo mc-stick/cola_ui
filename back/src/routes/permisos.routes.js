@@ -13,10 +13,12 @@ router.get('/permisos/todos', async (req, res) => {
   try {
     const [admins] = await pool.query(`
       SELECT DISTINCT
-        u.id, u.nombre, u.username, u.rol, u.user_active, u.activo
-      FROM usuarios u
-      WHERE u.rol = 'admin' AND u.activo = TRUE
-      ORDER BY u.nombre
+    u.*, 
+    per.name AS nombre
+FROM usuarios u
+LEFT JOIN persona per ON u.id_persona = per.id_persona
+WHERE u.activo = TRUE and u.rol=1
+ORDER BY u.rol;
     `);
 
     for (const admin of admins) {
@@ -174,7 +176,7 @@ router.delete('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, 
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'REMOVER PERMISO',
+      accion: 3,
       modulo: 'Permisos',
       detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
       req

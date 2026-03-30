@@ -15,10 +15,20 @@ const baseDN = process.env.LDAP_DN;
 
 function autenticarLDAP(username, password) {
   return new Promise((resolve, reject) => {
-    const client = ldap.createClient({ url: ldapUrl });
+    const client = ldap.createClient({ url: ldapUrl
+  //     ,
+  // tlsOptions: {
+  //   rejectUnauthorized: false // solo para pruebas
+  // }
+ });
 
     const serviceUser = process.env.LDAP_BIND_USER;
     const servicePass = process.env.LDAP_BIND_PASSWORD;
+
+    
+client.on('error', (err) => {
+  console.error('Error de conexión:', err);
+});
 
     client.bind(serviceUser, servicePass, (err) => {
       if (err) {
@@ -125,7 +135,7 @@ function ValidarLDAP(username) {
           message: "Error",
         });
       }
-
+      console.log("pass")
       const opts = {
         filter: `(employeeID=${username})`,
         scope: "sub",
@@ -181,115 +191,6 @@ function ValidarLDAP(username) {
   });
 }
 
-// router.post('/login', async (req, res) => {
-//   const { username, password } = req.body;
-
-//   // try {
-//   //   const ldapUser = await autenticarLDAP(username, password); //LDAP DESCOMENTAR PARA ACTIVAR
-
-//   //   const user = {
-//   //     id: "1",
-//   //     nombre: ldapUser.displayName || ldapUser.cn,
-//   //     rol: ldapUser.rol,
-//   //     mail: ldapUser.mail
-//   //   };
-
-//   //   console.log(ldapUser,"dap user")
-
-//   //   const token = jwt.sign(
-//   //     { id: user.id, nombre: user.nombre, rol: user.rol },
-//   //     JWT_SECRET,
-//   //     { expiresIn: '8h' }
-//   //   );
-
-//   //   await registrarAuditoria({
-//   //     usuarioId: user.nombre,
-//   //     accion: 'LOGIN EXITOSO',
-//   //     modulo: 'Autenticación',
-//   //     detalles: `Usuario LDAP "${user.nombre}" inicia sesión`,
-//   //     req
-//   //   });
-
-//   //   return res.json({ user, token, success: true });
-
-//   // } catch (ldapError) {
-
-//   //   if (ldapError.type === 'BAD_PASSWORD') {
-//   //     await registrarAuditoria({
-//   //       usuarioId: username,
-//   //       accion: 'LOGIN FALLIDO',
-//   //       modulo: 'Autenticación',
-//   //       detalles: 'Contraseña incorrecta (LDAP)',
-//   //       req
-//   //     });
-
-//   //     return res.status(401).json({ error: 'Credenciales inválidas' });
-//   //   }
-
-//   //   if (ldapError.type !== 'NOT_IN_LDAP') {
-//   //     console.error('LDAP error:', ldapError.message);
-//   //   }
-//   // }
-
-//   try {
-//     const [rows] = await pool.query(
-//       `SELECT * FROM usuarios
-//        WHERE username = ? AND activo = TRUE AND user_active = TRUE`,
-//       [username]
-//     );
-
-//     if (!rows.length) {
-//       console.log("username: ", username)
-//       await registrarAuditoria({
-//         usuarioId: username,
-//         accion: 'LOGIN FALLIDO',
-//         modulo: 'Autenticación',
-//         detalles: 'Usuario no encontrado',
-//         req
-//       });
-
-//       return res.status(401).json({ error: 'Credenciales inválidas' });
-//     }
-
-//     const user = rows[0];
-
-//     const match = await bcrypt.compare(password, user.password);
-//     if (!match) {
-//       await registrarAuditoria({
-//         usuarioId: user.id,
-//         accion: 'LOGIN FALLIDO',
-//         modulo: 'Autenticación',
-//         detalles: 'Contraseña incorrecta (DB)',
-//         req
-//       });
-
-//       return res.status(401).json({ error: 'Credenciales inválidas' });
-//     }
-
-//     delete user.password;
-
-//     const token = jwt.sign(
-//       { id: user.id, nombre: user.nombre, rol: user.rol },
-//       JWT_SECRET,
-//       { expiresIn: '8h' }
-//     );
-
-//     await registrarAuditoria({
-//       usuarioId: user.id,
-//       accion: 'LOGIN EXITOSO',
-//       modulo: 'Autenticación',
-//       detalles: `Usuario "${user.nombre}" inicia sesión`,
-//       req
-//     });
-
-//     return res.json({ user, token, success: true });
-
-//   } catch (dbError) {
-//     console.error('DB error:', dbError);
-//     return res.status(500).json({ error: 'Error interno' });
-//   }
-// });
-
 router.post("/verificar", async (req, res) => {
   try {
     const { username } = req.body;
@@ -330,24 +231,23 @@ router.post("/verificar", async (req, res) => {
   }
 });
 
+
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
     // 1️⃣ Autenticación SOLO con LDAP
+    console.log("ldapuser")
     //const ldapUser = await autenticarLDAP(username, password);
-
+    //console.log("ldapuser",ldapUser)
 
 
     let ldapUser = {
       displayName: username,
-      mail: 'mail@mail.com'
     };
 
-
-
     if (!ldapUser) {
-      return res.status(401).json({ error: "Credenciales inválidas" });
+      return res.status(401).json({ error: "Credenciales inválidass" });
     }
 
     
@@ -362,16 +262,15 @@ router.post("/login", async (req, res) => {
     //   user_active: true,
     // };
 
-    console.log(username)
+    // console.log(username)
 
     const userData = {
       username,
-      nombre: ldapUser.displayName || ldapUser.cn,
-      rol: username==='juan' ? "operador" : "admin",
-      mail: ldapUser.mail,
-      activo: true,
-      user_active: true,
+      nombre: username==='wluciano'? "12345678":"87654321",
+      rol: username==='juan' || username==='maria' ? "operador" : "admin",
+      activo: true
     };
+    console.log(userData,"data user -------------")
 
     // 2️⃣ Verificar si existe en DB
     const [rows] = await pool.query(
@@ -380,20 +279,21 @@ router.post("/login", async (req, res) => {
     );
 
     let userDB;
-
+    let role = userData.rol == "admin" ? 1 : 2;
+    console.log("loginnnnn")
     if (!rows.length) {
       // 3️⃣ No existe → CREARLO
+      console.log("creando user")
+      
       const [insertResult] = await pool.query(
         `INSERT INTO usuarios 
-        (username, nombre, rol, mail, activo, user_active)
-        VALUES (?, ?, ?, ?, ?, ?)`,
+        (username, id_persona, rol,  activo)
+        VALUES (?, ?, ?, ?)`,
         [
           userData.username,
           userData.nombre,
-          userData.rol,
-          userData.mail,
-          userData.activo,
-          userData.user_active,
+          role,
+          userData.activo
         ],
       );
 
@@ -404,36 +304,23 @@ router.post("/login", async (req, res) => {
     } else {
       // 4️⃣ Existe → ACTUALIZAR si cambió algo (ej: rol)
       const existingUser = rows[0];
-
-      if (!(existingUser.activo && existingUser.user_active)) {
-        console.log(existingUser.activo, existingUser.user_active)
-        await pool.query(
-          `UPDATE usuarios 
-           SET activo = 1, user_active = 0
-           WHERE id = ?`,
-          [existingUser.id],
-        );
-
-        return res.status(401).json({
-          error: "Usuario inactivo.",
-        });
-      }
-
+      console.log("actualizando user3",userData.nombre, role, existingUser.id)
       await pool.query(
         `UPDATE usuarios 
-         SET nombre = ?, rol = ?, mail = ?,activo=1
+         SET id_persona = ?, rol = ?
          WHERE id = ?`,
-        [userData.nombre, userData.rol, userData.mail, existingUser.id],
+        [userData.nombre, role, existingUser.id],
       );
+      console.log("actualizando user pass")
 
       userDB = {
         ...existingUser,
         ...userData,
       };
 
-      if (!existingUser.user_active) {
+      if (existingUser.active) {
         return res.status(401).json({
-          error: "Usuario inactivo.",
+          error: "Usuario inactivo c.",
         });
       }
     }
@@ -457,13 +344,13 @@ router.post("/login", async (req, res) => {
       { expiresIn: "8h" },
     );
 
-    await registrarAuditoria({
-      usuarioId: userDB.id,
-      accion: "LOGIN EXITOSO",
-      modulo: "Autenticación",
-      detalles: `Usuario LDAP "${userDB.nombre}" inicia sesión`,
-      req,
-    });
+    // await registrarAuditoria({
+    //   usuarioId: userDB.id,
+    //   accion: 1, // 1 es para login
+    //   modulo: "Autenticación",
+    //   detalles: `Usuario LDAP "${userDB.nombre}" inicia sesión`,
+    //   req,
+    // });
 
     return res.json({
       success: true,
@@ -471,18 +358,18 @@ router.post("/login", async (req, res) => {
       token,
     });
   } catch (error) {
-    await registrarAuditoria({
-      usuarioId: username,
-      accion: "LOGIN FALLIDO",
-      modulo: "Autenticación",
-      detalles: "Error en autenticación LDAP",
-      req,
-    });
+    // await registrarAuditoria({
+    //   usuarioId: username,
+    //   accion: "LOGIN FALLIDO",
+    //   modulo: "Autenticación",
+    //   detalles: "Error en autenticación LDAP",
+    //   req,
+    // });
 
     console.error("LDAP error:", error.message);
 
     return res.status(401).json({
-      error: "Credenciales inválidas",
+      error: "Credenciales inválidas catch",
     });
   }
 });
@@ -490,11 +377,11 @@ router.post("/login", async (req, res) => {
 router.get("/me", authenticateToken, async (req, res) => {
   try {
     const [usuarios] = await pool.query(
-      `SELECT u.id, u.nombre, u.username, u.rol, u.puesto_id, u.tel,
-              p.nombre as puesto_nombre, p.numero as puesto_numero 
+      `SELECT u.id, u.username, u.rol, u.puesto_id,
+              p.nombre as puesto_nombre
        FROM usuarios u
        LEFT JOIN puestos p ON u.puesto_id = p.id
-       WHERE u.id = ? and u.user_active=1 and u.activo =1`,
+       WHERE u.id = ?  and u.activo =1`,
       [req.user.id],
     );
 
@@ -504,7 +391,7 @@ router.get("/me", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    if (usuarios[0].rol !== "admin") {
+    if (usuarios[0].rol !== 1) {
       if (usuarios[0].puesto_id === null) {
         return res.status(404).json({ error: "Puesto no asignado" });
       }

@@ -18,6 +18,10 @@ import {
   ShieldAlertIcon,
   AlertCircleIcon,
   DoorOpenIcon,
+  Building,
+  Tags,
+  MonitorCheck,
+  LibraryBigIcon,
 } from "lucide-react";
 
 import { AlertToUI, Spinner } from "../components/loading";
@@ -34,6 +38,7 @@ import MediosSection from "./admin/MediosSection";
 import HistorialSection from "./admin/HistorialSection";
 import EstadisticasSection from "./admin/EstadisticasSection";
 import AuditoriaSection from "./admin/AuditoriaSection";
+import DepartamentoSection from "./admin/departamentoSection";
 
 function PantallaAdmin() {
   // Estado del usuario autenticado
@@ -42,6 +47,7 @@ function PantallaAdmin() {
 
   // Estados de datos
   const [servicios, setServicios] = useState([]);
+  const [departamentos, setdepartamentos] = useState([]);
   const [puestos, setPuestos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [medios, setMedios] = useState([]);
@@ -56,16 +62,18 @@ function PantallaAdmin() {
   const [menuFiltrado, setMenuFiltrado] = useState(false);
 
   const MENU_ITEMS = [
-    { id: "1", icon: Building2, label: "Configuración" },
-    { id: "2", icon: Briefcase, label: "Servicios" },
-    { id: "3", icon: MapPin, label: "Puestos" },
+    { id: "1", icon: Settings, label: "Configuración" },
+    { id: "10", icon: Building, label: "Departamentos" },
+    { id: "2", icon: Tags, label: "Servicios" },
+    { id: "3", icon: MonitorCheck, label: "Puestos" },
     { id: "4", icon: Users, label: "Usuarios" },
-    { id: "5", icon: UserCog, label: "Asignar Servicios" },
+    { id: "5", icon: LibraryBigIcon, label: "Asignar Servicios" },
     { id: "0", icon: UserCheck2Icon, label: "Asignar Permisos" },
     { id: "6", icon: Image, label: "Medios" },
     { id: "7", icon: History, label: "Historial" },
     { id: "8", icon: BarChart3, label: "Estadísticas" },
     { id: "9", icon: ShieldAlertIcon, label: "Auditoría" },
+    
   ];
 
   // ============================================
@@ -101,18 +109,20 @@ function PantallaAdmin() {
       toast.error("Debes seleccionar un color para el servicio");
       return false;
     }
-    if (!form.tiempo_promedio || form.tiempo_promedio < 1) {
-      toast.error("El tiempo promedio debe ser mayor a 0 minutos");
+    
+    return true;
+  };
+  const validarDepartamento = (form, esNuevo) => {
+    if (!form.nombre || form.nombre.trim() === "") {
+      toast.error("El nombre del servicio es obligatorio");
       return false;
     }
+      
     return true;
   };
 
   const validarPuesto = (form) => {
-    if (!form.numero || form.numero.trim() === "") {
-      toast.error("El número del puesto es obligatorio");
-      return false;
-    }
+    
     if (!form.nombre || form.nombre.trim() === "") {
       toast.error("El nombre del puesto es obligatorio");
       return false;
@@ -191,7 +201,7 @@ function PantallaAdmin() {
         case "0": // ASIGNAR PERMISOS
           const admins = await API.getTodosPermisosUsuarios();
           const filladmins = admins.filter(
-            (item) => item.user_active == 1 && item.id !== 1,
+            (item) => item.activo == 1 && item.id !== 1,
           );
           setAdminServicios(filladmins);
           break;
@@ -202,6 +212,9 @@ function PantallaAdmin() {
         case "2": // SERVICIOS
           const serviciosData = await API.getServicios();
           setServicios(serviciosData);
+          const departamentosData = await API.getdepartamentos();
+          setdepartamentos(departamentosData)
+          
           break;
         case "3": // PUESTOS
           const puestosData = await API.getPuestos();
@@ -216,7 +229,7 @@ function PantallaAdmin() {
         case "5": // ASIGNAR SERVICIOS
           const operadores = await API.getOperadoresConServicios();
           const fillOperadores = operadores.filter(
-            (item) => item.user_active == 1,
+            (item) => item.activo == 1,
           );
           setOperadoresServicios(fillOperadores);
           break;
@@ -236,6 +249,10 @@ function PantallaAdmin() {
         case "9": // AUDITORIA
           const usuariosData3 = await API.getUsuarios();
           setUsuarios(usuariosData3);
+          break;
+        case "10": // AUDITORIA
+          const departamento = await API.getdepartamentos();
+          setdepartamentos(departamento);
           break;
       }
     } catch (error) {
@@ -258,8 +275,7 @@ function PantallaAdmin() {
     }
     try {
       await API.updateConfiguracion(configuracion.id, configuracion);
-      console.log(configuracion);
-      toast.success("Configuración guardada exitosamente");
+      
       cargarDatos();
     } catch (error) {
       // Error ya manejado por API
@@ -302,6 +318,42 @@ function PantallaAdmin() {
       // Error ya manejado por API
     }
   };
+  const handleGuardarDepartamento = async (formulario, editando) => {
+    try {
+      if (editando === "nuevo") {
+        await API.createDepartamento(formulario);
+        toast.success("Departamento creado exitosamente");
+      } else {
+        await API.updateDepartamento(editando, formulario);
+        toast.success("Departamento actualizado exitosamente");
+      }
+      cargarDatos();
+    } catch (error) {
+      // Error ya manejado por API
+    }
+  };
+
+  const handleEliminarDepartamento = async (id) => {
+    try {
+      await API.deleteDepartamento(id);
+      toast.success("Departamento eliminado exitosamente");
+      cargarDatos();
+    } catch (error) {
+      // Error ya manejado por API
+    }
+  };
+
+  const handleSwitchDepartamento = async (id, activo) => {
+    try {
+      await API.switchDepartamento(id);
+      activo
+        ? toast.error("Departamento Inactivo")
+        : toast.success("Departamento Activo");
+      cargarDatos();
+    } catch (error) {
+      // Error ya manejado por API
+    }
+  };
 
   // ============================================
   // HANDLERS PUESTOS
@@ -311,7 +363,7 @@ function PantallaAdmin() {
     try {
       if (editando === "nuevo") {
         await API.createPuesto(formulario);
-        toast.success("Puesto creado exitosamente");
+        
       } else {
         await API.updatePuesto(editando, formulario);
         toast.success("Puesto actualizado exitosamente");
@@ -407,7 +459,7 @@ function PantallaAdmin() {
     if (!confirm("¿Estás seguro de eliminar este medio?")) return;
     try {
       await API.deleteMedio(id);
-      toast.success("Medio eliminado exitosamente");
+      //toast.success("Medio eliminado exitosamente");
       cargarDatos();
     } catch (error) {
       // Error ya manejado por API
@@ -432,6 +484,7 @@ function PantallaAdmin() {
 
   const handleCargarHistorial = async (filtros) => {
     try {
+      
       const params = {
         fecha_inicio: filtros.fecha_inicio,
         fecha_fin: filtros.fecha_fin,
@@ -440,17 +493,20 @@ function PantallaAdmin() {
       if (filtros.servicio_id) params.servicio_id = filtros.servicio_id;
       if (filtros.estado) params.estado = filtros.estado;
       if (filtros.operador) params.operador = filtros.operador;
-
+      
+      
       const data = await API.getHistorial(params);
+     
 
       const historialFiltrado = Object.values(
         data.reduce((acc, item) => {
-          if (!acc[item.ticket_id]) {
-            acc[item.ticket_id] = item;
+          if (!acc[item.id]) {
+            acc[item.id] = item;
           }
           return acc;
         }, {}),
       ).reverse();
+       
 
       toast.success(
         <div className="block">
@@ -459,6 +515,7 @@ function PantallaAdmin() {
           desde:<strong> {filtros.fecha_inicio} </strong>
           <br />
           hasta:<strong> {filtros.fecha_fin} </strong>
+         
         </div>,
       );
 
@@ -526,7 +583,7 @@ function PantallaAdmin() {
       const result = await API.getCurrentUser();
       if (result.success) {
         const user = result.user;
-        if (user.rol !== "admin") {
+        if (user.rol !== 1) {
           localStorage.removeItem("token");
           toast.error("Acceso denegado. Necesitas permisos de administrador.");
           return;
@@ -733,11 +790,22 @@ function PantallaAdmin() {
             {seccion === "2" && (
               <ServiciosSection
                 servicios={servicios}
+                departamentos={departamentos}
                 LoadingSpin={LoadingSpin}
                 onGuardarServicio={handleGuardarServicio}
                 onEliminarServicio={handleEliminarServicio}
                 onSwitchServicio={handleSwitchServicio}
                 validarServicio={validarServicio}
+              />
+            )}
+            {seccion === "10" && (
+              <DepartamentoSection
+                departamento={departamentos}
+                LoadingSpin={LoadingSpin}
+                onGuardarDepartamento={handleGuardarDepartamento}
+                onEliminarDepartamento={handleEliminarDepartamento}
+                onSwitchDepartamento={handleSwitchDepartamento}
+                validarDepartamento={validarDepartamento}
               />
             )}
 

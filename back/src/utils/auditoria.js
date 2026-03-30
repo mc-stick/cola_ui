@@ -9,25 +9,19 @@ const { pool } = require('../config/database');
  * @param {string} params.detalles - Detalles adicionales de la acción
  * @param {Object} params.req - Objeto request de Express para obtener IP y user-agent
  */
-async function registrarAuditoria({ usuarioId, accion, modulo, detalles, req }) {
-  const fecha = new Date();
-  const fechaStr = fecha.toISOString().split('T')[0];
-  const horaStr = fecha.toTimeString().split(' ')[0];
+async function registrarAuditoria({ usuarioId, accion, modulo, detalles }) {
 
+  
   try {
     await pool.query(
       `INSERT INTO auditoria 
-       (usuario_id, accion, modulo, detalle, fecha, hora, ip, user_agent)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (usuario_id, accion_id, modulo, detalles)
+       VALUES (?, ?, ?, ?)`,
       [
         usuarioId,
         accion,
         modulo,
         detalles || null,
-        fechaStr,
-        horaStr,
-        req?.ip || null,
-        req?.headers['user-agent'] || null
       ]
     );
   } catch (error) {

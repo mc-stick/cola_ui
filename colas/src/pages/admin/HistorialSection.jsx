@@ -45,41 +45,47 @@ function HistorialSection({
   });
   const getEstadoBadge = (estado) => {
     const estados = {
-      atendido: {
+      4: {
         bg: "bg-green-100",
         text: "text-green-700",
         icon: CheckCircle,
         label: "Atendido",
       },
-      no_presentado: {
+      5: {
         bg: "bg-red-100",
         text: "text-red-700",
         icon: XCircle,
         label: "No Atendido",
       },
-      espera: {
+      1: {
         bg: "bg-yellow-100",
         text: "text-yellow-700",
         icon: Clock,
         label: "En Espera",
       },
-      llamado: {
+      2: {
         bg: "bg-blue-100",
         text: "text-blue-700",
         icon: PhoneCall,
         label: "Llamado",
       },
-      en_atencion: {
+      3: {
         bg: "bg-warning",
         text: "text-orange-700",
         icon: AlertCircle,
         label: "En Atención",
       },
-      cancelado: {
+      6: {
         bg: "bg-gray-100",
         text: "text-gray-700",
         icon: XCircle,
         label: "Cancelado",
+      },
+       7: {
+        bg: "bg-blue-100",
+        text: "text-blue-700",
+        icon: Clock,
+        label: "Pendiente",
       },
     };
     return estados[estado] || estados.espera;
@@ -113,6 +119,8 @@ function HistorialSection({
     setHistorial([]);
     toast.success("Limpiando filtro de búsqueda.");
   };
+
+  //console.log(historial)
 
   return (
     <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
@@ -213,10 +221,10 @@ function HistorialSection({
               }}
               className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
               <option value="">Todos</option>
-              <option value="atendido">Atendido</option>
-              <option value="no_presentado">No Atendido</option>
-              <option value="llamado">Llamado</option>
-              <option value="espera">En Espera</option>
+              <option value={4}>Atendido</option>
+              <option value={5}>No Atendido</option>
+              <option value={2}>Llamado</option>
+              <option value={1}>En Espera</option>
             </select>
           </div>
 
@@ -270,7 +278,8 @@ function HistorialSection({
             Limpiar Filtro
           </button>
 
-          {!LoadingSpin && (
+            {/* BOTON CSV FUNCIONA BIEN PERO SOLO EXTRAE IDs */}
+          {/* {!LoadingSpin && (
             <button
               disabled={historial.length <= 0}
               onClick={() => exportarCSV(historial)}
@@ -282,7 +291,7 @@ function HistorialSection({
               <Download className="w-5 h-5 animate-bounce font-bold mt-1" />
               Descargar CSV
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -308,7 +317,7 @@ function HistorialSection({
               <div className="text-center py-16 text-white">
                 <History className="w-20 h-20 mx-auto mb-4 text-white" />
                 <p className="text-xl font-semibold">
-                  No hay tickets en el historial
+                  Historial de tickets
                 </p>
                 <p className="text-sm mt-2">
                   Ajusta los filtros para ver más resultados
@@ -317,15 +326,17 @@ function HistorialSection({
             )}
 
             {historial.map((ticket) => {
-              const estadoInfo = getEstadoBadge(ticket.accion);
+              const estadoInfo = getEstadoBadge(ticket.estado);
               const IconoEstado = estadoInfo.icon;
+              //console.log(ticket,"tickets history map")
 
               return (
                 <div
                   key={ticket.id}
-                  className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-all border-l-4"
+                  onClick={() => setModalinfo(ticket)}
+                  className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-all border-l-4 hover:cursor-pointer hover:bg-gray-50/50"
                   style={{
-                    borderLeftColor: ticket.servicio_color || "#6B7280",
+                    borderLeftColor: ticket.color || "#6B7280",
                   }}>
                   <div className="flex items-start justify-between gap-4">
                     {/* Izquierda: info principal */}
@@ -333,8 +344,9 @@ function HistorialSection({
                       {/* Número de Ticket */}
                       <div className="flex-shrink-0">
                         <div
-                          className="text-4xl font-extrabold"
-                          style={{ color: ticket.servicio_color }}>
+                         
+                          className="text-4xl font-extrabold "
+                          style={{ color: ticket.color }}>
                           {ticket.numero}
                         </div>
                         <div className="text-xs text-gray-500 text-center font-bold mt-2">
@@ -345,9 +357,9 @@ function HistorialSection({
                       {/* Info del Ticket */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-bold text-gray-800">
-                            {ticket.servicio_nombre}
-                          </h3>
+                          {/* <h3 className="text-lg font-bold text-gray-800">
+                            {ticket.estado}
+                          </h3> */}
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-bold ${estadoInfo.bg} ${estadoInfo.text} flex items-center gap-1`}>
                             <IconoEstado className="w-3 h-3" />
@@ -356,7 +368,7 @@ function HistorialSection({
                         </div>
 
                         {/* Cliente */}
-                        {ticket.identificacion && (
+                        {/* {ticket.identificacion && (
                           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                             <span className="font-semibold">Cliente:</span>
                             <span>
@@ -364,9 +376,17 @@ function HistorialSection({
                               {ticket.identificacion}
                             </span>
                           </div>
-                        )}
+                        )} */}
 
                         {/* Operador */}
+                        {/* {ticket.Cliente && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                            <Users className="w-4 h-4" />
+                            <span className="font-semibold">Cliente:</span>
+                            <span>{ticket.Cliente}</span>
+                            
+                          </div>
+                        )}
                         {ticket.operador_nombre && (
                           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                             <Users className="w-4 h-4" />
@@ -378,15 +398,15 @@ function HistorialSection({
                               </span>
                             )}
                           </div>
-                        )}
+                        )} */}
 
                         {/* Detalles */}
-                        {ticket.detalles && (
+                        {/* {ticket.detalles && (
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <PhoneCall className="w-4 h-4" />
                             <span>{ticket.detalles}</span>
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
 
@@ -396,16 +416,16 @@ function HistorialSection({
                         {ticket.accion !== "creado" ? (
                           <div className="flex items-center gap-2 justify-end">
                             <User className="w-3 h-3" />
-                            <span>Atendido por:</span>
+                            <span>Cliente:</span>
                             <span className="font-bold text-violet-600">
-                              {ticket.usuario_nombre}
+                              {ticket.cliente}
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 justify-end">
                             <Clock className="w-5 h-5 text-amber-500" />
                             <span className="font-bold text-amber-500">
-                              En espera
+                              ...
                             </span>
                           </div>
                         )}

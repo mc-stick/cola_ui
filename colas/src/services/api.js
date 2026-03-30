@@ -145,7 +145,7 @@ class API {
         throw new Error(result.error || "Error al crear medio");
       }
 
-      toast.success("Medio creado correctamente");
+      //toast.success("Medio creado correctamente");
       return result;
     } catch (error) {
       console.error("Error en createMedio:", error);
@@ -178,7 +178,7 @@ class API {
         throw new Error(result.error || "Error al actualizar medio");
       }
 
-      toast.success("Medio actualizado correctamente");
+      //toast.success("Medio actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en updateMedio:", error);
@@ -275,6 +275,22 @@ class API {
       throw error;
     }
   }
+  async getdepartamentos() {
+    try {
+      const response = await fetch(`${API_URL}/departamentos`);
+      if (!response.ok) {
+        toast.error("Error al obtener departamentos");
+        throw new Error("Error al obtener departamentos");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getdepartamentos:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar departamentos");
+      }
+      throw error;
+    }
+  }
 
   async createServicio(data) {
     try {
@@ -308,6 +324,38 @@ class API {
       throw error;
     }
   }
+  async createDepartamento(data) {
+    try {
+      const response = await fetch(`${API_URL}/departamentos`, {
+        method: "POST",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (this.handleAuthError(response)) {
+        throw new Error("No autorizado");
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.error || "Error al crear servicio");
+        throw new Error(result.error || "Error al crear servicio");
+      }
+
+      //toast.success("Departemanto creado correctamente");
+      return result;
+    } catch (error) {
+      console.error("Error en createServicio:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al crear Departamento");
+      }
+      throw error;
+    }
+  }
 
   async updateServicio(id, data) {
     try {
@@ -328,7 +376,7 @@ class API {
         throw new Error(result.error || "Error al actualizar servicio");
       }
 
-      toast.success("Servicio actualizado correctamente");
+      //toast.success("Servicio actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en updateServicio:", error);
@@ -337,6 +385,38 @@ class API {
         !error.message.includes("autorizado")
       ) {
         toast.error("Error al actualizar servicio");
+      }
+      throw error;
+    }
+  }
+  async updateDepartamento(id, data) {
+    try {
+      const response = await fetch(`${API_URL}/departamentos/${id}`, {
+        method: "PUT",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (this.handleAuthError(response)) {
+        throw new Error("No autorizado");
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.error || "Error al actualizar departamento");
+        throw new Error(result.error || "Error al actualizar departamento");
+      }
+
+      //toast.success("departamento actualizado correctamente");
+      return result;
+    } catch (error) {
+      console.error("Error en updatedepartamento:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al actualizar departamento");
       }
       throw error;
     }
@@ -356,11 +436,11 @@ class API {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || "Error al eliminar servicio");
+        toast.error( "Error: hay objetos que dependen del servicio.");
         throw new Error(result.error || "Error al eliminar servicio");
       }
 
-      toast.success("Servicio eliminado correctamente");
+      //toast.success("Servicio eliminado correctamente");
       return result;
     } catch (error) {
       console.error("Error en deleteServicio:", error);
@@ -369,6 +449,37 @@ class API {
         !error.message.includes("autorizado")
       ) {
         toast.error("Error al eliminar servicio");
+      }
+      throw error;
+    }
+  }
+  async deleteDepartamento(id) {
+    try {
+      const response = await fetch(`${API_URL}/departamentos/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeaders(),
+      });
+
+      if (this.handleAuthError(response)) {
+        throw new Error("No autorizado");
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error( "Error: hay objetos que dependen del departamento.");
+        throw new Error(result.error || "Error al eliminar departamento");
+      }
+
+      //toast.success("departamento eliminado correctamente");
+      return result;
+    } catch (error) {
+      console.error("Error en deletedepartamento:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al eliminar departamento");
       }
       throw error;
     }
@@ -473,7 +584,7 @@ class API {
         throw new Error(result.error || "Error al actualizar puesto");
       }
 
-      toast.success("Puesto actualizado correctamente");
+      //toast.success("Puesto actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en updatePuesto:", error);
@@ -505,7 +616,7 @@ class API {
         throw new Error(result.error || "Error al cambiar estado del puesto");
       }
 
-      toast.success("Puesto actualizado correctamente");
+      //toast.success("Puesto actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en switchPuesto:", error);
@@ -525,7 +636,7 @@ class API {
 
   async verificarUsuario(username) {
     try {
-      //console.log("USERNAME API: ",username)
+      ////console.log("USERNAME API: ",username)
       const response = await fetch(`${API_URL}/auth/verificar`, {
         method: "POST",
         headers: {
@@ -545,7 +656,7 @@ class API {
       // Validar si la data viene vacía o null
       const data = result.data ? result.data : "vacio";
 
-      //console.log("Usuario LDAP:", data);
+      ////console.log("Usuario LDAP:", data);
       return data;
     } catch (error) {
       ////console.error("Error al consumir la API:", error);
@@ -695,7 +806,7 @@ class API {
         throw new Error(result.error || "Error al actualizar usuario");
       }
 
-      toast.success("Usuario actualizado correctamente");
+      //toast.success("Usuario actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en updateUsuario:", error);
@@ -728,7 +839,7 @@ class API {
         throw new Error(result.error || "Error al actualizar operador");
       }
 
-      toast.success("Operador actualizado correctamente");
+      //toast.success("Operador actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en updateOperator:", error);
@@ -792,7 +903,7 @@ class API {
         throw new Error(result.error || "Error al cambiar estado del usuario");
       }
 
-      toast.success("Usuario actualizado correctamente");
+      //toast.success("Usuario actualizado correctamente");
       return result;
     } catch (error) {
       console.error("Error en switchUser:", error);
@@ -898,7 +1009,7 @@ class API {
         throw new Error("Error al actualizar permiso");
       }
 
-      toast.success("Permiso actualizado");
+      //toast.success("Permiso actualizado");
       return response.json();
     } catch (error) {
       console.error("Error en actualizarPermiso:", error);
@@ -1159,12 +1270,45 @@ class API {
     }
   }
 
-  async llamarTicket(id, usuarioId, puestoId) {
+  async llamarTicket(id, usuario_id,puesto, servicio) {
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/llamar`, {
         method: "POST",
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ usuario_id: usuarioId, puesto_id: puestoId }),
+        body: JSON.stringify({ usuario_id,puesto, servicio}),
+      });
+
+      if (this.handleAuthError(response)) {
+        throw new Error("No autorizado");
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.error || "Error al llamar ticket");
+        throw new Error(result.error || "Error al llamar ticket");
+      }
+
+      toast.success("Ticket llamado correctamente");
+      return result;
+    } catch (error) {
+      console.error("Error en llamarTicket:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al llamar ticket");
+      }
+      throw error;
+    }
+  }
+
+  async rellamarTicket(id, usuario_id,puesto, servicio) {
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/rellamar`, {
+        method: "POST",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ usuario_id,puesto, servicio}),
       });
 
       if (this.handleAuthError(response)) {
@@ -1193,7 +1337,7 @@ class API {
   }
 
   async llamarVolver(id) {
-    console.log(id)
+    //console.log(id)
   try {
     const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
       method: "POST",
@@ -1212,7 +1356,7 @@ class API {
   }
 }
 
-  async SendEvaluation(ticketId, rating, comment) {
+  async SendEvaluation(ticketId, ratings, comment) {
     try {
       const response = await fetch(`${API_URL}/tickets/${ticketId}/evaluar`, {
         method: "POST",
@@ -1220,7 +1364,7 @@ class API {
           "Content-Type": "application/json",
           ...this.getAuthHeaders(),
         },
-        body: JSON.stringify({ evaluation: rating, comment: comment }),
+        body: JSON.stringify({ evaluation: ratings, comment: comment }),
       });
 
       if (this.handleAuthError(response)) {
@@ -1268,11 +1412,18 @@ class API {
       );
       const data = await response.json();
 
+      //console.log(data.data,"dataticket")
+    
       return {
         expirado: data.expirado || false,
         yaEvaluado: data.yaEvaluado || false,
         notfound: data.notfound || false,
+        data:data.data || []
       };
+      
+        
+
+      
     } catch (error) {
       //console.error('Error en GetTicketEvaluationState:', error);
       return { expirado: true, yaEvaluado: false }; // asumimos expirado si hay error
@@ -1347,16 +1498,17 @@ class API {
 
   async transferirTicket(ticketactual, servicio_id, comentario, servicio_nm) {
     try {
+      //console.log("actual",ticketactual, "service",servicio_id, 'Comment:',comentario, "service transfer",servicio_nm," ->transferir")
       const response = await fetch(
         `${API_URL}/tickets/${ticketactual.id}/transferir`,
         {
           method: "POST",
           headers: this.getAuthHeaders(),
           body: JSON.stringify({
-            servicio_id: servicio_id,
+            servicio_nvo: servicio_id,
             comentario: comentario,
-            serv_ant: ticketactual.servicio_nombre,
-            servicio_nm: servicio_nm,
+            servicio_act: servicio_nm,
+            usuario: ticketactual.usuario
           }),
         },
       );
@@ -1394,6 +1546,24 @@ class API {
     try {
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(`${API_URL}/historial?${queryString}`);
+      if (!response.ok) {
+        toast.error("Error al obtener historial");
+        throw new Error("Error al obtener historial");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getHistorial:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar historial");
+      }
+      throw error;
+    }
+  }
+
+  async getHistorialDetail(id) {
+    try {
+      //console.log(id," api get hus")
+      const response = await fetch(`${API_URL}/historial/${id}`);
       if (!response.ok) {
         toast.error("Error al obtener historial");
         throw new Error("Error al obtener historial");
@@ -1604,9 +1774,8 @@ class API {
           Authorization: `Bearer ${token}`,
         },
       });
-
       const data = await response.json();
-
+      //console.log("first auth me api sucess data:", data)
       if (response.ok) {
         return { success: true, user: data };
       } else {

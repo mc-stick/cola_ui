@@ -20,7 +20,7 @@ export const OperatorHeader = ({
   const [activo, setActivo] = useState(false);
   const menuRef = useRef(null);
 
-  // console.log(usuario)
+  // //console.log(usuario)
 
   useEffect(() => {
     const handleClickOutside = (event) => {

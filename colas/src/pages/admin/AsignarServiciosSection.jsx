@@ -15,7 +15,7 @@ function AsignarServiciosSection({
   const [loaditems, setLoaditems] = useState(false);
 
   const handleSeleccionarOperador = async (operador) => {
-    if (!operador.user_active) {
+    if (!operador.activo) {
       toast.error("Usuario inactivo.");
       return;
     }
@@ -93,11 +93,8 @@ function AsignarServiciosSection({
                 </div>
               )}
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {[
-                  ...operadoresServicios,
-                  ...operadoresServicios,
-                  ...operadoresServicios,
-                ].map((operador) => (
+                {operadoresServicios
+                .map((operador) => (
                   <div
                     key={operador.id}
                     onClick={() => handleSeleccionarOperador(operador)}
@@ -110,7 +107,7 @@ function AsignarServiciosSection({
                       <div className="flex-1">
                         <h4
                           className={`font-bold text-white ${
-                            operador.user_active
+                            operador.activo
                               ? ""
                               : "line-through text-red-500"
                           }`}>
@@ -188,13 +185,7 @@ function AsignarServiciosSection({
                   ) : (
                     <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4  p-3">
-                        {[
-                          ...serviciosOperador,
-                          ...serviciosOperador,
-                          ...serviciosOperador,
-                          ...serviciosOperador,
-                          ...serviciosOperador,
-                        ].map((servicio) => (
+                        {serviciosOperador.map((servicio) => (
                           <div
                             title={
                               !servicio.service_active

@@ -40,7 +40,7 @@ function PantallaOperador() {
     abrirModalTransferir,
     cerrarModalTransferir,
     handleConfirmarTransferencia,
-  } = useTransferencia(ticketActual, comentario, cargarTickets, setTicketActual, setComentario);
+  } = useTransferencia(ticketActual, comentario, cargarTickets, setTicketActual, setComentario, usuario);
 
   // Hook de edición de usuario
   const {
@@ -58,7 +58,7 @@ function PantallaOperador() {
     setIsModalOpen(false);
     setGuia_paso(x);
     setTimeout(() => setRunTour(true), 300);
-    console.log(x, "guia ");
+    
   };
 
   const tutorialConfig = getTutorialDeOperador(onGuide, usuario?.nombre);

@@ -251,14 +251,14 @@ function EstadisticasSection({
                     key={operador.id}
                     className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                      <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center">
                         <span className="text-blue-700 font-bold">
-                          {operador.puesto_numero || "?"}
+                          {operador.id || "?"}
                         </span>
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-800">
-                          {operador.nombre}
+                          {operador.username}
                         </h4>
                         <p className="text-sm text-gray-600">
                           Puesto {operador.puesto_numero || "Sin asignar"}
@@ -286,7 +286,7 @@ function EstadisticasSection({
                         </div>
                         <div className="text-xs text-gray-600">No atendidos</div>
                       </div>
-                      <div>
+                      {/* <div>
                         <div className="text-2xl font-bold text-yellow-600">
                           {Math.round(operador.tiempo_promedio_servicio || 0)}{" "}
                           min
@@ -295,7 +295,7 @@ function EstadisticasSection({
                           Tiempo Promedio
                           <p>de atención</p>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 ))

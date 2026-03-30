@@ -7,6 +7,7 @@ export const useTransferencia = (
   cargarTickets,
   setTicketActual,
   setComentario,
+  usuario
 ) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [todosServicios, setTodosServicios] = useState([]);
@@ -36,7 +37,7 @@ export const useTransferencia = (
 
     setShowTransferModal(true);
 
-    console.log(ticketActual, "ticket actual");
+    //console.log(ticketActual, "ticket actual");
     setServicioSeleccionado("");
   };
 
@@ -55,12 +56,12 @@ export const useTransferencia = (
       const serv_nm = todosServicios.filter(
         (servicio) => servicio.id === servicioSeleccionado,
       );
-      console.log(ticketActual);
+      //console.log(ticketActual);
       await API.transferirTicket(
         ticketActual,
         servicioSeleccionado,
         comentario,
-        serv_nm[0].nombre,
+        usuario.id
       );
 
       setTicketActual(null);

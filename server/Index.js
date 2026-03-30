@@ -21,12 +21,12 @@ function connectToExternalWs() {
   externalWs = new WebSocket(externalWsUrl);
 
   externalWs.on('open', () => {
-    console.log('Conectado al WebSocket externo');
+    //console.log('Conectado al WebSocket externo');
     reconnectAttempts = 0;
   });
 
    externalWs.on('message', (message) => {
-    //console.log('Mensaje recibido del WebSocket externo:', message);
+    ////console.log('Mensaje recibido del WebSocket externo:', message);
     try {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage.event === 'print-ticket') {
@@ -38,7 +38,7 @@ function connectToExternalWs() {
   });
 
   externalWs.on('close', () => {
-    //console.log('Conexión con WebSocket externo cerrada');
+    ////console.log('Conexión con WebSocket externo cerrada');
     reconnect();
   });
 
@@ -50,7 +50,7 @@ function connectToExternalWs() {
   function reconnect() {
     reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Máximo 30 segundos de espera
-    //console.log(`Reintentando conexión en ${delay / 1000} segundos...`);
+    ////console.log(`Reintentando conexión en ${delay / 1000} segundos...`);
     setTimeout(connectToExternalWs, delay);
   }
 }
@@ -69,11 +69,11 @@ app.use((req, res) => {
 
 // Iniciar el servidor
 app.listen(PORT, async () => {
- // console.log(`Servidor corriendo en http://localhost:${PORT}`);
+ // //console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
 // Manejo de cierre del servidor
 process.on('SIGINT', () => {
-  //console.log('\n Cerrando servidor...');
+  ////console.log('\n Cerrando servidor...');
   process.exit(0);
 });

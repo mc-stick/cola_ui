@@ -3,7 +3,7 @@ import TicketQR from "../common/Qr";
 
 
 export default function PasoConfirmacion({ ticket, servicio, onReset, tipo, identificacion, setIdentificacion }) {
-  console.log(ticket)
+
 
   const fin = () =>{
     setIdentificacion("")

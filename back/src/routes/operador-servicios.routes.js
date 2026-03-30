@@ -100,12 +100,14 @@ router.get('/operadores-servicios', async (req, res) => {
   try {    
     const [operadores] = await pool.query(
       `SELECT DISTINCT
-        u.id, u.nombre, u.username, u.puesto_id, u.user_active,
-        p.numero as puesto_numero, p.nombre as puesto_nombre
-       FROM usuarios u
-       LEFT JOIN puestos p ON u.puesto_id = p.id
-       WHERE u.rol = 'operador' AND u.activo = TRUE
-       ORDER BY u.nombre`
+    u.*, 
+    per.name AS nombre,
+    p.nombre AS puesto_nombre
+FROM usuarios u
+LEFT JOIN puestos p ON u.puesto_id = p.id
+LEFT JOIN persona per ON u.id_persona = per.id_persona
+WHERE u.activo = TRUE and u.rol=2
+ORDER BY u.rol;`
     );
     
     for (let operador of operadores) {

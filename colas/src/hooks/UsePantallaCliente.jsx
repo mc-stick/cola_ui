@@ -23,7 +23,7 @@ export function usePantallaCliente() {
   }, []);
 
   // const cargarServicios = async () => {
-  //   console.log("cargar serv")
+  //   //console.log("cargar serv")
   //   const data = await API.getServicios();
   //   setServicios(data.filter((s) => s.service_active === 1));
   // };
@@ -37,7 +37,6 @@ export function usePantallaCliente() {
       identificacion: identificacion || null,
     });
 
-    console.log(ticket, "ticket creado");
 
     setTicketGenerado(ticket);
     setPaso(4);
@@ -45,7 +44,7 @@ export function usePantallaCliente() {
     if (tipoId === "telefono") {
       SendTwilioSms("mensaje a enviar", identificacion);
     } else {
-      console.log("PRINTING", ticket.numero, servicio.nombre);
+      //console.log("PRINTING", ticket.numero, servicio.nombre);
       await API.PrintTicket(ticket, servicio.nombre);
     }
   };

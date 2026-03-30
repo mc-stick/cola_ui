@@ -13,7 +13,15 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT u.*, p.numero as puesto_numero, p.nombre as puesto_nombre FROM usuarios u LEFT JOIN puestos p ON u.puesto_id = p.id WHERE u.activo = TRUE ORDER BY u.nombre'
+      `SELECT
+    u.*, 
+    per.name AS nombre,
+    p.nombre AS puesto_nombre
+FROM usuarios u
+LEFT JOIN puestos p ON u.puesto_id = p.id
+LEFT JOIN persona per ON u.id_persona = per.id_persona
+WHERE 1=1
+ORDER BY u.rol`
     );
     rows.forEach(user => delete user.password);
     res.json(rows);
@@ -113,18 +121,39 @@ router.put('/:user/change', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, username, password, rol, puesto_id, activo, tel } = req.body;
+    const {  username,  rol, puesto_id, activo } = req.body;
+    console.log(req.body,"actualizar user adm-op")
 
-    const saltRounds = 10;
-    
-    let query = 'UPDATE usuarios SET nombre = ?, username = ?, rol = ?, puesto_id = ?, activo = ?, tel=?';
-    let params = [nombre, username, rol, puesto_id || null, activo, tel];
-    
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      query += ', password = ?';
-      params.push(hashedPassword);
+     const userId = req.params.id;
+
+    const [rows] = await pool.query(
+      'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
+
+    const usuario = rows[0];
+
+    if (usuario.rol === 1 && usuario.activo) {
+      const [admins] = await pool.query(
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1'
+      );
+
+      if (admins[0].total <= 1) {
+        return res.status(400).json({
+          error: 'No se puede modificar el último administrador activo'
+        });
+      }
+    }
+    
+
+    
+    let query = 'UPDATE usuarios SET username = ?, rol = ?, puesto_id = ?, activo = ?';
+    let params = [ username, rol, (rol==2?puesto_id:null), activo];
+    
     
     query += ' WHERE id = ?';
     params.push(id);
@@ -212,9 +241,9 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     const usuario = rows[0];
 
-    if (usuario.rol === 'admin' && usuario.activo) {
+    if (usuario.rol === 1 && usuario.activo) {
       const [admins] = await pool.query(
-        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin" AND activo = 1 and user_active=1'
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1 '
       );
 
       if (admins[0].total <= 1) {
@@ -252,7 +281,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 router.delete('/:id/switch', authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, rol, activo, user_active, username FROM usuarios WHERE id = ?',
+      'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
       [req.params.id]
     );
 
@@ -261,11 +290,11 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
     }
 
     const usuario = rows[0];
-    const nuevoValor = !rows[0].user_active;
+    const nuevoValor = !rows[0].activo;
 
-    if (usuario.rol === 'admin' && usuario.activo) {
+    if (usuario.rol === 1 && usuario.activo) {
       const [admins] = await pool.query(
-        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = "admin" AND activo = 1 AND user_active=1'
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1'
       );
 
       if (admins[0].total <= 1 && nuevoValor === false) {
@@ -276,17 +305,17 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
     }
     
     await pool.query(
-      'UPDATE usuarios SET user_active = ? WHERE id = ?',
+      'UPDATE usuarios SET activo = ? WHERE id = ?',
       [nuevoValor, req.params.id]
     );
 
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: nuevoValor ? 'ACTIVAR USUARIO' : 'DESACTIVAR USUARIO',
-      modulo: 'Usuarios',
-      detalles: `ID: ${req.params.id}, Usuario: ${usuario.username}`,
-      req
-    });
+    // await registrarAuditoria({
+    //   usuarioId: req.user.id,
+    //   accion: nuevoValor ? 'ACTIVAR USUARIO' : 'DESACTIVAR USUARIO',
+    //   modulo: 'Usuarios',
+    //   detalles: `ID: ${req.params.id}, Usuario: ${usuario.username}`,
+    //   req
+    // });
 
     res.json({ success: true, activo: nuevoValor });
   } catch (error) {

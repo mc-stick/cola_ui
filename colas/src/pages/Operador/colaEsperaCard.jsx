@@ -66,7 +66,7 @@ export const ColaEsperaCard = ({
             key={ticket.id}
             className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border-l-4"
             style={{
-              borderLeftColor: ticket.servicio_color || "#1E40AF",
+              borderLeftColor: ticket.color || "#1E40AF",
             }}>
             <div className="flex items-center gap-4">
               <div className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
@@ -74,7 +74,7 @@ export const ColaEsperaCard = ({
               </div>
               <span
                 className="text-2xl font-bold"
-                style={{ color: ticket.servicio_color || "#1E40AF" }}>
+                style={{ color: ticket.color || "#1E40AF" }}>
                 {ticket.numero}
               </span>
             </div>

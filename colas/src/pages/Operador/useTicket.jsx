@@ -9,17 +9,20 @@ export const useTickets = (usuario, serviciosAsignados) => {
   const cargarTickets = async () => {
     try {
       const todosTickets = await API.getTicketsEspera();
+      
       const ticketsFiltrados = todosTickets.filter((ticket) => {
+        
         return serviciosAsignados.some(
-          (servicio) => servicio.id === ticket.servicio_id
+          (servicio) => servicio.id === ticket.servicio
         );
-      });
+      });//console.log(ticketsFiltrados, "espera filter")
 
       setTicketsEspera(ticketsFiltrados);
 
       const miTicket = await API.getTicketsByOperador(usuario.id);
+      console.log(miTicket,"mi ticket")
       const ticketEnAtencion = miTicket.find(
-        (t) => t.estado === "llamado" || t.estado === "en_atencion"
+        (t) => t.estado === 2 || t.estado === 3
       );
 
       // Solo actualizar el ticket actual si cambió
@@ -28,11 +31,13 @@ export const useTickets = (usuario, serviciosAsignados) => {
         if (prevTicket?.id === ticketEnAtencion?.id) {
           return ticketEnAtencion || null;
         }
-        
+        //console.log(ticketEnAtencion,"tk atencion comment")
         // Si cambió de ticket, cargar las notas del nuevo ticket
-        if (ticketEnAtencion) {
-          setComentario(ticketEnAtencion.notes || "");
-        }
+        // if (ticketEnAtencion) {
+        //   setComentario(ticketEnAtencion.ultimo_comentario || "");
+        // }
+
+        //console.log(ticketEnAtencion,"tk atencion")
         
         return ticketEnAtencion || null;
       });
@@ -56,14 +61,14 @@ export const useTickets = (usuario, serviciosAsignados) => {
       const siguiente = ticketsEspera[0];
       if (
         !serviciosAsignados.some(
-          (servicio) => servicio.id === siguiente.servicio_id
+          (servicio) => servicio.id === siguiente.servicio
         )
       ) {
         alert("No tienes permiso para atender este servicio");
         return;
       }
 
-      await API.llamarTicket(siguiente.id, usuario.id, usuario.puesto_id);
+      await API.llamarTicket(siguiente.id, usuario.id, usuario.puesto_id, siguiente.servicio);
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       console.error("Error llamando ticket:", error);
@@ -74,7 +79,9 @@ export const useTickets = (usuario, serviciosAsignados) => {
   const handleReLlamar = async () => {
     if (!ticketActual) return;
     try {
-      await API.llamarTicket(ticketActual.id, usuario.id, usuario.puesto_id);
+      //console.log(ticketActual,"tk actual")
+    
+      await API.rellamarTicket(ticketActual.id, usuario.id, usuario.puesto_id,ticketActual.servicio);
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       alert("Error al re-llamar ticket");
@@ -87,7 +94,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
       await API.finalizarTicket(
         ticketActual.id,
         usuario.id,
-        "atendido",
+        4,
         comentario
       );
       setTicketActual(null);
@@ -107,7 +114,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
       await API.finalizarTicket(
         ticketActual.id,
         usuario.id,
-        "no_presentado",
+        5,
         comentario
       );
       setTicketActual(null);
@@ -126,7 +133,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
       await API.finalizarTicket(
         ticketActual.id,
         usuario.id,
-        "pendiente",
+        7,
         comentario
       );
       setTicketActual(null);

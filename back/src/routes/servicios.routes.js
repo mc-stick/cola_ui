@@ -56,8 +56,8 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, color, tiempo_promedio, activo } = req.body;
-
+    const { nombre, descripcion, color, departamento_id, activo } = req.body;
+console.log( nombre, descripcion, color, departamento_id, activo )
     const [rows] = await pool.query(
       'SELECT * FROM servicios WHERE id = ?',
       [id]
@@ -65,8 +65,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const anterior = rows[0].nombre;
     
     await pool.query(
-      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, tiempo_promedio = ?, activo = ? WHERE id = ?',
-      [nombre, descripcion, color, tiempo_promedio, activo, id]
+      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, departamento = ?, activo = ? WHERE id = ?',
+      [nombre, descripcion, color, departamento_id, activo, id]
     );
     
     await registrarAuditoria({
@@ -79,8 +79,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
     
     res.json({ success: true });
   } catch (error) {
-    console.error('Error actualizando servicio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    //console.error('Error actualizando servicio:', error);
+    //res.status(500).json({ error: "error del servidor"});
   }
 });
 
@@ -94,7 +94,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'ELIMINAR SERVICIO',
+      accion: 5,
       modulo: 'Servicios',
       detalles: `ID: ${req.params.id}`,
       req
@@ -102,8 +102,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     
     res.json({ success: true });
   } catch (error) {
-    console.error('Error eliminando servicio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    //console.error('Error eliminando servicio: hay objetos que dependen del servicio, se recomienda deshabilitarlo.', error);
+    res.status(500).json({ error: "Error del servidor"});
   }
 });
 

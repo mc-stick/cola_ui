@@ -22,7 +22,7 @@ export default function PasoSeleccionServicio({
 
   const handleVerificar = async () => {
     const data = await api.verificarUsuario(identificacion);
-    console.log("LDAP: ident", data);
+   
     if (data && data.displayName) {
       setUser(data.displayName);
     } else {

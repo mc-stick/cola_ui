@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 export default function SliderUpDown({ servicios, onSelect }) {
   const [index, setIndex] = useState(0);
 
- console.log(servicios)
+
   
   const siguiente = () => {
     if (index < servicios.length - 1) {

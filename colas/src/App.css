@@ -20,6 +20,28 @@
   padding: 0;
 }
 
+input[type="color"] {
+  -webkit-appearance: none; /* Chrome, Safari */
+  -moz-appearance: none;    /* Firefox */
+  appearance: none;          /* Estándar */
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border-radius: 50%;
+  border: none;
+}
+
 .bg-primary {
   background: var(--color-secondary-blue-dark);
 }

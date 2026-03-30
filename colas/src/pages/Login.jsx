@@ -69,6 +69,7 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
 
         case "operador":
           navigate("/operador", { replace: true });
+          window.location.reload();
           break;
 
         default:

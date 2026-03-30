@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
 import { useMatrixText } from "../../hooks/useMatrixEfect";
+import AnimatedBubleBackground from "../../components/common/animBubbles";
 
 export function StarRating({
   max = 5,
@@ -30,7 +31,8 @@ export function StarRating({
                 ? `star-wave 450ms ease-out ${i * 90}ms`
                 : "none",
               animationDelay: animate ? `${i * 90}ms` : "0ms",
-            }}>
+            }}
+          >
             <StarIcon />
 
             {(full || partial) && (
@@ -42,7 +44,8 @@ export function StarRating({
                   width: full ? "100%" : `${percent}%`,
                   overflow: "hidden",
                   color: "orange",
-                }}>
+                }}
+              >
                 <StarIcon />
               </span>
             )}
@@ -64,6 +67,21 @@ export function StarRatingButton({
 
   const displayedValue = hover ?? value;
 
+  const StarPersonal = ({ filled, size = 24 }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={filled ? "orange" : "black"}
+      stroke="gray"
+      strokeWidth="0.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9" />
+    </svg>
+  );
+
   return (
     <div style={{ display: "flex", gap: 4 }}>
       {Array.from({ length: max }, (_, i) => {
@@ -80,11 +98,10 @@ export function StarRatingButton({
             onMouseLeave={() => !readOnly && setHover(null)}
             style={{
               cursor: readOnly ? "default" : "pointer",
-              fontSize: size,
-              color: filled ? "orange" : "#E0E0E0",
-              transition: "color 0.2s",
-            }}>
-            <StarIcon />
+              display: "inline-flex",
+            }}
+          >
+            <StarPersonal filled={filled} size={size} />
           </span>
         );
       })}
@@ -197,8 +214,9 @@ export function AnimatedRating({ value = 0 }) {
 
 function Mensaje({ titulo, mensaje }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center">
+    <div className="min-h-screen flex  items-center justify-center px-4">
+      <AnimatedBubleBackground />
+      <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-6 text-center">
         <h2 className="text-2xl font-semibold mb-3">
           <span className="flex gap-3 justify-center">
             <CircleSlashIcon className="w-10 h-10 text-red-500" /> {titulo}
@@ -212,11 +230,34 @@ function Mensaje({ titulo, mensaje }) {
 }
 
 export function EvaluacionTicket() {
-  const [rating, setRating] = useState(0);
+  //const [rating, setRating] = useState(0);
   const [enviado, setEnviado] = useState(false);
+  const [campos, setCampos] = useState([]);
   const [estado, setEstado] = useState(null);
   const [commentx, setCommentx] = useState("");
   const { id: ticketId } = useParams();
+
+  const [ratings, setRatings] = useState([]);
+
+  const [hasZero, setHasZero] = useState(true);
+
+  // 🔹 Inicializar ratings cuando lleguen los campos
+  useEffect(() => {
+    if (campos.length > 0) {
+      setRatings(Array(campos.length).fill(0));
+    }
+  }, [campos]);
+
+  useEffect(() => {
+    const existsZero = ratings.some((r) => r === 0 || r === undefined);
+    setHasZero(existsZero);
+  }, [ratings]);
+
+  const handleRatingChange = (index, value) => {
+    const newRatings = [...ratings];
+    newRatings[index] = value;
+    setRatings(newRatings);
+  };
 
   useEffect(() => {
     const fetchEstado = async () => {
@@ -225,6 +266,7 @@ export function EvaluacionTicket() {
         if (data.expirado || data.notfound) setEstado(1);
         else if (data.yaEvaluado) setEstado(2);
         else setEstado(0);
+        setCampos(data.data[0] || []);
       } catch (err) {
         console.error("Error al traer estado del ticket:", err);
         setEstado(1);
@@ -234,10 +276,10 @@ export function EvaluacionTicket() {
   }, [ticketId]);
 
   const handleSubmit = async () => {
-    if (rating === 0) return;
+    if (hasZero) return;
 
     try {
-      const result = await API.SendEvaluation(ticketId, rating, commentx);
+      const result = await API.SendEvaluation(ticketId, ratings, commentx);
 
       if (result.expirado) setEstado(1);
       else if (result.yaEvaluado) setEstado(2);
@@ -245,7 +287,8 @@ export function EvaluacionTicket() {
     } catch (err) {
       console.error("Error al enviar evaluación:", err);
     }
-    setCommentx("")
+
+    setCommentx("");
   };
 
   if (estado === 1) {
@@ -268,61 +311,84 @@ export function EvaluacionTicket() {
 
   // 🔹 Pantalla de evaluación
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary px-4">
+    <div className="min-h-screen flex items-center justify-center bg-blue-950 px-4">
+      <AnimatedBubleBackground />
       {enviado ? (
         <Mensaje
           titulo="¡Gracias por tu evaluación!"
           mensaje="Tu opinión nos ayuda a mejorar nuestro servicio."
         />
       ) : (
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 text-center">
+        <div className="w-full max-w-md bg-gray-300/80 rounded-2xl shadow-xl p-6 text-center">
           <h2 className="text-2xl font-semibold mb-2">
-            ¿Cómo fue tu atención?
+            Tu opinión nos importa, <br />
+            ¿cómo fue tu experiencia?
           </h2>
 
-          <p className="text-gray-500 mb-6">
-            Toca una estrella para calificar el servicio
-          </p>
+          {campos.map((data, index) => (
+            <div key={index}>
+              <div className="flex justify-between my-6">
+                <p className="text-black">
+                  Califica el servicio <br /> {data.nombre}
+                </p>
 
-          <div className="flex justify-center mb-6">
+                <StarRatingButton
+                  value={ratings[index] || 0}
+                  onChange={(value) => handleRatingChange(index, value)}
+                  size={36}
+                />
+              </div>
+
+              {index !== campos.length - 1 && (
+                <div className="h-1 bg-blue-600"></div>
+              )}
+            </div>
+          ))}
+
+          {/* 
+          <div className="flex justify-center my-6">
             <StarRatingButton value={rating} onChange={setRating} size={36} />
           </div>
+          <p className="text-black mb-6">
+            Toca una estrella para calificar el servicio
+          </p> */}
 
           <div>
             <textarea
-            onChange={(e)=>setCommentx(e.target.value)}
-              placeholder="Escribe tu comentario aquí..."
+              value={commentx}
+              onChange={(e) => setCommentx(e.target.value)}
+              placeholder="Escribenos tu comentario ..."
               className="
-        w-full
-        min-h-[100px]
-        p-3
-        text-sm
-        rounded-lg
-        border
-        border-gray-300
-        bg-white
-        placeholder-gray-400
-        resize-none
-        transition
-        focus:outline-none
-        focus:ring-2
-        focus:ring-blue-500
-        focus:border-blue-500
-      "
+                w-full
+                min-h-[100px]
+                p-3
+                text-sm
+                rounded-lg
+                border
+                border-gray-300
+                bg-white
+                placeholder-gray-400
+                resize-none
+                transition
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500
+                focus:border-blue-500
+              "
             />
-            
           </div>
 
           <button
             onClick={handleSubmit}
-            disabled={rating === 0}
-            className={`w-full py-3 rounded-lg font-medium text-white transition
+            disabled={hasZero}
+            className={`w-full py-3 rounded-lg font-medium text-black transition
               ${
-                rating === 0
-                  ? "bg-warning cursor-not-allowed"
+                hasZero
+                  ? "bg-gray-400 cursor-not-allowed"
                   : "bg-warning hover:bg-warning"
-              }`}>
-            Enviar evaluación
+              }`}
+          >
+            Enviar mi evaluación
           </button>
         </div>
       )}

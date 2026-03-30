@@ -29,7 +29,7 @@ export function Spinner({ timeout = 1000, onClose }) {
 
 export function TabSpinner({ timeout = 1000, onClose }) {
   const [config, setConfig] = useState(null);
-  
+
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -54,7 +54,7 @@ export function TabSpinner({ timeout = 1000, onClose }) {
     <div className=" inset-0 backdrop-blur-sm  items-center justify-center m-10 z-50 animate-fade-in">
       <div className="flex items-center justify-center">
         <div className="animate-spin">
-        <div className="h-20 w-20  rounded-full border-8  animate-spinColors"></div>
+          <div className="h-20 w-20  rounded-full border-8  animate-spinColors"></div>
         </div>
       </div>
       <div className=" flex items-center justify-center m-10 font-bold">
@@ -87,13 +87,15 @@ export function ConfirmModal({
           <div className="flex gap-4 justify-center">
             <button
               onClick={onCancel}
-              className="px-6 py-3 rounded-xl border border-red-300 text-red-600 bg-red-100 hover:bg-gray-100 transition">
+              className="px-6 py-3 rounded-xl border border-red-300 text-red-600 bg-red-100 hover:bg-gray-100 transition"
+            >
               Cancelar
             </button>
 
             <button
               onClick={onConfirm}
-              className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition">
+              className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition"
+            >
               Confirmar
             </button>
           </div>
@@ -149,7 +151,8 @@ export function DotsLoader() {
         <span
           key={index}
           className={`h-15 w-15  rounded-full animate-bounce`}
-          style={{ animationDelay: `-${0.3 - index * 0.15}s`}}>
+          style={{ animationDelay: `-${0.3 - index * 0.15}s` }}
+        >
           {logo && (
             <img
               src={logo}
@@ -193,95 +196,126 @@ export function CardLoader() {
 }
 
 export function InfoModal({ ticket = {}, modal = () => {} }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await api.getHistorialDetail(ticket.id);
+      
+      setData(res);
+    };
+
+    if (ticket?.id) {
+      fetchData();
+    }
+  }, [ticket.id]);
+
+console.log(ticket)
   return (
-    <div className="fixed inset-0 bg-gray-800/10  flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-xl w-full mx-4 shadow-xl animate-bounce-in">
-        <div className="text-center">
-          <div className="flex items-center justify-center mx-auto mb-6">
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-blue-100">
-              <InfoIcon className="w-12 h-12 text-blue-600" />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+      <div className="bg-white rounded-xl w-full max-w-2xl mx-4 shadow-2xl overflow-hidden animate-scale-in">
+        {/* HEADER */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+              <InfoIcon className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-black pr-10">
-              Información acerca del ticket
-            </h2>
+
+            <div>
+              <h2 className="text-2xl font-bold">Ticket #{ticket?.id}</h2>
+              <p className="text-sm opacity-90">
+                Información detallada del ticket
+              </p>
+              
+            </div>
+            <div className="ml-10">
+              <p>
+              <span className="font-semibold">Secuencia:</span>{" "}
+              <span className="text-blue-200 font-extrabold text-2xl px-4 py-2 rounded-xl">{data[0]?.Secuencia}</span>
+            </p>
+              <span className="">Fecha: <span className="italic">{new Date(ticket.created_at).toLocaleString('es-ES')}</span></span>
+            </div>
           </div>
-          <div
-            key={ticket.id}
-            className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-all border-l-4"
-            style={{
-              borderLeftColor: ticket.servicio_color || "#6B7280",
-            }}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4 flex-1">
-                {/* Número de Ticket */}
-                <div className="flex-shrink-0">
+
+          <div className=" justify-between text-sm mt-4">
+            <p className=" flex ">
+              <span className="font-semibold">Cliente:</span>{" "}
+              <span className="text-blue-200 font-extrabold text-lg uppercase gap-2 ml-2 rounded-xl">{data[0]?.Cliente}</span>
+            </p>
+           
+              <span className="flex font-semibold mb-3">Comentario del cliente:</span>{" "}
+              <span className="text-blue-900 flex font-extrabold ml-2 b-1 bg-blue-300 rounded-lg p-3 space-y-2">{data[0]?.cli_comment}</span>
+            
+           
+          </div>
+        </div>
+
+        {/* BODY (tu lista intacta) */}
+        <div className="p-6 bg-gray-500">
+          <div className="space-y-3  max-h-[400px] overflow-y-auto pr-2">
+            {data &&
+              data.map((ticket, index) => {
+                return (
                   <div
-                    className="text-4xl font-extrabold"
-                    style={{
-                      color: ticket.servicio_color, //|| hservicios.map(t=>t.color),
-                    }}>
-                    {ticket.numero}
-                  </div>
-                  <div className="text-xs text-gray-500 text-center font-bold mt-2">
-                    Ticket #<strong>{ticket.id}</strong>
-                  </div>
-                </div>
-              </div>
+                    key={index}
+                    className="bg-white rounded-2xl  hover:shadow-lg transition-all border border-gray-100 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      {/* IZQUIERDA */}
+                      <div className="flex px-4 py-3 items-center gap-4">
+                        <div className="bg-blue-50 text-blue-600 font-extrabold text-2xl px-4 py-2 rounded-xl">
+                          {ticket.Servicio} 
+                        </div>
 
-              <div className="flex-shrink-0 text-right space-y-2">
-                <div className="space-y-1 text-xs text-gray-500 border-t pt-2 mt-2">
-                  {ticket.accion !== "creado" ? (
-                    <div className="flex items-center gap-2 justify-end">
-                      <User className="w-5 h-5" />
-                      <span>Atendido por:</span>
-                      <span className="font-bold text-violet-600">
-                        {ticket.usuario_nombre}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 justify-end">
-                      <Clock className="w-5 h-5 text-amber-500" />
-                      <span className="font-bold text-amber-500">
-                        En espera
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 justify-end">
-                    <Clock className="w-5 h-5 text-green-500" />
-                    <span className="font-bold">Creado:</span>
-                    <span className="font-semibold italic">
-                      {new Date(ticket.created_at).toLocaleString("es-ES", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </span>
-                  </div>
-                  {ticket.transferido === 1 && (
-                    <div className="flex items-center gap-2 justify-end">
-                      <ArrowRightLeft className="w-5 h-5 text-cyan-500 font-bold" />
-                      <span className="font-bold text-orange-600">
-                        Ticket transferido
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                        <div>
+                          {/* <p className="text-sm font-semibold text-gray-800">
+                            {ticket.Servicio}
+                          </p> */}
+                          {/* <p className="text-xs text-gray-400">
+                            Secuencia: {ticket.Secuencia || "-"}
+                          </p> */}
+                        </div>
+                      </div>
 
-            <div className="space-y-1 text-lg font-semibold text-gray-500 border-t pt-2 mt-2">
-              {ticket.notes ? "Comentario:" : ""}
-            </div>
-            <span className="italic text-sm">
-              {ticket.notes || "No hay comentarios"}
-            </span>
+                      {/* DERECHA */}
+                      <div className="text-right px-4 py-3">
+                        <div className="flex items-center gap-2 justify-end text-xs">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-500">Operador</span>
+                          <span className="font-semibold text-violet-600">
+                            {ticket.Operador}
+                          </span>
+                        </div>
+
+                        {ticket.Transferido === 1 && (
+                          <div className="flex items-center gap-2 justify-end mt-1 text-xs">
+                            <ArrowRightLeft className="w-4 h-4 text-cyan-500" />
+                            <span className="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-lg font-medium">
+                              Transferido
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* COMENTARIO */}
+                    <div className="bg-gray-200 rounded-bl-2xl rounded-br-2xl px-4 py-3">
+                      <p className="text-xs    italic">
+                        {ticket.comentario || "Sin comentarios"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="p-3  bg-gray-300 flex justify-end">
           <button
             onClick={() => modal(false)}
-            className="px-6 mt-10 text-lg py-3 font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 transition">
+            className="px-6 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-700 to-green-900 text-white hover:scale-105 hover:shadow-lg transition-all"
+          >
             Aceptar
           </button>
         </div>

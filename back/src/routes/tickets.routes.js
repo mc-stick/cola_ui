@@ -12,7 +12,8 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const { servicio_id, tipo_identificacion, identificacion } = req.body;
-    
+    const id_persona = identificacion ?? "1";
+    console.log(id_persona)
     const [result] = await pool.query(
       'CALL generar_numero_ticket(?, @numero)',
       [servicio_id]
@@ -21,14 +22,14 @@ router.post('/', async (req, res) => {
     const [[{ '@numero': numero }]] = await pool.query('SELECT @numero');
     
     const [insertResult] = await pool.query(
-      'INSERT INTO tickets (numero, servicio_id, tipo_identificacion, identificacion) VALUES (?, ?, ?, ?)',
-      [numero, servicio_id, tipo_identificacion, identificacion]
+      'INSERT INTO tickets (numero, servicio_id, estado, id_persona) VALUES (?, ?, 1, ?)',
+      [numero, servicio_id, id_persona]
     );
     
-    await pool.query(
-      'INSERT INTO historial (ticket_id, accion) VALUES (?, ?)',
-      [insertResult.insertId, 'creado']
-    );
+    // await pool.query(
+    //   'INSERT INTO historial (ticket_id, accion) VALUES (?, ?)',
+    //   [insertResult.insertId, 'creado']
+    // );
     
     res.json({ 
       id: insertResult.insertId,
@@ -45,11 +46,12 @@ router.post('/', async (req, res) => {
  * GET /api/tickets/espera
  * Obtener tickets en espera
  */
-router.get('/espera', async (req, res) => {
+router.get('/espera', async (req, res) => { //ultima version
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM vista_tickets WHERE estado = "espera" ORDER BY created_at'
+      'SELECT * FROM vista_tickets WHERE estado = 1 ORDER BY created_at'
     );
+   
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets en espera:', error);
@@ -64,11 +66,12 @@ router.get('/espera', async (req, res) => {
 router.get('/llamados', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM vista_tickets 
-       WHERE estado IN ('llamado', 'en_atencion') 
-       ORDER BY llamado_at DESC 
-       LIMIT 5`
+      `SELECT * FROM vista_tickets
+       WHERE estado IN ('2', '3') 
+       ORDER BY created_at DESC 
+       LIMIT 20`
     );
+    
     
     res.json(rows);
   } catch (error) {
@@ -118,16 +121,16 @@ router.get('/evaluado-user', async (req, res) => {
  */
 router.get('/operador/:usuario_id', async (req, res) => {
   try {
-    const { usuario_id } = req.params;
+    const { usuario_id } = req.params;  //Ultima version
     
     const [rows] = await pool.query(
       `SELECT * FROM vista_tickets 
-       WHERE usuario_id = ?
-       AND estado NOT IN ('atendido', 'no_presentado', 'cancelado') 
+       WHERE usuario = ?
+       AND estado NOT IN (4, 5, 6) 
        ORDER BY created_at DESC`,
       [usuario_id]
     );
-    
+     console.log(rows, "rows")
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo tickets del operador:', error);
@@ -142,20 +145,61 @@ router.get('/operador/:usuario_id', async (req, res) => {
 router.post('/:id/llamar', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { usuario_id, puesto_id } = req.body;
-    
+    const { usuario_id,puesto, servicio} = req.body;
+
     await pool.query(
-      'CALL llamar_ticket(?, ?, ?)',
-      [id, usuario_id, puesto_id]
+      'CALL llamar_ticket(?, ?, ?,?)',
+      [id, usuario_id, puesto,servicio]
     );
+
+     const [rows] = await pool.query(`SELECT  ticket_id  FROM ticket_detail WHERE ticket_id=?`,
+      [Number(id)] )
+
+      if(rows.length === 0){
+
+    await pool.query(`INSERT INTO ticket_detail(ticket_id, id_servicio, id_puesto, id_usuario, id_persona, op_comment, transferir, llamado_veces)
+       VALUES (?,?,?,?,1,'',0,1)`,[Number(id),servicio,puesto,usuario_id] )}
     
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: 'LLAMAR TICKET',
-      modulo: 'Tickets',
-      detalles: `Ticket ID: ${id}, Puesto ID: ${puesto_id}`,
-      req
-    });
+    // await registrarAuditoria({
+    //   usuarioId: req.user.id,
+    //   accion: 7,
+    //   modulo: 'Tickets',
+    //   detalles: `Ticket ID: ${id}, Puesto ID: ${puesto}, Servicio ID: ${servicio}`,
+    //   req
+    // });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error llamando ticket:', error);
+    res.status(500).json({ error: "error del servidor"});
+  }
+});
+
+router.post('/:id/rellamar', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { usuario_id,puesto, servicio} = req.body;
+
+     const [rows] = await pool.query(`select llamado_veces from ticket_detail where
+    ticket_id = ? and
+    id_servicio = ? and
+    id_puesto = ? `,[Number(id),servicio,puesto] )
+
+    
+
+    await pool.query(`update ticket_detail set llamado_veces=? where
+    ticket_id = ? and
+    id_puesto = ? and
+    id_servicio = ?`,[rows[0].llamado_veces+1,Number(id), puesto,servicio] )
+
+    
+    // await registrarAuditoria({
+    //   usuarioId: req.user.id,
+    //   accion: 7,
+    //   modulo: 'Tickets',
+    //   detalles: `Ticket ID: ${id}, Puesto ID: ${puesto}, Servicio ID: ${servicio}`,
+    //   req
+    // });
     
     res.json({ success: true });
   } catch (error) {
@@ -214,13 +258,13 @@ router.post('/:id/atender', authenticateToken, async (req, res) => {
     
     await pool.query('CALL atender_ticket(?, ?)', [id, usuario_id]);
     
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: 'ATENDER TICKET',
-      modulo: 'Tickets',
-      detalles: `Ticket ID: ${id}`,
-      req
-    });
+    // await registrarAuditoria({
+    //   usuarioId: req.user.id,
+    //   accion: 'ATENDER TICKET',
+    //   modulo: 'Tickets',
+    //   detalles: `Ticket ID: ${id}`,
+    //   req
+    // });
     
     res.json({ success: true });
   } catch (error) {
@@ -239,15 +283,15 @@ router.post('/:id/finalizar', authenticateToken, async (req, res) => {
     const { usuario_id, estado, comentario } = req.body;
     
     await pool.query(
-      'CALL finalizar_ticket(?, ?, ?, ?)',
-      [id, usuario_id, estado, comentario]
+      'CALL finalizar_ticket(?, ?)',
+      [id,estado]
     );
     
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'FINALIZAR TICKET',
+      accion: 3,
       modulo: 'Tickets',
-      detalles: `Ticket ID: ${id}, Estado: ${estado}`,
+      detalles: `Ticket ID: ${id}, Finalizado por operador.`,
       req
     });
     
@@ -265,18 +309,22 @@ router.post('/:id/finalizar', authenticateToken, async (req, res) => {
 router.post('/:id/transferir', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { servicio_id, comentario,serv_ant,servicio_nm } = req.body;
+    const { servicio_nvo, usuario, servicio_act, comentario} = req.body;
+
+    console.log(" ------------------------ Transferir ---------------------------",req.body)
     
     await pool.query(
-      'UPDATE tickets SET servicio_id=?, notes=?,llamado_veces="0", estado="espera", puesto_id=null, usuario_id=null, transferido=1 WHERE id=?',
-      [servicio_id, comentario, id]
+      'CALL transferir(?,?,?,?)',
+       [id, usuario, servicio_nvo, comentario]
+     
     );
-    
+    //  UPDATE tickets SET estado=1 ,last_user=?, servicio=? WHERE id=?',
+    //   [usuario,servicio_id, id]
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'TRANSFERIR TICKET',
+      accion: 6,
       modulo: 'Tickets',
-      detalles: `Ticket ID: "${id}", Transferido de: "${serv_ant}", hasta: "${servicio_nm}"`,
+      detalles: `Ticket ID: "${id}", Transferido.`,
       req
     });
     
@@ -295,11 +343,11 @@ router.get('/:id/estado-evaluacion', async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      'SELECT finalizado_at, expirado, evaluation FROM tickets WHERE id=? AND estado="atendido"',
+      'SELECT finalizado_at, expirado FROM tickets WHERE id=? AND estado=4',
       [id]
     );
     const ticket = rows[0];
-    
+    console.log("ya evaluado")
     if (!ticket) {
       return res.json({ success: true, expirado: false, yaEvaluado: false, notfound: true });
     }
@@ -307,19 +355,40 @@ router.get('/:id/estado-evaluacion', async (req, res) => {
     const ahora = new Date();
     const finalizado = ticket.finalizado_at ? new Date(ticket.finalizado_at) : null;
 
-    const expiradoPorTiempo = finalizado && (ahora - finalizado > 30 * 60 * 1000);
+    const expiradoPorTiempo = finalizado && (ahora - finalizado > 50 * 60 * 1000);
     const expirado = ticket.expirado || expiradoPorTiempo;
+
+    let evaltk=[];
 
     if (expirado && !ticket.expirado) {
       await pool.query('UPDATE tickets SET expirado=1 WHERE id=?', [id]);
-    }
-
-    res.json({
+      return res.json({
       success: true,
       expirado,
       yaEvaluado: ticket.evaluation > 0,
       notfound: false
-    });
+      });
+    }else{
+     evaltk = await pool.query(`SELECT 
+s.nombre,
+td.ticket_id,
+td.id_servicio
+FROM ticket_detail td 
+join servicios s on s.id=td.id_servicio
+WHERE td.ticket_id=? `,[id]);
+
+console.log(evaltk)
+
+return res.json({
+  data: evaltk,
+      success: true,
+      expirado,
+      yaEvaluado: ticket.evaluation > 0,
+      notfound: false
+      });
+    }
+
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Error interno del servidor" });
@@ -335,11 +404,14 @@ router.post('/:id/evaluar', async (req, res) => {
     const { id } = req.params;
     const { evaluation, comment } = req.body;
 
+    console.log(evaluation, "evaluacion")
+
     const [rows] = await pool.query(
-      'SELECT finalizado_at, expirado, evaluation FROM tickets WHERE id=?',
+      'SELECT finalizado_at, expirado FROM tickets WHERE id=?',
       [id]
     );
     const ticket = rows[0];
+    console.log(ticket)
     
     if (!ticket) {
       return res.status(404).json({ success: false, message: "Ticket no encontrado" });
@@ -348,7 +420,7 @@ router.post('/:id/evaluar', async (req, res) => {
     const ahora = new Date();
     const finalizado = ticket.finalizado_at ? new Date(ticket.finalizado_at) : null;
 
-    const expiradoPorTiempo = finalizado && (ahora - finalizado > 30 * 60 * 1000);
+    const expiradoPorTiempo = finalizado && (ahora - finalizado > 50 * 60 * 1000);
     if (ticket.expirado || expiradoPorTiempo) {
       if (!ticket.expirado) {
         await pool.query('UPDATE tickets SET expirado=1 WHERE id=?', [id]);
@@ -360,7 +432,30 @@ router.post('/:id/evaluar', async (req, res) => {
       return res.status(400).json({ success: false, message: "Ticket ya evaluado" });
     }
 
-    await pool.query('UPDATE tickets SET evaluation=?, expirado=1, comment=? WHERE id=?', [evaluation,comment, id]);
+    await pool.query('UPDATE tickets SET  expirado=1, cli_comment=? WHERE id=?', [comment, id]);
+
+    const [data]= await pool.query(`SELECT * FROM ticket_detail WHERE ticket_id=?`,[id])
+
+   for (const stars of evaluation) {
+  await pool.query(
+    `INSERT INTO evaluacion (
+      ticket_id,
+      id_persona,
+      id_user,
+      id_servicio,
+      estrellas
+    )
+    VALUES (?,?,?,?,?)`,
+    [
+      id,
+      data[0]?.id_persona,
+      data[0]?.id_usuario,
+      data[0]?.id_servicio,
+      stars
+    ]
+  );
+}
+    
 
     res.json({ success: true, message: "Evaluación registrada correctamente" });
   } catch (error) {

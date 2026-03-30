@@ -98,7 +98,7 @@ export const ModalCallTK = ({ open, ticketId, onClose }) => {
     const handleReLlamar = async () => {
       try {
         const data = await api.llamarVolver(open);
-        console.log(data)
+       
         setValido(!!data?.estado);
       } catch (error) {
         setValido(false);

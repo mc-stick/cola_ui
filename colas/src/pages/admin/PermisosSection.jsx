@@ -14,16 +14,17 @@ function PermisosSection({
   const [permisosActuales, setPermisosActuales] = useState([]);
 
   const handleSeleccionaradmin = async (admin) => {
-    if (!admin.user_active) {
+    if (!admin.activo) {
       toast.error("Usuario inactivo.");
       return;
     }
 
     setAdminSeleccionado(admin);
+    // document.getElementsByName('')
 
     try {
       // Cargar permisos actuales del admin
-      const permisos = await API.getPermisosUsuario(admin.id);
+      const permisos = await API.getPermisosUsuario(admin.id,);
       setPermisosActuales(permisos);
     } catch (error) {
       toast.error("Error al cargar permisos del usuario");
@@ -37,10 +38,11 @@ function PermisosSection({
 
       if (activo) {
         await API.actualizarPermiso(usuarioId, permisoId, 0);
-        toast.error("Configuración No asignada.");
+        toast.error("Permiso eliminado.");
       } else {
+        
         await API.actualizarPermiso(usuarioId, permisoId, 1);
-        toast.success("Configuración asignada.");
+        toast.success("Permiso asignado.");
       }
 
       // Recargar permisos después de actualizar
@@ -94,7 +96,7 @@ function PermisosSection({
                       <div className="flex-1">
                         <h4
                           className={`font-bold text-lg ${
-                            admin.user_active
+                            admin.activo
                               ? "text-white"
                               : "line-through text-[var(--color-primary-red)]"
                           }`}

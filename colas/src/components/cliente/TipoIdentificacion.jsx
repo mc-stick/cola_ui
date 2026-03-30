@@ -34,7 +34,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
     setIsModalOpen(false);
     setGuia_paso(x);
     setTimeout(() => setRunTour(true), 300);
-    console.log(x, "guia ");
+    
   };
 
   const tutorialConfig = getTutorialDeAcceso(onGuide);
@@ -51,7 +51,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      console.log("Valor enviado:", inputValue);
+      
       setInputValue("");
     }
   };

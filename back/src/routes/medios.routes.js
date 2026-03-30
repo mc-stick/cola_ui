@@ -13,10 +13,10 @@ router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT 
-        id, tipo, url, nombre, activo, medio_active, orden, es_local, tamano_kb, created_at
+        id, tipo, url, nombre, activo, medio_active, tamano_kb, created_at
        FROM medios 
        WHERE activo = TRUE 
-       ORDER BY orden, created_at`
+       ORDER BY id, created_at`
     );
     
     res.json(rows);
@@ -64,8 +64,8 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const [result] = await pool.query(
       `INSERT INTO medios 
-       (tipo, url, nombre, orden, es_local, tamano_kb) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       (tipo, url, nombre, tamano_kb) 
+       VALUES (?, ?, ?, ?)`,
       [
         tipo, 
         url, 
@@ -116,9 +116,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
     
     await pool.query(
       `UPDATE medios 
-       SET tipo = ?, url = ?, nombre = ?, orden = ?, activo = ?, es_local = ?, tamano_kb = ?
+       SET tipo = ?, url = ?, nombre = ?, activo = ?, tamano_kb = ?
        WHERE id = ?`,
-      [tipo, url, nombre, orden, activo, es_local, tamano_kb, id]
+      [tipo, url, nombre, activo, tamano_kb, id]
     );
     
     await registrarAuditoria({
