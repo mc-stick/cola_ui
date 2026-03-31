@@ -27,11 +27,11 @@ router.get('/', async (req, res) => {
  */
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { nombre, descripcion, codigo, color, tiempo_promedio } = req.body;
-   
+    const { nombre, descripcion, codigo, color, check } = req.body;
+   console.log(req.body,"servicio")
     const [result] = await pool.query(
-      'INSERT INTO servicios (nombre, descripcion, codigo, color, tiempo_promedio) VALUES (?, ?, ?, ?, ?)',
-      [nombre, descripcion, codigo, color, tiempo_promedio]
+      'INSERT INTO servicios (nombre, descripcion, codigo, color, dar_prioridad) VALUES (?, ?, ?, ?, ?)',
+      [nombre, descripcion, codigo, color, check ? 1:0]
     );
     
     await registrarAuditoria({
@@ -56,7 +56,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, color, departamento_id, activo } = req.body;
+    const { nombre, descripcion, color, departamento_id, activo, check } = req.body;
 console.log( nombre, descripcion, color, departamento_id, activo )
     const [rows] = await pool.query(
       'SELECT * FROM servicios WHERE id = ?',
@@ -65,8 +65,8 @@ console.log( nombre, descripcion, color, departamento_id, activo )
     const anterior = rows[0].nombre;
     
     await pool.query(
-      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, departamento = ?, activo = ? WHERE id = ?',
-      [nombre, descripcion, color, departamento_id, activo, id]
+      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, departamento = ?, activo = ?, dar_prioridad=? WHERE id = ?',
+      [nombre, descripcion, color, departamento_id, activo, check ? 1:0, id]
     );
     
     await registrarAuditoria({

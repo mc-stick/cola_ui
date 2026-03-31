@@ -33,9 +33,7 @@ export const ColaEsperaCard = ({
   return (
     <div id="espera-tk" className="bg-white rounded-2xl shadow-lg p-8">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-800">
-          Tickets en Espera
-        </h3>
+        <h3 className="text-2xl font-bold text-gray-800">Tickets en Espera</h3>
         <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold">
           {ticketsEspera.length}
         </div>
@@ -61,38 +59,46 @@ export const ColaEsperaCard = ({
       </button>
 
       <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
-        {ticketsEspera.slice(0, 10).map((ticket, index) => (
-          <div
-            key={ticket.id}
-            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border-l-4"
-            style={{
-              borderLeftColor: ticket.color || "#1E40AF",
-            }}>
-            <div className="flex items-center gap-4">
-              <div className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
-                {index + 1}
-              </div>
-              <span
-                className="text-2xl font-bold"
-                style={{ color: ticket.color || "#1E40AF" }}>
-                {ticket.numero}
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-gray-700 font-semibold">
-                {ticket.servicio_nombre}
-              </div>
-              {ticket.transferido === 1 && (
-                <div className="text-red-700 font-semibold text-xs">
-                  Transferido (Prioridad)
+        {/* {ticketsEspera.slice(0, 10).map((ticket, index) => ( */}
+        {[
+          ...ticketsEspera.filter((t) => t.priority === 1),
+          ...ticketsEspera
+          .filter((t) => t.priority !== 1),
+        ]
+          .slice(0, 10)
+          .map((ticket, index) => (
+            <div
+              key={ticket.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border-l-4"
+              style={{
+                borderLeftColor: ticket.color || "#1E40AF",
+              }}>
+              <div className="flex items-center gap-4">
+                <div className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
+                  {index + 1}
                 </div>
-              )}
-              <div className="text-sm text-indigo-600">
-                {tiempoTranscurrido(ticket.created_at)}
+                <span
+                  className="text-2xl font-bold"
+                  style={{ color: ticket.color || "#1E40AF" }}>
+                  {ticket.numero}
+                </span>
+                {ticket.priority === 1 && (
+                  <div className="text-red-700 font-semibold text-xs">
+                    (Prioridad)
+                  </div>
+                )}
+              </div>
+              <div className="text-right">
+                {/* <div className="text-gray-700 font-semibold">
+                  {ticket.servicio_nombre}
+                </div> */}
+                
+                <div className="text-sm text-indigo-600">
+                  {tiempoTranscurrido(ticket.created_at)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
         {ticketsEspera.length === 0 && serviciosAsignados.length > 0 && (
           <div className="text-center py-12 text-gray-500">

@@ -1,8 +1,11 @@
 import {
   ArrowRightLeft,
+  BarChart,
   CheckCircle2Icon,
   Clock,
   InfoIcon,
+  ListChecksIcon,
+  MessageSquare,
   Trash2Icon,
   User,
 } from "lucide-react";
@@ -87,15 +90,13 @@ export function ConfirmModal({
           <div className="flex gap-4 justify-center">
             <button
               onClick={onCancel}
-              className="px-6 py-3 rounded-xl border border-red-300 text-red-600 bg-red-100 hover:bg-gray-100 transition"
-            >
+              className="px-6 py-3 rounded-xl border border-red-300 text-red-600 bg-red-100 hover:bg-gray-100 transition">
               Cancelar
             </button>
 
             <button
               onClick={onConfirm}
-              className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition"
-            >
+              className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition">
               Confirmar
             </button>
           </div>
@@ -151,8 +152,7 @@ export function DotsLoader() {
         <span
           key={index}
           className={`h-15 w-15  rounded-full animate-bounce`}
-          style={{ animationDelay: `-${0.3 - index * 0.15}s` }}
-        >
+          style={{ animationDelay: `-${0.3 - index * 0.15}s` }}>
           {logo && (
             <img
               src={logo}
@@ -201,7 +201,7 @@ export function InfoModal({ ticket = {}, modal = () => {} }) {
   useEffect(() => {
     const fetchData = async () => {
       const res = await api.getHistorialDetail(ticket.id);
-      
+
       setData(res);
     };
 
@@ -210,7 +210,7 @@ export function InfoModal({ ticket = {}, modal = () => {} }) {
     }
   }, [ticket.id]);
 
-console.log(ticket)
+  console.log(ticket, data);
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-white rounded-xl w-full max-w-2xl mx-4 shadow-2xl overflow-hidden animate-scale-in">
@@ -226,27 +226,43 @@ console.log(ticket)
               <p className="text-sm opacity-90">
                 Información detallada del ticket
               </p>
-              
             </div>
             <div className="ml-10">
               <p>
-              <span className="font-semibold">Secuencia:</span>{" "}
-              <span className="text-blue-200 font-extrabold text-2xl px-4 py-2 rounded-xl">{data[0]?.Secuencia}</span>
-            </p>
-              <span className="">Fecha: <span className="italic">{new Date(ticket.created_at).toLocaleString('es-ES')}</span></span>
+                <span className="font-semibold">Secuencia:</span>{" "}
+                <span className="text-blue-200 font-extrabold text-2xl px-4 py-2 rounded-xl">
+                  {data[0]?.Secuencia}
+                </span>
+              </p>
+              <span className="font-semibold">
+                Fecha:{" "}
+                <span className="font-normal italic">
+                  {new Date(ticket.created_at).toLocaleString("es-ES")}
+                </span>
+              </span>
             </div>
           </div>
 
           <div className=" justify-between text-sm mt-4">
             <p className=" flex ">
-              <span className="font-semibold">Cliente:</span>{" "}
-              <span className="text-blue-200 font-extrabold text-lg uppercase gap-2 ml-2 rounded-xl">{data[0]?.Cliente}</span>
+              <span className="font-semibold">
+                Cliente:
+                <span className="text-blue-200 font-extrabold text-base uppercase gap-2 ml-2 rounded-xl">
+                  {data[0]?.Cliente}
+                </span>
+              </span>
             </p>
-           
-              <span className="flex font-semibold mb-3">Comentario del cliente:</span>{" "}
-              <span className="text-blue-900 flex font-extrabold ml-2 b-1 bg-blue-300 rounded-lg p-3 space-y-2">{data[0]?.cli_comment}</span>
-            
-           
+            {data[0]?.cli_comment && (
+  <div className="mt-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 max-w-lg">
+    <h4 className="font-semibold text-white text-base mb-1 flex items-center gap-2">
+       Comentario del cliente <MessageSquare/>
+    </h4>
+
+    <p className="text-sm text-white/80 leading-relaxed">
+      {data[0]?.cli_comment}
+    </p>
+  </div>
+)}
           </div>
         </div>
 
@@ -258,13 +274,12 @@ console.log(ticket)
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-2xl  hover:shadow-lg transition-all border border-gray-100 flex flex-col gap-2"
-                  >
+                    className="bg-white rounded-2xl  hover:shadow-lg transition-all border border-gray-100 flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       {/* IZQUIERDA */}
                       <div className="flex px-4 py-3 items-center gap-4">
                         <div className="bg-blue-50 text-blue-600 font-extrabold text-2xl px-4 py-2 rounded-xl">
-                          {ticket.Servicio} 
+                          {ticket.Servicio}
                         </div>
 
                         <div>
@@ -295,6 +310,14 @@ console.log(ticket)
                             </span>
                           </div>
                         )}
+                        {ticket.Estado && (
+                          <div className="flex items-center gap-1 justify-end mt-1 text-xs">
+                            <ListChecksIcon className="w-4 h-4 text-amber-500" />
+                            <span className=" px-1 py-0.5 rounded-lg font-medium capitalize">
+                              {ticket.Estado}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -314,8 +337,7 @@ console.log(ticket)
         <div className="p-3  bg-gray-300 flex justify-end">
           <button
             onClick={() => modal(false)}
-            className="px-6 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-700 to-green-900 text-white hover:scale-105 hover:shadow-lg transition-all"
-          >
+            className="px-6 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-700 to-green-900 text-white hover:scale-105 hover:shadow-lg transition-all">
             Aceptar
           </button>
         </div>

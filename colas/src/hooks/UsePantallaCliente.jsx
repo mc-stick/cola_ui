@@ -8,6 +8,8 @@ export function usePantallaCliente() {
   const [tipoId, setTipoId] = useState(null);
   const [identificacion, setIdentificacion] = useState("");
   const [servicios, setServicios] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState([]);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [ticketGenerado, setTicketGenerado] = useState(null);
   const [config, setConfig] = useState(null);
@@ -19,6 +21,7 @@ export function usePantallaCliente() {
       const activos = servicios.filter((s) => s.service_active === 1);
       setServicios(activos);
     });
+    API.getdepartamentos().then(setDepartamentos);
     //cargarServicios();
   }, []);
 
@@ -31,15 +34,17 @@ export function usePantallaCliente() {
   const seleccionarServicio = async (servicio) => {
     setServicioSeleccionado(servicio);
 
+    console.log(servicio,"servicio creado ticket")
+
     const ticket = await API.createTicket({
-      servicio_id: servicio.id,
+      servicio_id: servicio,
       tipo_identificacion: tipoId,
       identificacion: identificacion || null,
     });
 
 
     setTicketGenerado(ticket);
-    setPaso(4);
+    setPaso(5);
 
     if (tipoId === "telefono") {
       SendTwilioSms("mensaje a enviar", identificacion);
@@ -47,6 +52,13 @@ export function usePantallaCliente() {
       //console.log("PRINTING", ticket.numero, servicio.nombre);
       await API.PrintTicket(ticket, servicio.nombre);
     }
+  };
+
+  const seleccionarDepartamento = async (departamento) => {
+    setDepartamentoSeleccionado(departamento);
+
+    console.log(departamento,"departamento seleccionado")
+    setPaso(4);
   };
 
   const reiniciar = () => {
@@ -69,12 +81,15 @@ export function usePantallaCliente() {
     identificacion,
     setIdentificacion,
     servicios,
+    departamentos,
     servicioSeleccionado,
+    departamentoSeleccionado,
     ticketGenerado,
     config,
     rating,
     setRating,
     seleccionarServicio,
+    seleccionarDepartamento,
     reiniciar,
   };
 }

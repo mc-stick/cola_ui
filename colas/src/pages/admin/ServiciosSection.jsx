@@ -24,6 +24,7 @@ function ServiciosSection({
       codigo: "",
       color: "#1E40AF",
       dep: "",
+      check: false,
     });
   };
 
@@ -61,8 +62,7 @@ function ServiciosSection({
         <button
           onClick={handleCrearServicio}
           disabled={LoadingSpin}
-          className="flex items-center gap-2 bg-[var(--color-primary-blue)] hover:bg-[var(--color-secondary-blue-dark)] disabled:bg-[var(--color-mono-silver)] disabled:cursor-not-allowed text-[var(--color-mono-white)] px-6 py-3 rounded-2xl font-semibold transition-all shadow-md"
-        >
+          className="flex items-center gap-2 bg-[var(--color-primary-blue)] hover:bg-[var(--color-secondary-blue-dark)] disabled:bg-[var(--color-mono-silver)] disabled:cursor-not-allowed text-[var(--color-mono-white)] px-6 py-3 rounded-2xl font-semibold transition-all shadow-md">
           <Plus className="w-5 h-5" />
           Nuevo Servicio
         </button>
@@ -100,11 +100,12 @@ function ServiciosSection({
                 <input
                   type="text"
                   value={formulario.codigo || ""}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, codigo: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const valor = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 3);
+                    setFormulario({ ...formulario, codigo: valor });
+                  }}
                   disabled={editando !== "nuevo"}
-                  maxLength={10}
+                  maxLength={3}
                   className="w-full px-4 py-2 border-2 border-[var(--color-mono-silver)] rounded-2xl focus:outline-none focus:border-[var(--color-primary-blue)] disabled:bg-[var(--color-mono-silver)]/30 transition"
                   placeholder="Código interno"
                 />
@@ -123,8 +124,7 @@ function ServiciosSection({
                       dep: e.target.value ? Number(e.target.value) : "",
                     })
                   }
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-[var(--color-secondary-blue-light)]/40 transition"
-                >
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-2xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-[var(--color-secondary-blue-light)]/40 transition">
                   <option value="">No asignado</option>
                   {departamentos.map((dep) => (
                     <option key={dep.id} value={dep.id}>
@@ -135,18 +135,43 @@ function ServiciosSection({
               </div>
 
               {/* Color */}
-              <div className="space-y-1 col-span-1 mr-[70%]">
-                <label className="block text-sm font-semibold text-[var(--color-primary-blue)]">
-                  Color
-                </label>
-                <input
-                  type="color"
-                  value={formulario.color || "#1e2a4f"}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, color: e.target.value })
-                  }
-                  className="h-10 w-10 border-2 border-[var(--color-mono-silver)] rounded-full p-1 cursor-pointer transition"
-                />
+              <div className="flex justify-around">
+                <div className="space-y-1  ">
+                  <label className="block text-sm font-semibold text-[var(--color-primary-blue)]">
+                    Color
+                  </label>
+                  <input
+                    type="color"
+                    value={formulario.color || "#1e2a4f"}
+                    onChange={(e) =>
+                      setFormulario({ ...formulario, color: e.target.value })
+                    }
+                    className="h-10 w-10 border-2 border-[var(--color-mono-silver)] rounded-full p-1 cursor-pointer transition"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-sm font-semibold text-[var(--color-primary-blue)]">
+                    Priorizar servicio:{" "}
+                    <span
+                      className={`text-sm font-bold 
+                      ${formulario.check ? "text-green-700" : "text-red-600"}`}>
+                      {formulario.check ? "Sí" : "No"}
+                    </span>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormulario({ ...formulario, check: !formulario.check })
+                    }
+                    className={`w-14 h-8 flex items-center rounded-full p-1 transition-all duration-300 cursor-pointer
+      ${formulario.check ? "bg-green-600" : "bg-red-500"}`}>
+                    <div
+                      className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-all duration-300
+        ${formulario.check ? "translate-x-6" : "translate-x-0"}`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -170,8 +195,7 @@ function ServiciosSection({
             <div className="flex gap-4 justify-end mt-4">
               <button
                 onClick={handleGuardar}
-                className="flex items-center gap-2 bg-[var(--color-primary-green)] hover:bg-[var(--color-secondary-green-dark)] text-[var(--color-mono-white)] px-6 py-2 rounded-2xl font-semibold transition shadow-lg"
-              >
+                className="flex items-center gap-2 bg-[var(--color-primary-green)] hover:bg-[var(--color-secondary-green-dark)] text-[var(--color-mono-white)] px-6 py-2 rounded-2xl font-semibold transition shadow-lg">
                 <Save className="w-5 h-5" />
                 Guardar
               </button>
@@ -181,8 +205,7 @@ function ServiciosSection({
                   setEditando(null);
                   setFormulario({});
                 }}
-                className="flex items-center gap-2 bg-[var(--color-mono-silver)] hover:bg-[var(--color-mono-black)] hover:text-[var(--color-mono-white)] text-[var(--color-mono-black)] px-6 py-2 rounded-2xl font-semibold transition shadow-sm"
-              >
+                className="flex items-center gap-2 bg-[var(--color-mono-silver)] hover:bg-[var(--color-mono-black)] hover:text-[var(--color-mono-white)] text-[var(--color-mono-black)] px-6 py-2 rounded-2xl font-semibold transition shadow-sm">
                 <X className="w-5 h-5" />
                 Cancelar
               </button>
@@ -211,8 +234,7 @@ function ServiciosSection({
             {servicios.map((servicio) => (
               <div
                 key={servicio.id}
-                className="bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-lg transition-all flex items-center justify-between"
-              >
+                className={`${servicio.service_active ? "bg-white":"bg-gray-300"} rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-lg transition-all flex items-center justify-between`}>
                 {/* IZQUIERDA */}
                 <div className="flex items-center gap-5">
                   {/* Código tipo badge */}
@@ -221,8 +243,7 @@ function ServiciosSection({
                     style={{
                       backgroundColor: `${servicio.color}20`,
                       color: servicio.color,
-                    }}
-                  >
+                    }}>
                     {servicio.codigo}
                   </div>
 
@@ -243,19 +264,35 @@ function ServiciosSection({
                   </div>
 
                   {/* Estado badge */}
-                  <span
+                  {/* <span
                     className={`ml-4 px-3 py-1 rounded-lg text-xs font-semibold ${
                       servicio.service_active
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-600"
-                    }`}
-                  >
+                    }`}>
                     {servicio.service_active ? "Activo" : "Inactivo"}
-                  </span>
+                  </span> */}
                 </div>
+                
 
                 {/* DERECHA - acciones */}
                 <div className="flex items-center gap-2">
+                  {servicio.dar_prioridad == true && <span
+                    className={`ml-4 px-3 py-1 mr-1 rounded-lg text-xs font-semibold ${
+                      servicio.service_active
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-600 "
+                    }`}>
+                     Servicio prioritario
+                  </span>}
+                  <span
+                    className={`ml-4 px-3 py-1 mr-10 rounded-lg text-xs font-semibold ${
+                      servicio.service_active
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-600"
+                    }`}>
+                    {servicio.service_active ? "Activo" : "Inactivo"}
+                  </span>
                   {/* Activar / Desactivar */}
                   <button
                     onClick={() =>
@@ -265,8 +302,7 @@ function ServiciosSection({
                       servicio.service_active
                         ? "bg-green-100 text-green-600 hover:bg-green-200"
                         : "bg-red-100 text-red-600 hover:bg-red-200"
-                    }`}
-                  >
+                    }`}>
                     {servicio.service_active ? (
                       <Check className="w-5 h-5" />
                     ) : (
@@ -281,18 +317,17 @@ function ServiciosSection({
                       setFormulario({
                         ...servicio,
                         dep: servicio.departamento || "",
+                        check: servicio.dar_prioridad || false
                       });
                     }}
-                    className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition"
-                  >
+                    className="p-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition">
                     <Edit className="w-5 h-5" />
                   </button>
 
                   {/* Eliminar */}
                   <button
                     onClick={() => setOpen(servicio.id)}
-                    className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition"
-                  >
+                    className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </div>

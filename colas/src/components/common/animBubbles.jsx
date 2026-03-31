@@ -7,14 +7,14 @@ export default function AnimatedBubleBackground() {
           className="bubble"
           style={{
             position: "absolute",
-            bottom: "-150px",
+            bottom: "-450px",
             right: "10%", // fija a la derecha
             width: "400px",
             height: "400px",
             borderRadius: "50%",
             backgroundColor: "#ffd900",
             opacity: 0.7,
-            animation: "riseRight 20s linear infinite",
+            animation: "riseRight 25s linear infinite",
           }}
         />
         <span
@@ -37,7 +37,7 @@ export default function AnimatedBubleBackground() {
           className="bubble"
           style={{
             position: "absolute",
-            bottom: "-150px",
+            bottom: "-350px",
             left: "10%", // fija a la izquierda
             width: "320px",
             height: "320px",

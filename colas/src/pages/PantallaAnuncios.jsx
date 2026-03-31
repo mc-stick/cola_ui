@@ -15,19 +15,6 @@ function PantallaAnuncios() {
   const [ticketEspera, setTicketEspera] = useState([]);
   const [historialTickets, setHistorialTickets] = useState({});
 
-  // ← NUEVO: Guardar el ID del ticket que fue llamado nuevamente
-  const [ticketRellamado, setTicketRellamado] = useState(null);
-
-  const [showSpeaker, setShowSpeaker] = useState(true);
-
-  useEffect(() => {
-    setShowSpeaker(false);
-    const timeout = setTimeout(() => {
-      setShowSpeaker(true);
-    }, 1000);
-    return () => clearTimeout(timeout);
-  }, [ticketsLlamados]);
-
   useEffect(() => {
     const actualizarReloj = () => {
       const ahora = new Date();
@@ -76,73 +63,70 @@ function PantallaAnuncios() {
   useEffect(() => {
     let ticketsAnteriores = [];
 
+    const mostrarModal = (ticket) => {
+      setTicketNuevo(ticket);
+      setTimeout(() => setTicketNuevo(null), 9000);
+    };
+
     const cargarTickets = async () => {
       try {
         const tickets = await API.getTicketsLlamados();
         const esperaTickets = await API.getTicketsEspera();
 
-        if (tickets.length > 0 && ticketsAnteriores.length > 0) {
-          const nuevoTicket = tickets.find(
-            (t) => !ticketsAnteriores.some((ta) => ta.id === t.id),
-          );
-
-          if (nuevoTicket) {
-            setTicketNuevo(nuevoTicket);
-            setTimeout(() => {
-              setTicketNuevo(null);
-            }, 9000);
-          }
-
-          // ← MODIFICADO: Detectar SOLO el ticket específico que fue rellamado
-          tickets.forEach((ticket) => {
-            const ticketAnterior = ticketsAnteriores.find(
-              (ta) => ta.id === ticket.id,
+        if (tickets.length > 0) {
+          if (ticketsAnteriores.length === 0) {
+            // ✅ PRIMERA CARGA: mostrar el primer ticket que ya esté llamado
+            mostrarModal(tickets[0]);
+          } else {
+            // ✅ Ticket nuevo (no existía antes)
+            const nuevoTicket = tickets.find(
+              (t) => !ticketsAnteriores.some((ta) => ta.id === t.id),
             );
-            if (
-              ticketAnterior &&
-              ticket.llamado_veces > ticketAnterior.llamado_veces
-            ) {
-              // Guardar el ticket que fue rellamado con timestamp
-              setTicketRellamado({
-                id: ticket.id,
-                timestamp: Date.now(),
-              });
-
-              // Limpiar después de 5 segundos
-              setTimeout(() => {
-                setTicketRellamado(null);
-              }, 5000);
+            if (nuevoTicket) {
+              mostrarModal(nuevoTicket);
             }
-          });
 
-          // Detectar tickets finalizados
-          const ticketsFinalizados = ticketsAnteriores.filter(
-            (ta) => !tickets.some((t) => t.id === ta.id),
-          );
-
-          if (ticketsFinalizados.length > 0) {
-            setHistorialTickets((prevHistorial) => {
-              const nuevoHistorial = { ...prevHistorial };
-
-              ticketsFinalizados.forEach((ticket) => {
-                const servicioNombre = ticket.servicio_nombre;
-
-                if (!nuevoHistorial[servicioNombre]) {
-                  nuevoHistorial[servicioNombre] = [];
-                }
-
-                nuevoHistorial[servicioNombre] = [
-                  { ...ticket, finalizado_at: new Date() },
-                  ...nuevoHistorial[servicioNombre],
-                ].slice(0, 5);
-              });
-
-              return nuevoHistorial;
+            // ✅ Rellamado: detectar ticket que fue llamado nuevamente
+            // Reutiliza el mismo modal + DemoSpeaker para disparar la voz
+            tickets.forEach((ticket) => {
+              const ticketAnterior = ticketsAnteriores.find(
+                (ta) => ta.id === ticket.id,
+              );
+              if (ticketAnterior && ticket.llamado > ticketAnterior.llamado) {
+                mostrarModal(ticket);
+              }
             });
+
+            // Detectar tickets finalizados
+            const ticketsFinalizados = ticketsAnteriores.filter(
+              (ta) => !tickets.some((t) => t.id === ta.id),
+            );
+
+            if (ticketsFinalizados.length > 0) {
+              setHistorialTickets((prevHistorial) => {
+                const nuevoHistorial = { ...prevHistorial };
+
+                ticketsFinalizados.forEach((ticket) => {
+                  const servicioNombre = ticket.servicio_nombre;
+
+                  if (!nuevoHistorial[servicioNombre]) {
+                    nuevoHistorial[servicioNombre] = [];
+                  }
+
+                  nuevoHistorial[servicioNombre] = [
+                    { ...ticket, finalizado_at: new Date() },
+                    ...nuevoHistorial[servicioNombre],
+                  ].slice(0, 5);
+                });
+
+                return nuevoHistorial;
+              });
+            }
           }
         }
 
         ticketsAnteriores = tickets;
+        console.log(tickets, "tickets pantalla");
         setTicketsLlamados(tickets);
         setTicketEspera(esperaTickets);
       } catch (error) {
@@ -288,7 +272,7 @@ function PantallaAnuncios() {
         </div>
       </div>
 
-      {/* Modal ticket nuevo (NO SE TOCA) */}
+      {/* Modal ticket nuevo / rellamado */}
       {ticketNuevo && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
           <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl border-4 border-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-primary-yellow)] animate-bounce-in">
@@ -345,14 +329,17 @@ function PantallaAnuncios() {
                   ([servicioNombre, data]) =>
                     data.tickets.map((ticket) => {
                       const esActual = ticketActual?.id === ticket.id;
+                      console.log(ticket);
 
                       return (
                         <li
                           key={ticket.id}
                           className={`flex justify-between items-center rounded-2xl bg-white/85 shadow-xl py-2 px-4 transition-all duration-300
                            ${
-                            esActual ? "scale-[1.02] border-4 animate-pulse" : "border-l-8"
-                          }`}
+                             esActual
+                               ? "scale-[1.02] border-4 animate-pulse"
+                               : "border-l-8"
+                           }`}
                           style={{
                             borderColor: data.color,
                           }}
@@ -365,33 +352,18 @@ function PantallaAnuncios() {
                             >
                               {ticket.numero}
                             </span>
-                            {/* <span
-                              className={`mx-5 px-3 pt-4 rounded-full text-sm font-bold text-white ${
-                                esActual ? "bg-green-600" : "bg-gray-800"
-                              }`}
-                            >
-                              {esActual ? "ATENDIENDO" : "LLAMADO"}
-                            </span> */}
 
-                            {ticket.llamado_veces > 1 && (
+                            {ticket.llamado > 1 && (
                               <span className="text-lg font-bold text-yellow-600">
-                                {ticket.llamado_veces} llamados
+                                {ticket.llamado} llamados
                               </span>
                             )}
                           </div>
 
                           {/* DERECHA */}
                           <div className="flex flex-col items-end gap-2">
-                            <span className="text-xl font-semibold text-gray-800 mt-2">
-                              Puesto: {ticket.puesto_nombre}
-                            </span>
-
-                            {/* Servicio visible solo en pantallas medianas+ */}
-                            <span
-                              className="hidden md:block text-sm font-bold uppercase mt-1"
-                              style={{ color: data.color }}
-                            >
-                              {servicioNombre}
+                            <span className="text-xl font-semibold text-gray-800 mt-2 uppercase">
+                              {ticket.puesto_nombre}
                             </span>
                           </div>
                         </li>
@@ -483,7 +455,7 @@ function PantallaAnuncios() {
                                 </h3>
                               </div>
                               {data.tickets.length ? (
-                                <span className="bg-green-500 text-white  px-2 py-1 rounded-full text-xs font-bold w-fit">
+                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold w-fit">
                                   {data.tickets.length} activos
                                 </span>
                               ) : (
@@ -502,17 +474,18 @@ function PantallaAnuncios() {
                                 <li
                                   key={ticket.id}
                                   className={`flex justify-between gap-x-4 p-4 rounded-2xl shadow-md border-2 transition-all
-        ${
-          index === 0 && ticketActual?.id === ticket.id
-            ? "bg-gradient-to-r from-[var(--color-secondary-yellow-light)] to-[var(--color-primary-yellow)] border-[var(--color-primary-yellow)]"
-            : index === 1
-              ? "bg-gradient-to-r from-[var(--color-secondary-green-light)] to-[var(--color-primary-green)] border-[var(--color-primary-green)]"
-              : "bg-gradient-to-r from-[var(--color-secondary-blue-light)] to-[var(--color-primary-blue)] border-[var(--color-primary-blue)]"
-        }`}
+                                    ${
+                                      index === 0 &&
+                                      ticketActual?.id === ticket.id
+                                        ? "bg-gradient-to-r from-[var(--color-secondary-yellow-light)] to-[var(--color-primary-yellow)] border-[var(--color-primary-yellow)]"
+                                        : index === 1
+                                          ? "bg-gradient-to-r from-[var(--color-secondary-green-light)] to-[var(--color-primary-green)] border-[var(--color-primary-green)]"
+                                          : "bg-gradient-to-r from-[var(--color-secondary-blue-light)] to-[var(--color-primary-blue)] border-[var(--color-primary-blue)]"
+                                    }`}
                                 >
                                   <div className="flex min-w-0 gap-x-4 items-center">
                                     <div className="min-w-0 flex-auto">
-                                      <div className=" min-w-0 flex-auto font-bold text-[var(--color-mono-black)] text-3xl">
+                                      <div className="min-w-0 flex-auto font-bold text-[var(--color-mono-black)] text-3xl">
                                         {ticket.numero}
                                       </div>
                                       {index === 0 &&
@@ -533,12 +506,12 @@ function PantallaAnuncios() {
                                       {ticket.puesto_nombre}
                                     </p>
 
-                                    {ticket.llamado_veces > 1 && (
+                                    {ticket.llamado > 1 && (
                                       <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-primary-yellow)] text-[var(--color-mono-black)] text-xs font-bold">
                                         <AlertTriangle className="w-8 h-8" />
                                         <p className="text-lg text-black/70">
-                                          {ticket.llamado_veces} Llamado
-                                          {ticket.llamado_veces ? "s" : ""}
+                                          {ticket.llamado} Llamado
+                                          {ticket.llamado ? "s" : ""}
                                         </p>
                                       </div>
                                     )}
@@ -553,7 +526,7 @@ function PantallaAnuncios() {
                                 <div className="pt-3 border-t-2 border-white/10">
                                   <div className="flex items-center gap-2 mb-2">
                                     <CheckCircle className="w-4 h-4 text-[var(--color-primary-green)]" />
-                                    <h4 className="text-xs font-bold text-bkacl/80 uppercase">
+                                    <h4 className="text-xs font-bold text-black/80 uppercase">
                                       Últimos Atendidos
                                     </h4>
                                   </div>

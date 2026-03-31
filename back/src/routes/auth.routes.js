@@ -15,20 +15,20 @@ const baseDN = process.env.LDAP_DN;
 
 function autenticarLDAP(username, password) {
   return new Promise((resolve, reject) => {
-    const client = ldap.createClient({ url: ldapUrl
-  //     ,
-  // tlsOptions: {
-  //   rejectUnauthorized: false // solo para pruebas
-  // }
- });
+    const client = ldap.createClient({
+      url: ldapUrl,
+      //     ,
+      // tlsOptions: {
+      //   rejectUnauthorized: false // solo para pruebas
+      // }
+    });
 
     const serviceUser = process.env.LDAP_BIND_USER;
     const servicePass = process.env.LDAP_BIND_PASSWORD;
 
-    
-client.on('error', (err) => {
-  console.error('Error de conexión:', err);
-});
+    client.on("error", (err) => {
+      console.error("Error de conexión:", err);
+    });
 
     client.bind(serviceUser, servicePass, (err) => {
       if (err) {
@@ -49,7 +49,7 @@ client.on('error', (err) => {
           "mail",
           "sAMAccountName",
           "memberOf",
-          "employeeID"
+          "employeeID",
         ],
       };
 
@@ -135,16 +135,11 @@ function ValidarLDAP(username) {
           message: "Error",
         });
       }
-      console.log("pass")
+      console.log("pass");
       const opts = {
         filter: `(employeeID=${username})`,
         scope: "sub",
-        attributes: [
-          "dn",
-          "cn",
-          "displayName",
-          "employeeID"
-        ],
+        attributes: ["dn", "cn", "displayName", "employeeID"],
       };
 
       client.search(baseDN, opts, (err, res) => {
@@ -163,12 +158,9 @@ function ValidarLDAP(username) {
           userDN = entry.pojo.objectName;
 
           entry.pojo.attributes.forEach((attr) => {
-
             userData[attr.type] =
               attr.values.length === 1 ? attr.values[0] : attr.values;
           });
-
-
         });
 
         res.on("error", () => {
@@ -203,8 +195,7 @@ router.post("/verificar", async (req, res) => {
       });
     }
 
-
-    console.log("Validando: ", username)
+    console.log("Validando: ", username);
 
     const usuario = await ValidarLDAP(username);
 
@@ -215,12 +206,20 @@ router.post("/verificar", async (req, res) => {
       });
     }
 
+    await pool.query(
+      `INSERT INTO persona (id_persona, name) 
+   VALUES (?, ?)
+   ON DUPLICATE KEY UPDATE 
+   name = VALUES(name)`,
+      [usuario.employeeID, usuario.cn || usuario.displayName],
+    );
+
     return res.status(200).json({
       ok: true,
       message: "Usuario encontrado",
       data: usuario,
     });
-
+    
   } catch (error) {
     console.error("Error en /verificar:", error);
 
@@ -231,46 +230,42 @@ router.post("/verificar", async (req, res) => {
   }
 });
 
-
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
     // 1️⃣ Autenticación SOLO con LDAP
-    console.log("ldapuser")
-    //const ldapUser = await autenticarLDAP(username, password);
-    //console.log("ldapuser",ldapUser)
+    // console.log("ldapuser")
+    const ldapUser = await autenticarLDAP(username, password);
+    console.log("ldapuser", ldapUser);
 
-
-    let ldapUser = {
-      displayName: username,
-    };
+    // let ldapUser = {
+    //   displayName: username,
+    // };
 
     if (!ldapUser) {
       return res.status(401).json({ error: "Credenciales inválidass" });
     }
 
-    
-
     // Normalizamos datos LDAP
-    // const userData = {
-    //   username,
-    //   nombre: ldapUser.displayName || ldapUser.cn,
-    //   rol: ldapUser.rol,
-    //   mail: ldapUser.mail,
-    //   activo: true,
-    //   user_active: true,
-    // };
-
-    // console.log(username)
-
     const userData = {
       username,
-      nombre: username==='wluciano'? "12345678":"87654321",
-      rol: username==='juan' || username==='maria' ? "operador" : "admin",
-      activo: true
+      nombre: ldapUser.displayName || ldapUser.cn,
+      rol: ldapUser.rol,
+      employeeID: ldapUser.employeeID,
+      activo: true,
+      user_active: true,
     };
-    console.log(userData,"data user -------------")
+
+    console.log(username);
+
+    // const userData = {
+    //   username,
+    //   nombre: username==='wluciano'? "12345678":"87654321",
+    //   rol: username==='juan' || username==='maria' ? "operador" : "admin",
+    //   activo: true
+    // };
+    // console.log(userData,"data user -------------")
 
     // 2️⃣ Verificar si existe en DB
     const [rows] = await pool.query(
@@ -280,38 +275,48 @@ router.post("/login", async (req, res) => {
 
     let userDB;
     let role = userData.rol == "admin" ? 1 : 2;
-    console.log("loginnnnn")
+    console.log("loginnnnn");
     if (!rows.length) {
       // 3️⃣ No existe → CREARLO
-      console.log("creando user")
-      
-      const [insertResult] = await pool.query(
-        `INSERT INTO usuarios 
+
+      console.log("creando user:", userData);
+      await pool.query(`INSERT INTO persona(id_persona, name) VALUES (?,?)`, [
+        userData.employeeID,
+        userData.nombre,
+      ]);
+      console.log("logged");
+
+      if (userData.rol) {
+        console.log("logged2");
+        const [insertResult] = await pool.query(
+          `INSERT INTO usuarios 
         (username, id_persona, rol,  activo)
         VALUES (?, ?, ?, ?)`,
-        [
-          userData.username,
-          userData.nombre,
-          role,
-          userData.activo
-        ],
-      );
+          [userData.username, userData.employeeID, role, userData.activo],
+        );
 
-      userDB = {
-        id: insertResult.insertId,
-        ...userData,
-      };
+        userDB = {
+          id: insertResult.insertId,
+          ...userData,
+        };
+      }
     } else {
       // 4️⃣ Existe → ACTUALIZAR si cambió algo (ej: rol)
       const existingUser = rows[0];
-      console.log("actualizando user3",userData.nombre, role, existingUser.id)
+      console.log(
+        "actualizando user3",
+        userData.nombre,
+        role,
+        existingUser.id,
+        userData.employeeID,
+      );
       await pool.query(
         `UPDATE usuarios 
          SET id_persona = ?, rol = ?
          WHERE id = ?`,
-        [userData.nombre, role, existingUser.id],
+        [userData.employeeID, role, existingUser.id],
       );
-      console.log("actualizando user pass")
+      console.log("actualizando user pass");
 
       userDB = {
         ...existingUser,
@@ -333,11 +338,10 @@ router.post("/login", async (req, res) => {
       }
     }
 
-
     const token = jwt.sign(
       {
         id: userDB.id,
-        nombre: userDB.nombre,
+        nombre: userDB.username,
         rol: userDB.rol,
       },
       JWT_SECRET,
@@ -369,7 +373,7 @@ router.post("/login", async (req, res) => {
     console.error("LDAP error:", error.message);
 
     return res.status(401).json({
-      error: "Credenciales inválidas catch",
+      error: "Credenciales inválidas",
     });
   }
 });
@@ -378,14 +382,16 @@ router.get("/me", authenticateToken, async (req, res) => {
   try {
     const [usuarios] = await pool.query(
       `SELECT u.id, u.username, u.rol, u.puesto_id,
-              p.nombre as puesto_nombre
+                       p.nombre as puesto_nombre,
+              per.name as nombre
        FROM usuarios u
        LEFT JOIN puestos p ON u.puesto_id = p.id
+       left JOIN persona per on u.id_persona = per.id_persona
        WHERE u.id = ?  and u.activo =1`,
       [req.user.id],
     );
 
-    console.log("userdb", usuarios[0])
+    console.log("userdb", usuarios[0]);
 
     if (usuarios.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado" });

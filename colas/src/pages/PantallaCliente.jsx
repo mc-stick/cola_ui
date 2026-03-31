@@ -4,6 +4,7 @@ import PasoIngresoId from "../components/cliente/pasoDos";
 import PasoSeleccionServicio from "../components/cliente/SeleccionServicio";
 import PasoTipoIdentificacion from "../components/cliente/TipoIdentificacion";
 import { usePantallaCliente } from "../hooks/UsePantallaCliente";
+import PasoSeleccionDep from "../components/cliente/SeleccionDep";
 
 export const HeaderIndex = ({ config }) => {
   return (
@@ -61,15 +62,29 @@ export default function PantallaCliente() {
     return (
       <>
         <HeaderIndex config={state.config} />
-        <PasoSeleccionServicio
+        <PasoSeleccionDep
           {...state}
           servicios={state.servicios}
-          onSelect={state.seleccionarServicio}
+          departamentos={state.departamentos}
+          onSelect={state.seleccionarDepartamento}
         />
       </>
     );
 
   if (state.paso === 4)
+    return (
+      <>
+        <HeaderIndex config={state.config} />
+        <PasoSeleccionServicio
+          {...state}
+          servicios={state.servicios}
+          dep={state.departamentoSeleccionado}
+          onSelect={state.seleccionarServicio}
+        />
+      </>
+    );
+
+  if (state.paso === 5)
     return (
       <>
         <HeaderIndex config={state.config} />

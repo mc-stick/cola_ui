@@ -9,20 +9,19 @@ export const useTickets = (usuario, serviciosAsignados) => {
   const cargarTickets = async () => {
     try {
       const todosTickets = await API.getTicketsEspera();
-      
+
       const ticketsFiltrados = todosTickets.filter((ticket) => {
-        
         return serviciosAsignados.some(
-          (servicio) => servicio.id === ticket.servicio
+          (servicio) => servicio.id === ticket.servicio,
         );
-      });//console.log(ticketsFiltrados, "espera filter")
+      }); //console.log(ticketsFiltrados, "espera filter")
 
       setTicketsEspera(ticketsFiltrados);
 
       const miTicket = await API.getTicketsByOperador(usuario.id);
-      console.log(miTicket,"mi ticket")
+      console.log(miTicket, "mi ticket");
       const ticketEnAtencion = miTicket.find(
-        (t) => t.estado === 2 || t.estado === 3
+        (t) => t.estado === 2 || t.estado === 3,
       );
 
       // Solo actualizar el ticket actual si cambió
@@ -38,7 +37,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
         // }
 
         //console.log(ticketEnAtencion,"tk atencion")
-        
+
         return ticketEnAtencion || null;
       });
     } catch (error) {
@@ -58,30 +57,67 @@ export const useTickets = (usuario, serviciosAsignados) => {
     }
 
     try {
-      const siguiente = ticketsEspera[0];
+      const ticketsOrdenados = [
+        ...ticketsEspera.filter((t) => t.prior === 1),
+        ...ticketsEspera.filter((t) => t.prior !== 1).reverse(), // mismo ajuste que hiciste arriba
+      ];
+
+      const siguiente = ticketsOrdenados[0];
+
+      if (!siguiente) return;
+
       if (
         !serviciosAsignados.some(
-          (servicio) => servicio.id === siguiente.servicio
+          (servicio) => servicio.id === siguiente.servicio,
         )
       ) {
         alert("No tienes permiso para atender este servicio");
         return;
       }
 
-      await API.llamarTicket(siguiente.id, usuario.id, usuario.puesto_id, siguiente.servicio);
+      await API.llamarTicket(
+        siguiente.id,
+        usuario.id,
+        usuario.puesto_id,
+        siguiente.servicio,
+      );
+
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       console.error("Error llamando ticket:", error);
       alert("Error al llamar ticket");
     }
+
+    // try {
+    //   const siguiente = ticketsEspera[0];
+    //   if (
+    //     !serviciosAsignados.some(
+    //       (servicio) => servicio.id === siguiente.servicio
+    //     )
+    //   ) {
+    //     alert("No tienes permiso para atender este servicio");
+    //     return;
+    //   }
+
+    //   await API.llamarTicket(siguiente.id, usuario.id, usuario.puesto_id, siguiente.servicio);
+    //   setTimeout(() => cargarTickets(), 500);
+    // } catch (error) {
+    //   console.error("Error llamando ticket:", error);
+    //   alert("Error al llamar ticket");
+    // }
   };
 
   const handleReLlamar = async () => {
     if (!ticketActual) return;
     try {
       //console.log(ticketActual,"tk actual")
-    
-      await API.rellamarTicket(ticketActual.id, usuario.id, usuario.puesto_id,ticketActual.servicio);
+
+      await API.rellamarTicket(
+        ticketActual.id,
+        usuario.id,
+        usuario.puesto_id,
+        ticketActual.servicio,
+      );
       setTimeout(() => cargarTickets(), 500);
     } catch (error) {
       alert("Error al re-llamar ticket");
@@ -91,12 +127,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
   const handleAtendido = async () => {
     if (!ticketActual) return;
     try {
-      await API.finalizarTicket(
-        ticketActual.id,
-        usuario.id,
-        4,
-        comentario
-      );
+      await API.finalizarTicket(ticketActual.id, usuario.id, 4, comentario);
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);
@@ -111,12 +142,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
     if (!confirm("¿Confirmar que el cliente NO se presentó?")) return;
 
     try {
-      await API.finalizarTicket(
-        ticketActual.id,
-        usuario.id,
-        5,
-        comentario
-      );
+      await API.finalizarTicket(ticketActual.id, usuario.id, 5, comentario);
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);
@@ -130,12 +156,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
     if (!confirm("¿Esta seguro de realizar esta acción?")) return;
 
     try {
-      await API.finalizarTicket(
-        ticketActual.id,
-        usuario.id,
-        7,
-        comentario
-      );
+      await API.finalizarTicket(ticketActual.id, usuario.id, 7, comentario);
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);

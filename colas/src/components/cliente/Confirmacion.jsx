@@ -26,7 +26,7 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo, iden
 
             <div className="text-7xl font-extrabold">{ticket?.numero}</div>
 
-            <div className="text-2xl font-semibold italic mt-10 text-black mb-4">
+            <div className="text-2xl font-semibold italic mt-5 text-black mb-4">
               {servicio?.nombre}
             </div>
             {tipo === "sin_id"? (
@@ -35,13 +35,13 @@ export default function PasoConfirmacion({ ticket, servicio, onReset, tipo, iden
               </div>
             )  : identificacion && identificacion.length === 8 ? (
               <div className="text-lg font-semibold italic mt-10 text-black mb-4">
-                {identificacion},
+                {/* {identificacion}, */}
                 <br />
-                 espera por tu llamado.
+                 Espere por su llamado.
               </div>
             ): (
               <div className="text-lg font-semibold italic mt-10 text-black mb-4">
-                Aqui tienes tu número de ticket, se envió por SMS a tu movil. 
+                Se envió un SMS a su movil con un numero de ticket. 
                 <br />
                 
               </div>

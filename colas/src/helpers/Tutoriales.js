@@ -10,18 +10,8 @@ export const getTutorialDeAcceso = (onGuide) => [
     }
   },
   {
-    title: "Ya tienes un ticket para mas tarde?",
-    content: [
-      "Te mostraré como colocarte en la fila lo mas pronto posible, este paso solo se puede realizar si tu ticket fue marcado para volver mas tarde."
-    ],
-    action: {
-      label: "Verificar si mi tickt aun funciona",
-      onClick: ()=>onGuide(6)
-    }
-  },
-  {
     title: "Crea un ticket usando tu Teléfono",
-    content: ["Te ayudaré a crear un ticket usando tu número de teléfono."],
+    content: ["Te ayudaré a crear un ticket usando tu número de teléfono, enviaremos un SMS a tu teléfono."],
     action: {
       label: "Crear un ticket",
       onClick: ()=>onGuide(2) 
@@ -29,7 +19,7 @@ export const getTutorialDeAcceso = (onGuide) => [
   },
   {
     title: "Crea un ticket usando tu ID",
-    content: ["Te ayudaré a crear un ticket usando tu número de ID."],
+    content: ["Te ayudaré a crear un ticket usando su ID de CAMPUS."],
     action: {
       label: "Crear un ticket",
       onClick: ()=>onGuide(3) 
@@ -37,10 +27,20 @@ export const getTutorialDeAcceso = (onGuide) => [
   },
   {
     title: "Crea un ticket como Invitado",
-    content: ["Te ayudaré a crear un ticket como Invitado."],
+    content: ["Te ayudaré a crear un ticket como Invitado si no estás registrado con un ID de CAMPUS."],
     action: {
       label: "Crear un ticket",
       onClick: ()=>onGuide(4) 
+    }
+  },
+  {
+    title: "Ya tienes un ticket para mas tarde?",
+    content: [
+      "Te mostraré como colocarte en la fila lo mas pronto posible, este paso solo se puede realizar si tu ticket fue marcado para volver mas tarde."
+    ],
+    action: {
+      label: "Verificar si mi ticket aun funciona.",
+      onClick: ()=>onGuide(6)
     }
   }
 ];

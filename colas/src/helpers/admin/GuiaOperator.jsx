@@ -28,7 +28,7 @@ export default function GuiaAdmin({ activar, setActivar }) {
           },
           { 
             element: '#grid-opcion3', 
-            popover: { title: 'Invitado', description: 'Continua como invitado sin registrarte en el sistema.', side: "top"} 
+            popover: { title: 'Invitado', description: 'Continua como invitado si no tienes un ID de CAMPUS.', side: "top"} 
           },
           { 
             element: '#btn-ayuda', 

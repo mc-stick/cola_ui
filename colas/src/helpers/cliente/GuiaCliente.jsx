@@ -16,7 +16,7 @@ export default function GuiaUsuario({ activar, setActivar }) {
         steps: [
           { 
             element: '#titulo-paso', 
-            popover: { title: 'Identificación', description: 'Selecciona cómo prefieres que el sistema te reconozca.', side: "bottom"} 
+            popover: { title: 'Identificación', description: 'Selecciona la opción que más se acerque a tu perfil.', side: "bottom"} 
           },
           { 
             element: '#grid-opcion1', 
@@ -28,7 +28,7 @@ export default function GuiaUsuario({ activar, setActivar }) {
           },
           { 
             element: '#grid-opcion3', 
-            popover: { title: 'Invitado', description: 'Continua como invitado sin registrarte en el sistema.', side: "top"} 
+            popover: { title: 'Invitado', description: 'Continua como invitado si no tienes un ID de CAMPUS.', side: "top"} 
           },
           { 
             element: '#btn-tk', 

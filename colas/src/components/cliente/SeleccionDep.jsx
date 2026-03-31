@@ -4,9 +4,9 @@ import api from "../../services/api";
 import { obtenerSaludo } from "../../utils/getWelcome";
 import { AlertTriangle } from "lucide-react";
 
-export default function PasoSeleccionServicio({
+export default function PasoSeleccionDep({
+  departamentos,
   servicios,
-  departamentoSeleccionado,
   onSelect,
   setPaso,
   setIdentificacion,
@@ -15,12 +15,21 @@ export default function PasoSeleccionServicio({
   const [user, setUser] = useState("");
   const [show, setShow] = useState(true);
 
-  const serviciosFiltrados = servicios.filter(
-    (s) => s.departamento === departamentoSeleccionado.id,
-  );
+  const departamentosConServicios = departamentos.filter((d) => {
+    return (
+      d &&
+      servicios.some((s) => s.service_active === 1 && s.departamento === d.id)
+    );
+  });
+
+  console.log(departamentosConServicios);
+  // Luego renderizamos solo esos departamentos
+
+  // const deptoFiltrados = departamentos
+  // .filter((s) => s.departamento === departamentoSeleccionado.id)
 
   const Backbtn = () => {
-    setPaso(3);
+    setPaso(1);
 
     setShow(true);
   };
@@ -29,7 +38,7 @@ export default function PasoSeleccionServicio({
     const data = await api.verificarUsuario(identificacion);
 
     if (data && data.cn || data.displayName) {
-      setUser( data.cn || data.displayName);
+      setUser(data.cn || data.displayName);
     } else {
       setShow(false);
       // setIdentificacion(user);
@@ -48,40 +57,31 @@ export default function PasoSeleccionServicio({
       <div className="fixed w-screen h-screen flex flex-col items-center bg-primary pt-16 pb-8 px-8">
         {show ? (
           <div id="table-service" className="animation-fade-in text-center">
-            {/* <span className="text-3xl font-bold text-white m-8">
+            <span className="text-3xl font-bold text-white m-8">
               {obtenerSaludo()}
-              <span className="text-[--color-mono-gold]">{" " + user}</span>
+              {user && (
+                <span className="text-[--color-mono-gold]">{" " + user}</span>
+              )}
               {`, bienvenido(a) a UCNE`}
-            </span> */}
+            </span>
             <h2 className="text-3xl font-bold text-white m-8">
-              Selecciona un servicio
+              Selecciona un Departamento
             </h2>
 
-            <div
-              className={`grid gap-6 ${
-                serviciosFiltrados.length === 1
-                  ? "grid-cols-1"
-                  : serviciosFiltrados.length === 2
-                    ? "grid-cols-1 sm:grid-cols-2"
-                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-              }`}>
-              {serviciosFiltrados.map((s) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {departamentosConServicios.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => onSelect(s)}
-                  style={{ borderTopColor: s.color }}
-                  className="bg-white w-full p-6 rounded-2xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 text-left border-t-8 flex flex-col">
-                  <div
-                    className="text-4xl sm:text-5xl font-extrabold mb-3"
+                  className="bg-white w-full sm:w-auto border-t-amber-500 p-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 text-left border-t-8">
+                  {/* <div
+                    className="text-5xl font-extrabold mb-4"
                     style={{ color: s.color }}>
                     {s.codigo}
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                  </div> */}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
                     {s.nombre}
                   </h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    {s.descripcion}
-                  </p>
                 </button>
               ))}
             </div>

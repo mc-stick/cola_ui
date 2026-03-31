@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
 export const SliderModal = ({ isOpen, onClose, slides }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,14 +19,19 @@ export const SliderModal = ({ isOpen, onClose, slides }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-200">
       <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-10 relative animate-in zoom-in-95 duration-200 min-h-[450px] flex flex-col">
-        
-        <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition-colors z-20">
           <X size={28} strokeWidth={3} />
         </button>
-        <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-600 z-10">
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-600 z-10">
           <ChevronLeft size={28} />
         </button>
-        <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-600 z-10">
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-600 z-10">
           <ChevronRight size={28} />
         </button>
         <div className="text-center flex-1 flex flex-col justify-center px-8">
@@ -40,10 +45,15 @@ export const SliderModal = ({ isOpen, onClose, slides }) => {
         <div className="mt-auto">
           <div className="flex justify-center gap-3 mb-8">
             {slides.map((_, index) => (
-              <div key={index} className={`h-2 transition-all duration-300 rounded-full ${currentIndex === index ? 'bg-primary w-8' : 'bg-gray-200 w-2'}`} />
+              <div
+                key={index}
+                className={`h-2 transition-all duration-300 rounded-full ${currentIndex === index ? "bg-primary w-8" : "bg-gray-200 w-2"}`}
+              />
             ))}
           </div>
-          <button onClick={onClose} className="w-full bg-primary text-white font-semibold py-5 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200">
+          <button
+            onClick={onClose}
+            className="w-full bg-primary text-white font-semibold py-5 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200">
             Aceptar
           </button>
         </div>
@@ -51,8 +61,6 @@ export const SliderModal = ({ isOpen, onClose, slides }) => {
     </div>
   );
 };
-
-
 
 export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -83,9 +91,10 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-2xl w-full p-20 relative animate-in zoom-in-95 duration-300 min-h-[550px] flex flex-col">
-        
         {/* Botón Cerrar Superior */}
-        <button onClick={onClose} className="absolute top-8 right-8 text-gray-400 hover:text-red-500 transition-colors z-20 p-2 hover:bg-red-50 rounded-full">
+        <button
+          onClick={onClose}
+          className="absolute top-8 right-8 text-gray-400 hover:text-red-500 transition-colors z-20 p-2 hover:bg-red-50 rounded-full">
           <X size={24} strokeWidth={3} />
         </button>
 
@@ -93,13 +102,19 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
         {tutorials.length > 1 && (
           <>
             {currentIndex > 0 && (
-              <button onClick={prevSlide} className="absolute -left-6 top-1/2 -translate-y-1/2 p-4 bg-white shadow-xl rounded-full text-blue-600 z-10 hover:scale-110 transition-transform hidden md:block">
+              <button
+                onClick={prevSlide}
+                className="absolute -left-6 top-1/2 -translate-y-1/2 p-4 bg-white shadow-xl rounded-full text-blue-600 z-10 hover:scale-110 transition-transform hidden md:block">
                 <ChevronLeft size={32} strokeWidth={3} />
               </button>
             )}
-            <button onClick={nextSlide} className="absolute -right-6 top-1/2 -translate-y-1/2 p-4 bg-primary shadow-xl rounded-full text-white z-10 hover:scale-110 transition-transform hidden md:block">
-              <ChevronRight size={32} strokeWidth={3} />
-            </button>
+            {currentIndex < tutorials.length - 1 && (
+              <button
+                onClick={nextSlide}
+                className="absolute -right-6 top-1/2 -translate-y-1/2 p-4 bg-primary shadow-xl rounded-full text-white z-10 hover:scale-110 transition-transform hidden md:block">
+                <ChevronRight size={32} strokeWidth={3} />
+              </button>
+            )}
           </>
         )}
 
@@ -120,7 +135,7 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             <h3 className="text-3xl font-black text-blue-950 mb-4 leading-tight">
               {currentSlide.title}
             </h3>
-            
+
             <div className="space-y-4">
               {Array.isArray(currentSlide.content) ? (
                 currentSlide.content.map((text, i) => (
@@ -136,10 +151,9 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
             </div>
 
             {currentSlide.action && (
-              <button 
+              <button
                 onClick={currentSlide.action.onClick}
-                className="mt-6 px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all"
-              >
+                className="mt-6 px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all">
                 {currentSlide.action.label}
               </button>
             )}
@@ -150,9 +164,9 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
         <div className="mt-8 pt-6 border-t border-gray-100">
           <div className="flex justify-center gap-2 mb-1">
             {tutorials.map((_, index) => (
-              <div 
-                key={index} 
-                className={`h-2 transition-all duration-500 rounded-full ${currentIndex === index ? 'bg-primary w-10' : 'bg-gray-200 w-2'}`} 
+              <div
+                key={index}
+                className={`h-2 transition-all duration-500 rounded-full ${currentIndex === index ? "bg-primary w-10" : "bg-gray-200 w-2"}`}
               />
             ))}
           </div>
@@ -171,9 +185,8 @@ export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
               'SIGUIENTE PASO'
             )}
           </button>*/}
-        </div> 
+        </div>
       </div>
     </div>
   );
 };
-

@@ -46,49 +46,65 @@ export default function PasoIngresoId({
       : identificacion.length !== 8;
 
   return (
-    <>
-      <div id="visualizador-id">
-        <h2 className="text-3xl text-white text-center mb-6 mt-10 font-bold">
-          Ingresa tu {tipoId === "telefono" ? "teléfono" : "ID"}
-        </h2>
-
-        <div className="flex flex-col items-center justify-center w-full px-4">
-          {/* Contenedor del Input */}
-
-          {/* El visualizador de identificación */}
-          <div className="text-3xl md:text-6xl max-w-lg  text-center font-bold ] text-[--color-primary-yellow] drop-shadow-sm">
-            {identificacion ? (
-              identificacion.length >= 4 && identificacion.length <= 6 && tipoId === "telefono"  ? (
-                `${identificacion.slice(0, 3)}-${identificacion.slice(3, 6)}`
-              ) : identificacion.length >= 7 && tipoId === "telefono" ? (
-                `${identificacion.slice(0, 3)}-${identificacion.slice(3, 6)}-${identificacion.slice(6)}`
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-blue-600 via-blue-500 to-blue-400 px-4 py-6">
+      {/* Contenedor principal que ocupa todo el alto */}
+      <div className="">
+        {/* Título */}
+        {/* <h2 className="text-2xl sm:text-3xl md:text-4xl text-white text-center font-bold mb-6 drop-shadow-md">
+        
+      </h2> */}
+        {/* Visualizador de ID compacto */}
+        <div className="flex flex-col items-center w-full max-w-md mx-auto">
+          <div className="bg-white/20 backdrop-blur-sm w-full rounded-xl py-3 px-4 text-center shadow-md flex flex-col items-center justify-center">
+            <div className="text-4xl font-semibold text-white drop-shadow-sm tracking-wide">
+              {identificacion ? (
+                identificacion.length >= 4 &&
+                identificacion.length <= 6 &&
+                tipoId === "telefono" ? (
+                  `${identificacion.slice(0, 3)}-${identificacion.slice(3, 6)}`
+                ) : identificacion.length >= 7 && tipoId === "telefono" ? (
+                  `${identificacion.slice(0, 3)}-${identificacion.slice(3, 6)}-${identificacion.slice(6)}`
+                ) : (
+                  identificacion
+                )
               ) : (
-                identificacion
-              )
-            ) : (
-              <span className="opacity-30">--------</span>
-            )}
+                <span className="opacity-80 text-2xl font-black">
+                  Ingresa tu {tipoId === "telefono" ? "teléfono" : "ID CAMPUS"}
+                </span>
+              )}
+            </div>
+
+            {/* Línea decorativa inferior */}
+            <div
+              className={`h-1 w-1/2 mt-3 mx-auto rounded-full transition-all duration-500 ${
+                identificacion ? "bg-yellow-400" : "bg-white/30"
+              }`}
+            />
           </div>
-
-          {/* Línea decorativa inferior */}
-          <div
-            className={`h-1.5 w-[25%] mt-4 mb-2 rounded-full transition-all duration-500 ${identificacion ? "bg-[--color-primary]" : "bg-gray-300/50"}`}
-          />
-        </div>
-
-        <div id="teclado-area" className="w-full max-w-md mx-auto">
-          <NumericKeypad
-            value={identificacion}
-            onAdd={agregar}
-            onDelete={borrar}
-            onConfirm={onConfirm}
-            confirmDisabled={disabled}
-          />
         </div>
       </div>
-      <div className="text-6xl text-center pb-20">
-        <BackBtnCli step={() => {setPaso(1), setIdentificacion("")}} />
+
+      {/* Teclado */}
+      <div className="w-full max-w-md mx-auto mt-4">
+        <NumericKeypad
+          value={identificacion}
+          onAdd={agregar}
+          onDelete={borrar}
+          onConfirm={onConfirm}
+          confirmDisabled={disabled}
+        />
       </div>
-    </>
+
+      {/* Botón de volver */}
+      <div className="text-center">
+        <BackBtnCli
+          step={() => {
+            setPaso(1);
+            setIdentificacion("");
+          }}
+          className="text-white text-3xl sm:text-4xl hover:text-yellow-400 transition-colors"
+        />
+      </div>
+    </div>
   );
 }

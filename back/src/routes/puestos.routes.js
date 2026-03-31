@@ -79,7 +79,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { numero, nombre, activo } = req.body;
 
-    console.log(numero, nombre, activo)
+    console.log(numero, nombre, activo, "puestos -----------------")
 
     const [existentes] = await pool.query(
       'SELECT * FROM puestos WHERE (nombre = ?) AND id != ?',
@@ -96,7 +96,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await pool.query(
       'UPDATE puestos SET nombre = ?, activo = ? WHERE id = ?',
-      [numero, nombre, activo, id]
+      [nombre, activo, id]
     );
 
     await registrarAuditoria({

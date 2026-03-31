@@ -20,7 +20,6 @@ export const OperatorHeader = ({
   const [activo, setActivo] = useState(false);
   const menuRef = useRef(null);
 
-  // //console.log(usuario)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,15 +44,11 @@ export const OperatorHeader = ({
         {/* INFO USUARIO */}
         <div className="mt-1 ml-10 p-2 flex items-center justify-between gap-16 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
           {/* PUESTO */}
-          <div id="title-puesto" className="flex ml-20 items-center gap-3">
-            <div className="p-2 rounded-full bg-amber-400/20 animate-pulse">
-              <MapPinIcon className="w-6 h-6 text-amber-300" />
-            </div>
-
-            <span className="px-4 py-1 rounded-lg text-lg font-extrabold uppercase tracking-wide bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md">
-              {usuario.puesto_nombre && <span>{usuario.puesto_nombre || "--"}</span>}
-            </span>
+          <div id="title-puesto" className="flex ml-10 text-2xl uppercase font-bold items-center gap-5">
+            <MapPinIcon className="w-8 h-6 text-amber-300" />
+             {usuario.puesto_nombre && <span>{usuario.puesto_nombre || "--"}</span>}
           </div>
+          
 
           {/* SERVICIOS */}
           <div id="title-services">
@@ -61,7 +56,7 @@ export const OperatorHeader = ({
               <div className="flex ml-20 mr-10 flex-col gap-3">
                 <div className="flex items-center gap-2 text-white font-bold">
                   <TagsIcon className="w-5 h-5 text-cyan-300 animate-pulse" />
-                  <span className="tracking-wide">Servicios asignados</span>
+                  <span className="tracking-wide">Mis servicios asignados</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2 relative">
@@ -114,8 +109,8 @@ export const OperatorHeader = ({
         <div id="title-user" className="relative mt-10 text-right">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 text-3xl font-bold p-2 hover:bg-blue-800/40 rounded-lg transition">
-            <CircleUser className="w-8 h-6 text-blue-300" />
+            className="flex items-center gap-2 text-xl font-bold p-2 hover:bg-blue-800/40 rounded-lg transition">
+            <CircleUser className="w-8 h-6 tlg text-blue-300" />
             {usuario.nombre}
             <ChevronDown className="w-5 h-5" />
           </button>

@@ -12,18 +12,19 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const { servicio_id, tipo_identificacion, identificacion } = req.body;
-    const id_persona = identificacion ?? "1";
-    console.log(id_persona)
+    // const id_persona = identificacion ?? "1";
+    const id_persona = (identificacion && identificacion.length === 8) ? identificacion : "1";
+    console.log(servicio_id)
     const [result] = await pool.query(
       'CALL generar_numero_ticket(?, @numero)',
-      [servicio_id]
+      [servicio_id.id]
     );
     
     const [[{ '@numero': numero }]] = await pool.query('SELECT @numero');
     
     const [insertResult] = await pool.query(
-      'INSERT INTO tickets (numero, servicio_id, estado, id_persona) VALUES (?, ?, 1, ?)',
-      [numero, servicio_id, id_persona]
+      'INSERT INTO tickets (numero, servicio_id, estado, id_persona, priority) VALUES (?, ?, 1, ?,?)',
+      [numero, servicio_id.id, id_persona, servicio_id.dar_prioridad]
     );
     
     // await pool.query(
@@ -66,7 +67,7 @@ router.get('/espera', async (req, res) => { //ultima version
 router.get('/llamados', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT * FROM vista_tickets
+      `SELECT * FROM vista_ticket_llamado
        WHERE estado IN ('2', '3') 
        ORDER BY created_at DESC 
        LIMIT 20`
@@ -215,11 +216,11 @@ router.post('/:id/volver', async (req, res) => {
     await pool.query(
       `UPDATE tickets 
        SET estado = CASE
-         WHEN created_at < NOW() - INTERVAL 10 HOUR THEN 'atendido'
-         ELSE 'espera'
+         WHEN created_at < NOW() - INTERVAL 10 HOUR THEN 4
+         ELSE 1
        END
        WHERE numero = ?
-       AND estado = 'pendiente'`,
+       AND estado = 7`,
       [id]
     );
 
@@ -230,9 +231,9 @@ router.post('/:id/volver', async (req, res) => {
       [id]
     );
 
-    console.log(rows)
+    console.log(rows,"rows volver")
 
-    if (rows.length === 0 || rows[0].estado!=='espera') {
+    if (rows.length === 0 || rows[0].estado!==1) {
       return res.status(404).json({ error: "Ticket no encontrado" });
     }
 
@@ -347,10 +348,10 @@ router.get('/:id/estado-evaluacion', async (req, res) => {
       [id]
     );
     const ticket = rows[0];
-    console.log("ya evaluado")
+   console.log("ya evaluado")
     if (!ticket) {
       return res.json({ success: true, expirado: false, yaEvaluado: false, notfound: true });
-    }
+    } 
 
     const ahora = new Date();
     const finalizado = ticket.finalizado_at ? new Date(ticket.finalizado_at) : null;

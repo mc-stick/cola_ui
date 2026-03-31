@@ -219,7 +219,7 @@ function Mensaje({ titulo, mensaje }) {
       <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-6 text-center">
         <h2 className="text-2xl font-semibold mb-3">
           <span className="flex gap-3 justify-center">
-            <CircleSlashIcon className="w-10 h-10 text-red-500" /> {titulo}
+             {titulo}
           </span>{" "}
         </h2>
 
@@ -289,9 +289,15 @@ export function EvaluacionTicket() {
     }
 
     setCommentx("");
+    
   };
 
+  
+
   if (estado === 1) {
+    setTimeout(() => {
+        window.location.href = "https://www.ucne.edu.do/";
+      }, 5000); 
     return (
       <Mensaje
         titulo="Evaluación expirada"
@@ -301,6 +307,9 @@ export function EvaluacionTicket() {
   }
 
   if (estado === 2) {
+    setTimeout(() => {
+        window.location.href = "https://www.ucne.edu.do/";
+      }, 5000); 
     return (
       <Mensaje
         titulo="Ticket ya evaluado"
@@ -322,14 +331,14 @@ export function EvaluacionTicket() {
         <div className="w-full max-w-md bg-gray-300/80 rounded-2xl shadow-xl p-6 text-center">
           <h2 className="text-2xl font-semibold mb-2">
             Tu opinión nos importa, <br />
-            ¿cómo fue tu experiencia?
+            ¿Cómo fue tu experiencia?
           </h2>
 
           {campos.map((data, index) => (
             <div key={index}>
               <div className="flex justify-between my-6">
-                <p className="text-black">
-                  Califica el servicio <br /> {data.nombre}
+                <p className="text-black text-xl font-black">
+                  {data.nombre}
                 </p>
 
                 <StarRatingButton

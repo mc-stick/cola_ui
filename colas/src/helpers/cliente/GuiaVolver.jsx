@@ -77,9 +77,9 @@ export default function GuiaVolver({ activar, setActivar }) {
           {
             element: "#validate-tk",
             popover: {
-              title: "Confirmacion.",
+              title: "Confirmación.",
               description:
-                "Aqui se mostrara si tu ticket es valido o no.\n\n Aquí finaliza el tutorial.",
+                "Aquí finaliza el tutorial, presiona aceptar para cerrar.",
               side: "right",
             }, 
             onHighlightStarted: (element) => {
