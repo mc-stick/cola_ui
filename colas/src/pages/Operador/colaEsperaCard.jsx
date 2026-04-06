@@ -1,5 +1,12 @@
-import { FileWarningIcon } from "lucide-react";
+import { FileWarningIcon, Users, Clock, ArrowRightCircle } from "lucide-react";
 import { tiempoTranscurrido } from "./TimeUtils";
+
+const colors = {
+  primaryBlue: "#1e2a4f",
+  primaryRed: "#cc132c",
+  primaryYellow: "#fad824",
+  monoSilver: "#b2b2b2",
+};
 
 export const ColaEsperaCard = ({
   ticketsEspera,
@@ -9,18 +16,10 @@ export const ColaEsperaCard = ({
   onLlamarSiguiente,
 }) => {
   const getButtonText = () => {
-    if (serviciosAsignados.length === 0) {
-      return "Sin servicios asignados";
-    }
-    if (usuario.puesto_numero === null) {
-      return "No tienes un puesto asignado";
-    }
-    if (ticketsEspera.length === 0) {
-      return "No hay tickets en espera";
-    }
-    if (ticketActual !== null) {
-      return "Atendiendo un ticket";
-    }
+    if (serviciosAsignados.length === 0) return "Sin servicios asignados";
+    if (usuario.puesto_numero === null) return "Sin puesto asignado";
+    if (ticketsEspera.length === 0) return "Cola vacía";
+    if (ticketActual !== null) return "Finaliza la atención actual";
     return "Llamar Siguiente";
   };
 
@@ -30,80 +29,108 @@ export const ColaEsperaCard = ({
     serviciosAsignados.length === 0 ||
     usuario.puesto_numero === null;
 
+  // Ordenar: Prioridad 1 primero
+  const ticketsOrdenados = [
+    ...ticketsEspera.filter((t) => t.priority === 1),
+    ...ticketsEspera.filter((t) => t.priority !== 1),
+  ].slice(0, 10);
+
   return (
-    <div id="espera-tk" className="bg-white rounded-2xl shadow-lg p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold text-gray-800">Tickets en Espera</h3>
-        <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-bold">
-          {ticketsEspera.length}
+    <div id="espera-tk" className="bg-white rounded-[2.5rem] shadow-sm border p-8 relative overflow-hidden flex flex-col h-full" style={{ borderColor: colors.monoSilver }}>
+      {/* Barra de acento */}
+      <div className="absolute top-0 left-0 w-full h-3" style={{ backgroundColor: colors.primaryBlue }}></div>
+
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h3 className="text-xl font-black tracking-tighter uppercase flex items-center gap-2" style={{ color: colors.primaryBlue }}>
+            <Users className="w-5 h-5 opacity-30" />
+            Cola de Espera
+          </h3>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Próximos en línea</p>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-3xl font-black leading-none" style={{ color: colors.primaryBlue }}>
+            {ticketsEspera.length}
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-tighter opacity-30">Tickets</span>
         </div>
       </div>
 
+      {/* Alerta de Configuración */}
       {serviciosAsignados.length === 0 && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
-          <p className="text-yellow-800 text-sm flex">
-            <FileWarningIcon />{" "}
-            <span className="ml-2">
-              No tienes servicios asignados. Contacta al administrador.
-            </span>
+        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-6 animate-pulse">
+          <p className="text-amber-700 text-xs font-bold flex items-center gap-3">
+            <FileWarningIcon size={18} />
+            <span>Configuración incompleta: Sin servicios.</span>
           </p>
         </div>
       )}
 
+      {/* Botón Principal de Acción */}
       <button
         id="llamar-tk"
         onClick={onLlamarSiguiente}
         disabled={isButtonDisabled}
-        className="w-full bg-primary hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-bold text-xl mb-6 transition-all transform hover:scale-105 active:scale-95 disabled:transform-none shadow-lg">
+        className={`w-full py-5 px-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] mb-8 transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:scale-100 ${
+          isButtonDisabled 
+            ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border border-slate-200" 
+            : "text-white hover:brightness-110 shadow-blue-900/20"
+        }`}
+        style={{ backgroundColor: isButtonDisabled ? undefined : colors.primaryBlue }}>
         {getButtonText()}
+        {!isButtonDisabled && <ArrowRightCircle size={20} />}
       </button>
 
-      <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
-        {/* {ticketsEspera.slice(0, 10).map((ticket, index) => ( */}
-        {[
-          ...ticketsEspera.filter((t) => t.priority === 1),
-          ...ticketsEspera
-          .filter((t) => t.priority !== 1),
-        ]
-          .slice(0, 10)
-          .map((ticket, index) => (
-            <div
-              key={ticket.id}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all border-l-4"
-              style={{
-                borderLeftColor: ticket.color || "#1E40AF",
-              }}>
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
-                  {index + 1}
-                </div>
-                <span
-                  className="text-2xl font-bold"
-                  style={{ color: ticket.color || "#1E40AF" }}>
-                  {ticket.numero}
-                </span>
-                {ticket.priority === 1 && (
-                  <div className="text-red-700 font-semibold text-xs">
-                    (Prioridad)
-                  </div>
-                )}
+      {/* Lista de Tickets */}
+      <div className="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar">
+        {ticketsOrdenados.map((ticket, index) => (
+          <div
+            key={ticket.id}
+            className="group flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100 relative overflow-hidden"
+          >
+            {/* Indicador lateral de color del servicio */}
+            <div 
+              className="absolute left-0 top-0 h-full w-1.5" 
+              style={{ backgroundColor: ticket.color || colors.primaryBlue }}
+            />
+
+            <div className="flex items-center gap-4 pl-2">
+              <div className="bg-white w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-black text-slate-300 border border-slate-100 shadow-sm">
+                {index + 1}
               </div>
-              <div className="text-right">
-                {/* <div className="text-gray-700 font-semibold">
-                  {ticket.servicio_nombre}
-                </div> */}
-                
-                <div className="text-sm text-indigo-600">
-                  {tiempoTranscurrido(ticket.created_at)}
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-black tracking-tighter" style={{ color: colors.primaryBlue }}>
+                    {ticket.numero}
+                  </span>
+                  {ticket.priority === 1 && (
+                    <span className="bg-red-100 text-red-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-tighter animate-bounce">
+                      Prioridad
+                    </span>
+                  )}
                 </div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[120px]">
+                  {ticket.servicio_nombre}
+                </p>
               </div>
             </div>
-          ))}
+
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1.5 text-blue-500 font-black text-[10px] uppercase tracking-tighter">
+                <Clock size={12} strokeWidth={3} />
+                {tiempoTranscurrido(ticket.created_at)}
+              </div>
+              <p className="text-[8px] font-bold text-slate-300 uppercase">En espera</p>
+            </div>
+          </div>
+        ))}
 
         {ticketsEspera.length === 0 && serviciosAsignados.length > 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <p className="text-lg">No hay tickets en espera</p>
-            <p className="text-sm mt-2">para tus servicios asignados</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center opacity-20 group">
+             <Users size={48} className="mb-4 group-hover:scale-110 transition-transform duration-500" />
+             <p className="text-sm font-black uppercase tracking-widest">Cola Despejada</p>
+             <p className="text-[10px] font-bold uppercase mt-1">No hay clientes pendientes</p>
           </div>
         )}
       </div>

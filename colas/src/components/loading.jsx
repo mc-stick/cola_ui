@@ -8,60 +8,40 @@ import {
   MessageSquare,
   Trash2Icon,
   User,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
 export function Spinner({ timeout = 1000, onClose }) {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose?.();
-    }, timeout);
-
+    const timer = setTimeout(() => onClose?.(), timeout);
     return () => clearTimeout(timer);
   }, [timeout, onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="flex items-center justify-center">
-        <div className="h-20 w-20 animate-spin rounded-full border-8 border-gray-300 border-t-blue-500"></div>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] animate-fade-in">
+      <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-slate-100 border-t-blue-600"></div>
       </div>
     </div>
   );
 }
 
 export function TabSpinner({ timeout = 1000, onClose }) {
-  const [config, setConfig] = useState(null);
-
   useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const [configData] = await Promise.all([api.getConfiguracion()]);
-        setConfig(configData);
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
-    cargarDatos();
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose?.();
-    }, timeout);
-
+    const timer = setTimeout(() => onClose?.(), timeout);
     return () => clearTimeout(timer);
   }, [timeout, onClose]);
 
   return (
-    <div className=" inset-0 backdrop-blur-sm  items-center justify-center m-10 z-50 animate-fade-in">
-      <div className="flex items-center justify-center">
-        <div className="animate-spin">
-          <div className="h-20 w-20  rounded-full border-8  animate-spinColors"></div>
-        </div>
+    <div className="flex flex-col items-center justify-center p-12 w-full animate-fade-in">
+      <div className="relative flex items-center justify-center">
+        <div className="h-20 w-20 rounded-full border-4 border-slate-100 border-t-blue-500 animate-spin"></div>
+        <Clock className="absolute w-8 h-8 text-blue-500/50" />
       </div>
-      <div className=" flex items-center justify-center m-10 font-bold">
-        Cargando...
+      <div className="mt-6 font-bold text-slate-400 tracking-widest uppercase text-xs">
+        Cargando información...
       </div>
     </div>
   );
@@ -77,26 +57,26 @@ export function ConfirmModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-xl w-full mx-4 shadow-2xl animate-bounce-in">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in">
+      <div className="bg-white rounded-[2.5rem] p-8 sm:p-10 max-w-md w-full mx-4 shadow-2xl border border-white animate-scale-in">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-blue-100">
-            <InfoIcon className="w-12 h-12 text-blue-600" />
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-blue-50 text-blue-600 rotate-3">
+            <InfoIcon className="w-10 h-10" />
           </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-3">{title}</h2>
+          <p className="text-slate-500 text-sm leading-relaxed mb-8">
+            {message}
+          </p>
 
-          <h2 className="text-3xl font-bold mb-4">{title}</h2>
-          <p className="text-gray-600 mb-8">{message}</p>
-
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-3 mt-2">
             <button
               onClick={onCancel}
-              className="px-6 py-3 rounded-xl border border-red-300 text-red-600 bg-red-100 hover:bg-gray-100 transition">
+              className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all">
               Cancelar
             </button>
-
             <button
               onClick={onConfirm}
-              className="px-6 py-3 rounded-xl bg-green-600 text-white hover:bg-green-700 transition">
+              className="flex-1 px-6 py-3.5 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">
               Confirmar
             </button>
           </div>
@@ -106,90 +86,16 @@ export function ConfirmModal({
   );
 }
 
-export function AlertToUI({ title = "Confirmar", action = "info" }) {
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl animate-bounce-in">
-        <div className="text-center">
-          <div className=" w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-            {action === "confirmar" ? (
-              <CheckCircle2Icon
-                color="green"
-                className="w-20 h-20 text-white"
-              />
-            ) : action === "eliminar" ? (
-              <Trash2Icon color="red" className="w-20 h-20 text-white" />
-            ) : (
-              <InfoIcon color="blue" className="w-20 h-20 text-white" />
-            )}
-          </div>
-
-          <div className="text-4xl font-bold mb-6">{title}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function DotsLoader() {
-  const [config, setConfig] = useState(null);
-
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const [configData] = await Promise.all([api.getConfiguracion()]);
-        setConfig(configData);
-      } catch (error) {
-        console.error("Error cargando datos:", error);
-      }
-    };
-    cargarDatos();
-  }, []);
-  const logos = new Array(3).fill(config?.logo_url);
-  return (
-    <div className="flex space-x-2">
-      {logos.map((logo, index) => (
-        <span
-          key={index}
-          className={`h-15 w-15  rounded-full animate-bounce`}
-          style={{ animationDelay: `-${0.3 - index * 0.15}s` }}>
-          {logo && (
-            <img
-              src={logo}
-              alt="Logo"
-              className="w-10 h-10 drop-shadow-lg object-contain rounded-lg p-1 mr-10"
-            />
-          )}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function CardLoader() {
   return (
-    <div className="bg-gray-50 rounded-xl p-5 border-l-4 border-gray-300 animate-pulse w-full">
-      <div className="flex items-start justify-between gap-4 w-full">
-        <div className="flex items-start gap-4 flex-1 w-full">
-          <div className="flex-shrink-0 space-y-2">
-            <div className="h-10 w-10 rounded bg-gray-200"></div>
-            <div className="h-2 w-12 rounded bg-gray-200"></div>
-          </div>
-
-          <div className="flex-1 space-y-4 w-full">
-            <div className="h-4 w-full rounded bg-gray-200"></div>
-            <div className="h-3 w-3/4 rounded bg-gray-200"></div>
-            <div className="h-3 w-full rounded bg-gray-200"></div>
-            <div className="h-3 w-1/2 rounded bg-gray-200"></div>
-          </div>
+    <div className="bg-white rounded-2xl p-6 border border-slate-100 animate-pulse w-full shadow-sm mb-3">
+      <div className="flex items-center gap-4">
+        <div className="h-14 w-14 rounded-xl bg-slate-100 flex-shrink-0"></div>
+        <div className="flex-1 space-y-3">
+          <div className="h-3 w-1/3 rounded-full bg-slate-100"></div>
+          <div className="h-4 w-3/4 rounded-full bg-slate-200"></div>
         </div>
-
-        <div className="flex-shrink-0 space-y-3 text-right">
-          <div className="h-3 w-16 rounded bg-gray-200"></div>
-          <div className="h-3 w-20 rounded bg-gray-200"></div>
-          <div className="h-3 w-24 rounded bg-gray-200"></div>
-          <div className="h-3 w-12 rounded bg-gray-200"></div>
-        </div>
+        <div className="h-8 w-20 rounded-lg bg-slate-50"></div>
       </div>
     </div>
   );
@@ -197,148 +103,127 @@ export function CardLoader() {
 
 export function InfoModal({ ticket = {}, modal = () => {} }) {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await api.getHistorialDetail(ticket.id);
-
-      setData(res);
+      try {
+        const res = await api.getHistorialDetail(ticket.id);
+        setData(res);
+      } finally {
+        setLoading(false);
+      }
     };
-
-    if (ticket?.id) {
-      fetchData();
-    }
+    if (ticket?.id) fetchData();
   }, [ticket.id]);
 
-  console.log(ticket, data);
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-white rounded-xl w-full max-w-2xl mx-4 shadow-2xl overflow-hidden animate-scale-in">
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-              <InfoIcon className="w-8 h-8" />
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+      <div className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl overflow-hidden border border-white animate-scale-in flex flex-col max-h-[90vh]">
+        {/* HEADER LIMPIO */}
+        <div className="p-6 md:p-8 border-b border-slate-100 relative">
+          <button
+            onClick={() => modal(false)}
+            className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="flex flex-col md:flex-row md:items-center gap-5">
+            <div
+              className="px-4 py-2 rounded-2xl flex flex-col items-center justify-center text-white font-black shadow-lg w-fit"
+              style={{ backgroundColor: ticket.color || "#3b82f6" }}>
+              <span className="text-xl">{ticket.numero}</span>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold">Ticket #{ticket?.id}</h2>
-              <p className="text-sm opacity-90">
-                Información detallada del ticket
-              </p>
-            </div>
-            <div className="ml-10">
-              <p>
-                <span className="font-semibold">Secuencia:</span>{" "}
-                <span className="text-blue-200 font-extrabold text-2xl px-4 py-2 rounded-xl">
-                  {data[0]?.Secuencia}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  Ticket #{ticket.id}
                 </span>
-              </p>
-              <span className="font-semibold">
-                Fecha:{" "}
-                <span className="font-normal italic">
-                  {new Date(ticket.created_at).toLocaleString("es-ES")}
+                <span className="text-slate-400 text-xs font-medium italic">
+                  {new Date(ticket.created_at).toLocaleString()}
                 </span>
-              </span>
+              </div>
+              <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                {data[0]?.Cliente || "Cargando..."}
+              </h2>
             </div>
           </div>
 
-          <div className=" justify-between text-sm mt-4">
-            <p className=" flex ">
-              <span className="font-semibold">
-                Cliente:
-                <span className="text-blue-200 font-extrabold text-base uppercase gap-2 ml-2 rounded-xl">
-                  {data[0]?.Cliente}
-                </span>
-              </span>
-            </p>
-            {data[0]?.cli_comment && (
-  <div className="mt-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 max-w-lg">
-    <h4 className="font-semibold text-white text-base mb-1 flex items-center gap-2">
-       Comentario del cliente <MessageSquare/>
-    </h4>
-
-    <p className="text-sm text-white/80 leading-relaxed">
-      {data[0]?.cli_comment}
-    </p>
-  </div>
-)}
-          </div>
+          {data[0]?.cli_comment && (
+            <div className="mt-5 bg-slate-50 border border-slate-100 rounded-2xl p-4 flex gap-3 items-start">
+              <MessageSquare className="w-5 h-5 text-blue-500 shrink-0 mt-1" />
+              <p className="text-sm text-slate-600 italic">
+                "{data[0].cli_comment}"
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* BODY (tu lista intacta) */}
-        <div className="p-6 bg-gray-500">
-          <div className="space-y-3  max-h-[400px] overflow-y-auto pr-2">
-            {data &&
-              data.map((ticket, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="bg-white rounded-2xl  hover:shadow-lg transition-all border border-gray-100 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      {/* IZQUIERDA */}
-                      <div className="flex px-4 py-3 items-center gap-4">
-                        <div className="bg-blue-50 text-blue-600 font-extrabold text-2xl px-4 py-2 rounded-xl">
-                          {ticket.Servicio}
-                        </div>
+        {/* BODY - LISTA DE PASOS */}
+        <div className="p-6 md:p-8 overflow-y-auto bg-slate-50/50 flex-1 custom-scrollbar">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">
+            Línea de atención
+          </p>
 
-                        <div>
-                          {/* <p className="text-sm font-semibold text-gray-800">
-                            {ticket.Servicio}
-                          </p> */}
-                          {/* <p className="text-xs text-gray-400">
-                            Secuencia: {ticket.Secuencia || "-"}
-                          </p> */}
-                        </div>
-                      </div>
-
-                      {/* DERECHA */}
-                      <div className="text-right px-4 py-3">
-                        <div className="flex items-center gap-2 justify-end text-xs">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-500">Operador</span>
-                          <span className="font-semibold text-violet-600">
-                            {ticket.Operador}
+          <div className="space-y-4">
+            {loading ? (
+              <div className="space-y-3">
+                <CardLoader />
+                <CardLoader />
+              </div>
+            ) : (
+              data.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div className="flex gap-4 items-center">
+                      {/* <div className="bg-slate-50 text-blue-600 font-bold text-lg w-12 h-12 flex items-center justify-center rounded-xl border border-slate-100">
+                        {item.Servicio?.substring(0, 2).toUpperCase()}
+                      </div> */}
+                      <div>
+                        <p className="text-sm font-bold text-slate-700">
+                          {item.Servicio}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <User className="w-3 h-3 text-slate-300" />
+                          <span className="text-xs text-slate-500 font-medium">
+                            {item.Operador || "Sin asignar"}
                           </span>
                         </div>
-
-                        {ticket.Transferido === 1 && (
-                          <div className="flex items-center gap-2 justify-end mt-1 text-xs">
-                            <ArrowRightLeft className="w-4 h-4 text-cyan-500" />
-                            <span className="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-lg font-medium">
-                              Transferido
-                            </span>
-                          </div>
-                        )}
-                        {ticket.Estado && (
-                          <div className="flex items-center gap-1 justify-end mt-1 text-xs">
-                            <ListChecksIcon className="w-4 h-4 text-amber-500" />
-                            <span className=" px-1 py-0.5 rounded-lg font-medium capitalize">
-                              {ticket.Estado}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
 
-                    {/* COMENTARIO */}
-                    <div className="bg-gray-200 rounded-bl-2xl rounded-br-2xl px-4 py-3">
-                      <p className="text-xs    italic">
-                        {ticket.comentario || "Sin comentarios"}
-                      </p>
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between border-t sm:border-0 pt-3 sm:pt-0">
+                      <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase">
+                        {item.Estado}
+                      </span>
+                      {item.Transferido === 1 && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-cyan-600 mt-1 uppercase">
+                          <ArrowRightLeft className="w-3 h-3" /> Transferido
+                        </span>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+
+                  {item.comentario && (
+                    <div className="mt-4 pt-3 border-t border-slate-50 text-xs text-slate-400 italic">
+                      Nota: {item.comentario}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* FOOTER */}
-        <div className="p-3  bg-gray-300 flex justify-end">
+        <div className="p-6 border-t border-slate-100 bg-white flex justify-end">
           <button
             onClick={() => modal(false)}
-            className="px-6 py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-green-700 to-green-900 text-white hover:scale-105 hover:shadow-lg transition-all">
-            Aceptar
+            className="w-full sm:w-auto px-10 py-3.5 text-sm font-bold rounded-2xl bg-slate-900 text-white hover:bg-black transition-all shadow-xl shadow-slate-200">
+            Entendido
           </button>
         </div>
       </div>

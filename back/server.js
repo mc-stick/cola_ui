@@ -3,7 +3,7 @@ const cors = require('cors');
 const WebSocket = require('ws');
 require('dotenv').config();
 
-const { pool, testConnection } = require('./src/config/database');
+const { pool, testConnection, validarConexionLDAP } = require('./src/config/database');
 const { msgtw } = require('./src/twilio/apiTwi.js');
 
 const authRoutes = require('./src/routes/auth.routes');
@@ -28,7 +28,8 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use('/api/msg', msgtw);
 
-testConnection();   // eliminar todo esto en produccion.
+testConnection();
+validarConexionLDAP();   // eliminar todo esto en produccion.
 
 app.use('/api/auth', authRoutes);
 app.use('/api/configuracion', configRoutes);
@@ -43,8 +44,36 @@ app.use('/api/tickets', ticketsRoutes);
 app.use('/api/estadisticas', estadisticasRoutes);
 app.use('/api', auditoriaRoutes);
 
+
+
 const server = app.listen(PORT, () => {
-  console.log(`running port ${PORT}`);
+  console.log(`running ports ${PORT}`);
+});
+
+async function verificarServicios() {
+  try {
+    const resultados = await Promise.allSettled([
+      testConnection(),
+      validarConexionLDAP()
+    ]);
+
+    const dbOk = resultados[0].status === "fulfilled";
+    const ldapOk = resultados[1].status === "fulfilled";
+
+    return dbOk && ldapOk; // 👈 true solo si ambos funcionan
+  } catch (error) {
+    return false;
+  }
+}
+
+app.get('/api/health', async (req, res) => {
+  const ok = await verificarServicios();
+console.log(ok,"server:")
+  res.json({
+    ok,
+    db: ok, // opcional simplificado
+    ldap: ok
+  });
 });
 
 const wss = new WebSocket.Server({ server });

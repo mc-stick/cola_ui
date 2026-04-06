@@ -3,11 +3,7 @@ import {
   AlertTriangleIcon,
   EyeIcon,
   EyeOffIcon,
-  Shield,
-  ShieldAlertIcon,
-  ShieldIcon,
   SquareUserRoundIcon,
-  UserCircle,
   UserIcon,
 } from "lucide-react";
 import API from "../services/api";
@@ -25,6 +21,17 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
   const navigate = useNavigate();
   const UCNE_URL = import.meta.env.VITE_UCNE_URL;
 
+  // Definición de colores de la paleta para uso rápido
+  const colors = {
+    primaryBlue: "#1e2a4f",
+    primaryRed: "#cc132c",
+    primaryYellow: "#fad824",
+    primaryGreen: "#499c35",
+    monoGold: "#daab00",
+    monoSilver: "#b2b2b2",
+    secondaryBlueDark: "#006ca1"
+  };
+
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -39,13 +46,11 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
       const result = await API.login(username, password);
-
       if (!result.success) {
         setError("Credenciales inválidas");
         setLoading(false);
@@ -53,25 +58,19 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
       }
 
       const user = result.user;
-
       localStorage.setItem("token", result.token);
-
-      // Guardar sesión
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("role", user.rol);
 
-      // Redirigir según rol
       switch (user.rol) {
         case "admin":
           navigate("/admin", { replace: true });
           window.location.reload();
           break;
-
         case "operador":
           navigate("/operador", { replace: true });
           window.location.reload();
           break;
-
         default:
           navigate("/", { replace: true });
       }
@@ -83,111 +82,129 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
     }
   };
 
-  
-
   return (
-    <div className="min-h-screen flex flex-col blue-overlay overflow-hidden">
+    <div className="min-h-screen flex flex-col blue-overlay overflow-hidden bg-slate-50">
       <AnimatedBubleBackground />
 
-      <div id="pswrapper">
+      <div id="pswrapper" className="flex-grow flex items-center justify-center">
         <form onSubmit={handleLogin}>
-          <div className="book-container">
-            {/* <!-- Lado Izquierdo - Azul con Logo --> */}
-            <div className="welcome-page">
-              <div className="welcome-content">
-                <h1 aria-label="Oracle PeopleSoft Sign-in">
+          <div className="book-container shadow-2xl flex overflow-hidden rounded-2xl">
+            
+            {/* Lado Izquierdo - Azul Primario con Logo */}
+            <div 
+              className="welcome-page p-10 flex flex-col items-center justify-center text-white"
+              style={{ backgroundColor: colors.primaryBlue }}
+            >
+              <div className="welcome-content text-center">
+                <h1 aria-label=" Sign-in">
                   <img
                     src={"images/Final-08.png"}
-                    className="ps-staticimg"
+                    className="ps-staticimg max-w-[200px]"
                     alt="imagen logo"
                     title="logo"
                   />
                 </h1>
-                <h2 className="mt-20">Bienvenidos</h2>
-                <p>Gestion de colas y tickets</p>
+                <h2 className="mt-10 text-3xl font-bold">Bienvenidos</h2>
+                <p className="mt-2 opacity-80">Gestión de colas y tickets</p>
+                <div 
+                    className="h-1 w-16 mx-auto mt-4" 
+                    style={{ backgroundColor: colors.primaryYellow }}
+                ></div>
               </div>
             </div>
 
-            {/* <!-- Lado Derecho - Formulario Blanco --> */}
-            <div className="login-page">
+            {/* Lado Derecho - Formulario Blanco */}
+            <div className="login-page p-10 min-w-[350px]">
               {error && (
-                <div className="flex flex-col items-center bg-red-50  rounded-lg text-center">
-                  <AlertTriangleIcon className=" text-red-700 font-bold" />
-
-                  <p className="text-red-700 text-sm font-semibold">
+                <div 
+                  className="flex flex-col items-center p-3 rounded-lg text-center mb-4 border"
+                  style={{ backgroundColor: `${colors.primaryRed}10`, borderColor: colors.primaryRed }}
+                >
+                  <AlertTriangleIcon style={{ color: colors.primaryRed }} className="mb-1" />
+                  <p className="text-sm font-semibold" style={{ color: colors.primaryRed }}>
                     El ID de usuario o la contraseña no son válidos.
                   </p>
                 </div>
               )}
-              <div className="w-full flex justify-center max-w-sm mx-auto mt-4">
-                <h2 className="text-2xl font-bold text-blackk mb-10">
-                  {error ? (
-                    <span className="flex flex-col items-center mb-4">
 
-                        <SquareUserRoundIcon className="w-20 h-20 text-red-600" />
-                    </span>
-                  ) : (
-                    <span className="flex flex-col items-center mb-4">
-                        <SquareUserRoundIcon className="w-20 h-20 text-blue-900" />
-                    </span>
-                  )}
-
+              <div className="w-full flex flex-col items-center mb-8">
+                <SquareUserRoundIcon 
+                  className="w-20 h-20 mb-4" 
+                  style={{ color: error ? colors.primaryRed : colors.primaryBlue }} 
+                />
+                <h2 className="text-xl font-bold tracking-tight" style={{ color: colors.primaryBlue }}>
                   INICIAR SESIÓN
                 </h2>
               </div>
-              <div className="login-content">
-                <div>
-                  <span className="ps_label-show" id="ptLabelUserid">
-                    <label htmlFor="userid">Usuario</label>
-                  </span>
-                </div>
-                <div className="ps_box-control userid-container">
-                  <input
-                    required
-                    type="text"
-                    id="userid"
-                    name="userid"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    title="Usuario"
-                    autoComplete="username"
-                  />
-                  <UserIcon className="w-6 h-6 absolute right-3 top-4 text-black peer-focus:text-black transition-colors" />
+
+              <div className="login-content space-y-4">
+                {/* Input Usuario */}
+                <div className="relative">
+                  <label 
+                    htmlFor="userid" 
+                    className="block text-xs font-bold uppercase mb-1 text-gray-700"
+                    
+                  >
+                    Usuario
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      type="text"
+                      id="userid"
+                      className="w-full border-b-2 p-2 pr-10 outline-none transition-colors focus:border-blue-500"
+                      style={{ borderBottomColor: colors.monoSilver }}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      autoComplete="username"
+                    />
+                    <UserIcon className="w-5 h-5 absolute right-2 bottom-2" style={{ color: colors.primaryBlue }} />
+                  </div>
                 </div>
 
-                <div className="mt-5">
-                  <span className="ps_label-show" id="ptLabelPassword">
-                    <label htmlFor="pwd">Contraseña</label>
-                  </span>
-                </div>
-                <div className="ps_box-control password-container">
-                  <input
-                    required
-                    id="pwd"
-                    name="pwd"
-                    title="Contraseña"
-                    autoComplete="current-password"
-                    type={viewpass ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  {viewpass ? (
-                    <EyeIcon
-                      onClick={() => setViewPass(false)}
-                      className="w-6 h-6 absolute right-3 top-4 text-gray-400 peer-focus:text-black transition-colors"
+                {/* Input Contraseña */}
+                <div className="relative">
+                  <label 
+                    htmlFor="pwd" 
+                    className="block text-xs font-bold uppercase mb-1 text-gray-700"
+                  >
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      id="pwd"
+                      type={viewpass ? "text" : "password"}
+                      className="w-full border-b-2 p-2 pr-10 outline-none transition-colors focus:border-blue-500"
+                      style={{ borderBottomColor: colors.monoSilver }}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
                     />
-                  ) : (
-                    <EyeOffIcon
-                      onClick={() => setViewPass(true)}
-                      className="w-6 h-6 absolute right-3 top-4 text-black peer-focus:text-black transition-colors"
-                    />
-                  )}
+                    <button 
+                      type="button" 
+                      onClick={() => setViewPass(!viewpass)}
+                      className="absolute right-2 bottom-2"
+                    >
+                      {viewpass ? (
+                        <EyeIcon className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <EyeOffIcon className="w-5 h-5" style={{ color: colors.primaryBlue }} />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
+
               <button
                 type="submit"
                 disabled={loading}
-                className="ps-button mt-10">
+                className="w-full py-3 rounded-md font-bold text-white transition-all transform hover:scale-[1.02] active:scale-95 mt-10 shadow-lg"
+                style={{ 
+                    backgroundColor: colors.primaryBlue,
+                    opacity: loading ? 0.7 : 1
+                }}
+              >
                 {loading ? "Ingresando..." : "Ingresar"}
               </button>
             </div>
@@ -196,14 +213,20 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
       </div>
 
       <footer
-        style={{ backgroundColor: "#fad8241f" }}
-        className=" text-white h-[50px] w-full flex bottom-0 items-center justify-center z-10">
-        <p className="text-xs ">
+        style={{ 
+            backgroundColor: colors.primaryBlue,
+            borderTop: `4px solid ${colors.primaryYellow}` 
+        }}
+        className="text-white h-[60px] w-full flex items-center justify-center z-10"
+      >
+        <p className="text-sm">
           Copyright © {new Date().getFullYear()}{" "}
-          <strong>Gestion de colas v1.2.2</strong>{" "}
+          <strong style={{ color: colors.primaryYellow }}>Gestión de colas v1.2.2</strong>{" "}
           <a
             href={UCNE_URL}
-            className="underline hover:text-gray-300 transition-colors m-2">
+            className="underline transition-colors m-2 hover:text-white"
+            style={{ color: colors.secondaryBlueLight }}
+          >
             UCNE
           </a>
         </p>

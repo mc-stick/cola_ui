@@ -62,129 +62,134 @@ export const SliderModal = ({ isOpen, onClose, slides }) => {
   );
 };
 
-export const TutorialModal = ({ isOpen, onClose, tutorials }) => {
+export const TutorialModal = ({ isOpen, onClose, tutorials = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Reiniciar el índice al cerrar/abrir para que siempre empiece desde el inicio
+  // Reiniciar el índice al cerrar/abrir
   useEffect(() => {
     if (isOpen) setCurrentIndex(0);
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !tutorials.length) return null;
 
   const currentSlide = tutorials[currentIndex];
 
   const nextSlide = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     if (currentIndex < tutorials.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      onClose(); // Si es el último, cerramos
+      onClose();
     }
   };
 
   const prevSlide = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] max-w-2xl w-full p-20 relative animate-in zoom-in-95 duration-300 min-h-[550px] flex flex-col">
-        {/* Botón Cerrar Superior */}
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-xl w-full relative animate-in zoom-in-95 duration-300 flex flex-col overflow-hidden border border-white">
+        
+        {/* Botón Cerrar Superior Refinado */}
         <button
           onClick={onClose}
-          className="absolute top-8 right-8 text-gray-400 hover:text-red-500 transition-colors z-20 p-2 hover:bg-red-50 rounded-full">
-          <X size={24} strokeWidth={3} />
+          className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-full transition-all z-20"
+        >
+          <X size={20} strokeWidth={2.5} />
         </button>
 
-        {/* Navegación Lateral (Solo si hay más de 1 slide) */}
-        {tutorials.length > 1 && (
-          <>
-            {currentIndex > 0 && (
-              <button
-                onClick={prevSlide}
-                className="absolute -left-6 top-1/2 -translate-y-1/2 p-4 bg-white shadow-xl rounded-full text-blue-600 z-10 hover:scale-110 transition-transform hidden md:block">
-                <ChevronLeft size={32} strokeWidth={3} />
-              </button>
-            )}
-            {currentIndex < tutorials.length - 1 && (
-              <button
-                onClick={nextSlide}
-                className="absolute -right-6 top-1/2 -translate-y-1/2 p-4 bg-primary shadow-xl rounded-full text-white z-10 hover:scale-110 transition-transform hidden md:block">
-                <ChevronRight size={32} strokeWidth={3} />
-              </button>
-            )}
-          </>
-        )}
-
-        <div className="flex-1 flex flex-col">
-          {/* Header con Icono o Imagen opcional */}
-          <div className="flex justify-center mb-6">
+        {/* Contenido principal con padding balanceado */}
+        <div className="p-8 md:p-12 flex flex-col items-center min-h-[450px]">
+          
+          {/* Header con Icono Estilo Dashboard */}
+          <div className="mb-8">
             {currentSlide.icon ? (
-              <div className="p-4 bg-blue-50 rounded-3xl text-blue-600 transition-all animate-bounce">
-                {currentSlide.icon}
+              <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center text-blue-600 shadow-inner animate-pulse">
+                {/* Clonamos el icono para asegurar tamaño consistente si viene de props */}
+                {typeof currentSlide.icon === 'object' ? currentSlide.icon : <span className="text-4xl">{currentSlide.icon}</span>}
               </div>
             ) : (
-              <div className="h-2 w-16 bg-blue-100 rounded-full mb-4" /> // Decoración simple
+              <div className="h-1.5 w-12 bg-slate-100 rounded-full" />
             )}
           </div>
 
           {/* Cuerpo del Tutorial */}
-          <div className="text-center px-4 overflow-y-auto">
-            <h3 className="text-3xl font-black text-blue-950 mb-4 leading-tight">
+          <div className="text-center flex-1 flex flex-col justify-center w-full">
+            <h3 className="text-2xl md:text-3xl font-black text-slate-800 mb-4 leading-tight">
               {currentSlide.title}
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[200px] overflow-y-auto px-2 custom-scrollbar">
               {Array.isArray(currentSlide.content) ? (
                 currentSlide.content.map((text, i) => (
-                  <p key={i} className="text-gray-500 text-lg leading-relaxed">
+                  <p key={i} className="text-slate-500 text-base md:text-lg leading-relaxed">
                     {text}
                   </p>
                 ))
               ) : (
-                <p className="text-gray-500 text-lg leading-relaxed italic">
-                  "{currentSlide.text}"
+                <p className="text-slate-500 text-base md:text-lg leading-relaxed italic">
+                  "{currentSlide.text || currentSlide.content}"
                 </p>
               )}
             </div>
 
             {currentSlide.action && (
-              <button
-                onClick={currentSlide.action.onClick}
-                className="mt-6 px-6 py-2 border-2 border-blue-600 text-blue-600 font-bold rounded-xl hover:bg-primary hover:text-white transition-all">
-                {currentSlide.action.label}
-              </button>
+              <div className="mt-8">
+                <button
+                  onClick={currentSlide.action.onClick}
+                  className="px-8 py-3 bg-blue-50 text-blue-600 font-bold rounded-2xl hover:bg-blue-100 transition-all text-sm uppercase tracking-wide"
+                >
+                  {currentSlide.action.label}
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Footer: Indicadores y Botón Principal */}
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="flex justify-center gap-2 mb-1">
+        {/* Footer: Navegación e Indicadores */}
+        <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-6">
+          
+          {/* Indicadores de Pasos (Dots) */}
+          <div className="flex justify-center gap-2">
             {tutorials.map((_, index) => (
               <div
                 key={index}
-                className={`h-2 transition-all duration-500 rounded-full ${currentIndex === index ? "bg-primary w-10" : "bg-gray-200 w-2"}`}
+                className={`h-1.5 transition-all duration-500 rounded-full ${
+                  currentIndex === index ? "bg-blue-600 w-8" : "bg-slate-200 w-2"
+                }`}
               />
             ))}
           </div>
-          {/* 
-          <button 
-            onClick={nextSlide} 
-            className={`w-full flex items-center justify-center gap-2 font-black py-5 rounded-2xl transition-all shadow-lg active:scale-[0.98] ${
-              currentIndex === tutorials.length - 1 
-              ? 'bg-green-600 text-white shadow-green-100' 
-              : 'bg-primary text-white shadow-blue-100'
-            }`}
-          >
-            {currentIndex === tutorials.length - 1 ? (
-              <> FINALIZAR <CheckCircle2 size={20} /> </>
-            ) : (
-              'SIGUIENTE PASO'
-            )}
-          </button>*/}
+
+          {/* Botones de Navegación Inferiores (Mejor para Mobile/Kiosco) */}
+          <div className="flex items-center justify-between w-full gap-4">
+            <button
+              onClick={prevSlide}
+              disabled={currentIndex === 0}
+              className={`flex items-center gap-2 font-bold text-sm uppercase tracking-wider transition-all ${
+                currentIndex === 0 ? "opacity-0 pointer-events-none" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <ChevronLeft size={20} /> Anterior
+            </button>
+
+            <button
+              onClick={nextSlide}
+              className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-sm uppercase tracking-wider shadow-lg transition-all active:scale-95 ${
+                currentIndex === tutorials.length - 1
+                  ? "bg-emerald-600 text-white shadow-emerald-200 hover:bg-emerald-700"
+                  : "bg-slate-900 text-white shadow-slate-200 hover:bg-black"
+              }`}
+            >
+              {currentIndex === tutorials.length - 1 ? (
+                <> Finalizar <CheckCircle2 size={18} /> </>
+              ) : (
+                <> Siguiente <ChevronRight size={18} /> </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

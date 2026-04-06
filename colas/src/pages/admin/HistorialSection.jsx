@@ -11,16 +11,10 @@ import {
   AlertCircle,
   User,
   ListChecksIcon,
-  Users,
   Download,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import {
-  TabSpinner,
-  InfoModal,
-  DotsLoader,
-  CardLoader,
-} from "../../components/loading";
+import { InfoModal, CardLoader } from "../../components/loading";
 import { exportarCSV } from "../../components/jsontoCsv";
 
 function HistorialSection({
@@ -43,103 +37,100 @@ function HistorialSection({
     estado: "",
     operador: "",
   });
+
   const getEstadoBadge = (estado) => {
     const estados = {
       4: {
-        bg: "bg-green-100",
-        text: "text-green-700",
+        bg: "bg-emerald-100",
+        text: "text-emerald-700",
         icon: CheckCircle,
         label: "Atendido",
       },
       5: {
-        bg: "bg-red-100",
-        text: "text-red-700",
+        bg: "bg-rose-100",
+        text: "text-rose-700",
         icon: XCircle,
         label: "No Atendido",
       },
       1: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-700",
+        bg: "bg-amber-100",
+        text: "text-amber-700",
         icon: Clock,
         label: "En Espera",
       },
       2: {
-        bg: "bg-blue-100",
-        text: "text-blue-700",
+        bg: "bg-sky-100",
+        text: "text-sky-700",
         icon: PhoneCall,
         label: "Llamado",
       },
       3: {
-        bg: "bg-warning",
+        bg: "bg-orange-100",
         text: "text-orange-700",
         icon: AlertCircle,
         label: "En Atención",
       },
       6: {
-        bg: "bg-gray-100",
-        text: "text-gray-700",
+        bg: "bg-slate-100",
+        text: "text-slate-700",
         icon: XCircle,
         label: "Cancelado",
       },
-       7: {
-        bg: "bg-blue-100",
-        text: "text-blue-700",
+    };
+    return (
+      estados[estado] || {
+        bg: "bg-gray-100",
+        text: "text-gray-500",
         icon: Clock,
         label: "Pendiente",
-      },
-    };
-    return estados[estado] || estados.espera;
+      }
+    );
   };
 
   const handleCargarHistorial = async () => {
     setLoadingSpin(true);
     if (!validarFiltrosHistorial(filtrosHistorial)) {
+      setLoadingSpin(false);
       return;
     }
     try {
       await onCargarHistorial(filtrosHistorial);
     } catch {
+      toast.error("Error de conexión");
     } finally {
-      setTimeout(() => {
-        setLoadingSpin(false);
-      }, 1000);
+      setTimeout(() => setLoadingSpin(false), 500);
     }
   };
 
-  const handleLimpiarFiltros = () => {
-    setFiltrosHistorial({
-      fecha_inicio: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      fecha_fin: new Date().toISOString().split("T")[0],
-      servicio_id: "",
-      estado: "",
-      operador: "",
-    });
-    setHistorial([]);
-    toast.success("Limpiando filtro de búsqueda.");
-  };
-
-  //console.log(historial)
-
   return (
-    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
-      <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
-        <History className="w-8 h-8 text-[var(--color-primary-yellow)]" />
-        Historial de Tickets
-      </h2>
-      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
-      {/* Filtros */}
-      <div className="bg-gray-50 rounded-xl p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-bold text-gray-800">Filtros</h3>
-          </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-8 w-full max-w-full overflow-hidden">
+      {/* Header Estilo Bienvenida */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <History className="w-6 h-6 text-blue-600" />
+            Registro de Actividad
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">
+            Consulta el historial de turnos y tickets generados.
+          </p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Fecha Inicio
+        {historial.length > 0 && (
+          <button
+            onClick={() => exportarCSV(historial)}
+            className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold transition-all">
+            <Download className="w-4 h-4" /> Exportar Datos
+          </button>
+        )}
+      </div>
+
+      {/* Panel de Filtros Simplificado */}
+      <div className="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">
+              Desde
             </label>
             <input
               type="date"
@@ -150,357 +141,168 @@ function HistorialSection({
                   fecha_inicio: e.target.value,
                 })
               }
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
           </div>
-
-          {/* Fecha Fin */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Fecha Fin
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">
+              Hasta
             </label>
             <input
               type="date"
               value={filtrosHistorial.fecha_fin}
-              onChange={(e) => {
+              onChange={(e) =>
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   fecha_fin: e.target.value,
-                });
-                handleCargarHistorial();
-              }}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                })
+              }
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             />
           </div>
-
-          {/* Servicio */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Servicio
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">
+              Servicio / Área
             </label>
             <select
               value={filtrosHistorial.servicio_id}
-              onChange={(e) => {
+              onChange={(e) =>
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   servicio_id: e.target.value,
-                });
-                setHistorial([]);
-              }}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
-              <option value="">Todos</option>
-              {servicios.map((servicio) => (
-                <option
-                  key={servicio.id}
-                  value={servicio.id}
-                  className={`${
-                    servicio.service_active === 1
-                      ? ""
-                      : "bg-red-100 text-red-700"
-                  }`}
-                  disabled={servicio.service_active !== 1}>
-                  {servicio.codigo} - {servicio.nombre}
+                })
+              }
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+              <option value="">Todos los servicios</option>
+              {servicios.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nombre}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* Estado */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">
               Estado
             </label>
             <select
               value={filtrosHistorial.estado}
-              onChange={(e) => {
+              onChange={(e) =>
                 setFiltrosHistorial({
                   ...filtrosHistorial,
                   estado: e.target.value,
-                });
-                setHistorial([]);
-              }}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
-              <option value="">Todos</option>
-              <option value={4}>Atendido</option>
-              <option value={5}>No Atendido</option>
-              <option value={2}>Llamado</option>
-              <option value={1}>En Espera</option>
-            </select>
-          </div>
-
-          {/* Operador */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Atendido por:
-            </label>
-            <select
-              value={filtrosHistorial.operador}
-              onChange={(e) => {
-                setFiltrosHistorial({
-                  ...filtrosHistorial,
-                  operador: e.target.value,
-                });
-                setHistorial([]);
-              }}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600">
-              <option value="">Todos</option>
-              {usuarios
-                .filter((u) => u.rol === "operador")
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.nombre}
-                  </option>
-                ))}
+                })
+              }
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+              <option value="">Cualquier estado</option>
+              <option value="4">Atendido</option>
+              <option value="1">En Espera</option>
+              <option value="5">No Atendido</option>
             </select>
           </div>
         </div>
 
-        {/* Botones de acción */}
-        <div className="flex gap-3 mt-4">
+        <div className="flex items-center gap-3 mt-6">
           <button
             onClick={handleCargarHistorial}
-            className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
-              historial.length > 0 ? "" : "bg-green-600"
-            }`}>
-            <Search className="w-5 h-5 animate-bounce font-bold mt-1" />
-            Buscar
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
+            <Search className="w-4 h-4" /> Actualizar Vista
           </button>
-
           <button
-            disabled={historial.length <= 0}
-            onClick={handleLimpiarFiltros}
-            className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
-              historial.length <= 0
-                ? "bg-gray-400 hover:cursor-not-allowed"
-                : "bg-amber-700 hover:bg-amber-600"
-            }`}>
-            <PaintbrushIcon className="w-5 h-5" />
-            Limpiar Filtro
+            onClick={() => {
+              setFiltrosHistorial({
+                ...filtrosHistorial,
+                servicio_id: "",
+                estado: "",
+              });
+              setHistorial([]);
+            }}
+            className="text-slate-400 hover:text-slate-600 px-4 py-2 text-sm font-bold transition-all">
+            Limpiar filtros
           </button>
-
-            {/* BOTON CSV FUNCIONA BIEN PERO SOLO EXTRAE IDs */}
-          {/* {!LoadingSpin && (
-            <button
-              disabled={historial.length <= 0}
-              onClick={() => exportarCSV(historial)}
-              className={`flex items-center gap-2 text-white px-6 py-2 rounded-lg font-semibold transition-colors ${
-                historial.length <= 0
-                  ? "bg-gray-400 hover:cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700"
-              }`}>
-              <Download className="w-5 h-5 animate-bounce font-bold mt-1" />
-              Descargar CSV
-            </button>
-          )} */}
         </div>
       </div>
 
-      {/* Lista de tickets */}
+      {/* Resultados con estilo Dashboard */}
       {LoadingSpin ? (
-        <div className="flex justify-center text-center">
-          <CardLoader />
-        </div>
+        <CardLoader />
       ) : (
-        <>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-white">
-              Mostrando{" "}
-              <span className="font-bold white border-b-2 border-b-white mb-1">
-                {historial.length}
-              </span>{" "}
-              tickets
-            </p>
-          </div>
+        <div className="w-full">
+          <p className="text-slate-400 text-[11px] font-bold uppercase mb-4 tracking-wider">
+            Resultados: {historial.length} tickets encontrados
+          </p>
 
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-            {historial.length === 0 && (
-              <div className="text-center py-16 text-white">
-                <History className="w-20 h-20 mx-auto mb-4 text-white" />
-                <p className="text-xl font-semibold">
-                  Historial de tickets
-                </p>
-                <p className="text-sm mt-2">
-                  Ajusta los filtros para ver más resultados
+          <div className="grid grid-cols-1 gap-3 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+            {historial.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                <Clock className="w-10 h-10 mx-auto text-slate-300 mb-3" />
+                <p className="text-slate-400 text-sm">
+                  Selecciona los filtros para ver el historial.
                 </p>
               </div>
-            )}
-
-            {historial.map((ticket) => {
-              const estadoInfo = getEstadoBadge(ticket.estado);
-              const IconoEstado = estadoInfo.icon;
-              //console.log(ticket,"tickets history map")
-
-              return (
-                <div
-                  key={ticket.id}
-                  onClick={() => setModalinfo(ticket)}
-                  className="bg-gray-50 rounded-xl p-5 hover:shadow-md transition-all border-l-4 hover:cursor-pointer hover:bg-gray-50/50"
-                  style={{
-                    borderLeftColor: ticket.color || "#6B7280",
-                  }}>
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Izquierda: info principal */}
-                    <div className="flex items-start gap-4 flex-1">
-                      {/* Número de Ticket */}
-                      <div className="flex-shrink-0">
-                        <div
-                         
-                          className="text-4xl font-extrabold "
-                          style={{ color: ticket.color }}>
+            ) : (
+              historial.map((ticket) => {
+                const info = getEstadoBadge(ticket.estado);
+                return (
+                  <div
+                    key={ticket.id}
+                    onClick={() => setModalinfo(ticket)}
+                    className="group bg-white border border-slate-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/5 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="px-4 py-2 rounded-xl flex flex-col items-center justify-center text-white font-black shadow-inner w-fit"
+                        style={{ backgroundColor: ticket.color || "#64748b" }}>
+                        <span className="text-xl leading-none">
                           {ticket.numero}
-                        </div>
-                        <div className="text-xs text-gray-500 text-center font-bold mt-2">
-                          Ticket #<strong>{ticket.id}</strong>
-                        </div>
+                        </span>
+                        <span className="text-[10px] opacity-80 font-bold uppercase mt-1">
+                          ticket ID:{ticket.id}
+                        </span>
                       </div>
 
-                      {/* Info del Ticket */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          {/* <h3 className="text-lg font-bold text-gray-800">
-                            {ticket.estado}
-                          </h3> */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-bold ${estadoInfo.bg} ${estadoInfo.text} flex items-center gap-1`}>
-                            <IconoEstado className="w-3 h-3" />
-                            {estadoInfo.label}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 ${info.bg} ${info.text}`}>
+                            <info.icon className="w-3 h-3" /> {info.label}
+                          </span>
+                          <span className="text-slate-400 text-[10px] font-medium italic">
+                            {new Date(ticket.created_at).toLocaleTimeString(
+                              [],
+                              { hour: "2-digit", minute: "2-digit" },
+                            )}
                           </span>
                         </div>
-
-                        {/* Cliente */}
-                        {/* {ticket.identificacion && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                            <span className="font-semibold">Cliente:</span>
-                            <span>
-                              {ticket.tipo_identificacion}:{" "}
-                              {ticket.identificacion}
-                            </span>
-                          </div>
-                        )} */}
-
-                        {/* Operador */}
-                        {/* {ticket.Cliente && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                            <Users className="w-4 h-4" />
-                            <span className="font-semibold">Cliente:</span>
-                            <span>{ticket.Cliente}</span>
-                            
-                          </div>
-                        )}
-                        {ticket.operador_nombre && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                            <Users className="w-4 h-4" />
-                            <span className="font-semibold">Atendido por:</span>
-                            <span>{ticket.operador_nombre}</span>
-                            {ticket.puesto_numero && (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
-                                Puesto {ticket.puesto_numero}
-                              </span>
-                            )}
-                          </div>
-                        )} */}
-
-                        {/* Detalles */}
-                        {/* {ticket.detalles && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <PhoneCall className="w-4 h-4" />
-                            <span>{ticket.detalles}</span>
-                          </div>
-                        )} */}
+                        <h4 className="text-slate-700 font-bold text-sm uppercase tracking-tight truncate max-w-[200px]">
+                          {ticket.cliente || "Ticket General"}
+                        </h4>
+                        <p className="text-slate-400 text-xs font-medium">
+                          Área: {ticket.servicio_nombre || "N/A"}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Derecha: Fechas y acciones */}
-                    <div className="flex-shrink-0 text-right space-y-2">
-                      <div className="space-y-1 text-xs text-gray-500 ">
-                        {ticket.accion !== "creado" ? (
-                          <div className="flex items-center gap-2 justify-end">
-                            <User className="w-3 h-3" />
-                            <span>Cliente:</span>
-                            <span className="font-bold text-violet-600">
-                              {ticket.cliente}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 justify-end">
-                            <Clock className="w-5 h-5 text-amber-500" />
-                            <span className="font-bold text-amber-500">
-                              ...
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2 justify-end">
-                          <Clock className="w-3 h-3 text-green-500" />
-                          <span className="font-bold">Creado:</span>
-                          <span className="font-semibold italic">
-                            {new Date(ticket.created_at).toLocaleString(
-                              "es-ES",
-                              {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              },
-                            )}
-                          </span>
-                        </div>
-
-                        {ticket.llamado_at && (
-                          <div className="flex items-center gap-2 justify-end">
-                            <PhoneCall className="w-3 h-3" />
-                            <span>Llamado:</span>
-                            <span className="font-semibold">
-                              {new Date(ticket.llamado_at).toLocaleTimeString(
-                                "es-ES",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
-                            </span>
-                          </div>
-                        )}
-
-                        {ticket.atendido_at && (
-                          <div className="flex items-center gap-2 justify-end">
-                            <CheckCircle className="w-3 h-3" />
-                            <span>Atendido:</span>
-                            <span className="font-semibold">
-                              {new Date(ticket.atendido_at).toLocaleTimeString(
-                                "es-ES",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2 justify-end">
-                          <button
-                            onClick={() => setModalinfo(ticket)}
-                            className="flex items-center justify-center">
-                            <ListChecksIcon className="mt-1 mr-2 w-4 h-4 text-green-500" />
-                            <span className="font-bold underline text-blue-500 hover:text-red-500">
-                              Ver más detalles
-                            </span>
-                          </button>
-                        </div>
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2">
+                      <div className="text-right hidden sm:block">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">
+                          Fecha
+                        </p>
+                        <p className="text-slate-600 text-xs font-bold">
+                          {new Date(ticket.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 group-hover:bg-blue-50 text-slate-400 group-hover:text-blue-600 p-2 rounded-xl transition-all">
+                        <ListChecksIcon className="w-5 h-5" />
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
-        </>
+        </div>
       )}
 
-      {/* Modal de detalles */}
       {modalinfo && (
         <InfoModal ticket={modalinfo} modal={() => setModalinfo(null)} />
       )}

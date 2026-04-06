@@ -27,11 +27,11 @@ router.get('/', async (req, res) => {
  */
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { nombre, descripcion, codigo, color, check } = req.body;
+    const { nombre, descripcion, codigo, color,departamento_id, check } = req.body;
    console.log(req.body,"servicio")
     const [result] = await pool.query(
-      'INSERT INTO servicios (nombre, descripcion, codigo, color, dar_prioridad) VALUES (?, ?, ?, ?, ?)',
-      [nombre, descripcion, codigo, color, check ? 1:0]
+      'INSERT INTO servicios (nombre, descripcion, codigo, color, departamento, dar_prioridad) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, descripcion, codigo, color,departamento_id, check ? 1:0]
     );
     
     await registrarAuditoria({

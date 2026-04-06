@@ -297,7 +297,7 @@ export function EvaluacionTicket() {
   if (estado === 1) {
     setTimeout(() => {
         window.location.href = "https://www.ucne.edu.do/";
-      }, 5000); 
+      }, 10000); 
     return (
       <Mensaje
         titulo="Evaluación expirada"
@@ -309,7 +309,7 @@ export function EvaluacionTicket() {
   if (estado === 2) {
     setTimeout(() => {
         window.location.href = "https://www.ucne.edu.do/";
-      }, 5000); 
+      }, 10000); 
     return (
       <Mensaje
         titulo="Ticket ya evaluado"

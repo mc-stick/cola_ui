@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { UserCog, Users, Briefcase, Check, X } from "lucide-react";
+import { UserCog, Users, Briefcase, Check, X, AlertCircleIcon, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
-import { DotsLoader, TabSpinner } from "../../components/loading";
+import { Spinner, TabSpinner } from "../../components/loading";
 
 function AsignarServiciosSection({
   operadoresServicios,
   LoadingSpin,
-  onSeleccionarOperador,
   onToggleServicio,
   API,
 }) {
@@ -14,249 +13,189 @@ function AsignarServiciosSection({
   const [serviciosOperador, setServiciosOperador] = useState([]);
   const [loaditems, setLoaditems] = useState(false);
 
+  const colors = {
+    primaryBlue: "#1e2a4f",
+    primaryYellow: "#fad824",
+    secondaryBlueDark: "#006ca1",
+    monoSilver: "#b2b2b2",
+  };
+
   const handleSeleccionarOperador = async (operador) => {
     if (!operador.activo) {
       toast.error("Usuario inactivo.");
       return;
     }
-
     setOperadorSeleccionado(operador);
     setLoaditems(true);
-
     try {
       const servicios = await API.getOperadorServicios(operador.id);
       setServiciosOperador(servicios);
     } catch (error) {
-      toast.error("Error al cargar servicios del operador");
+      toast.error("Error al cargar servicios");
     } finally {
-      setTimeout(() => {
-        setLoaditems(false);
-      }, 1000);
+      setTimeout(() => setLoaditems(false), 800);
     }
   };
 
   const handleToggleServicio = async (servicio) => {
     if (!operadorSeleccionado) return;
-
     try {
       if (servicio.asignado) {
-        await API.desasignarServicioOperador(
-          operadorSeleccionado.id,
-          servicio.id,
-        );
-        toast.error("Servicio No asignado.");
+        await API.desasignarServicioOperador(operadorSeleccionado.id, servicio.id);
+        toast.info("Servicio removido.");
       } else {
         await API.asignarServicioOperador(operadorSeleccionado.id, servicio.id);
         toast.success("Servicio asignado.");
       }
-
-      // Recargar servicios del operador
-      const serviciosActualizados = await API.getOperadorServicios(
-        operadorSeleccionado.id,
-      );
+      const serviciosActualizados = await API.getOperadorServicios(operadorSeleccionado.id);
       setServiciosOperador(serviciosActualizados);
-
-      // Notificar al padre para actualizar la lista
-      if (onToggleServicio) {
-        await onToggleServicio();
-      }
+      if (onToggleServicio) await onToggleServicio();
     } catch (error) {
-      toast.error("Error al actualizar servicio");
+      toast.error("Error al actualizar");
     }
   };
 
   return (
-    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
-          <Users className="w-8 h-8 text-[var(--color-primary-yellow)]" />
-          Asignación de Servicios a Operadores
-        </h2>
-      </div>
-      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
-      {LoadingSpin ? (
-        <div className="flex justify-center mt-20">
-          <TabSpinner />
+    <div 
+      className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col" 
+      style={{ borderColor: colors.monoSilver, height: 'calc(100vh - 140px)' }}
+    >
+      <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }}></div>
+
+      {/* HEADER */}
+      <div className="p-8 shrink-0 flex justify-between items-center border-b">
+        <div>
+          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
+            Asignación de <span style={{ color: colors.secondaryBlueDark }}>Servicios</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vincula operadores con sus áreas de atención</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lista de Operadores */}
-          <div className="lg:col-span-1">
-            <h3 className="text-xl font-bold text-white pb-2 mb-4 border-b-orange-50 border-b-2">
-              Operadores <span className="italic text-sm">{"("}activos{")"}</span>
-            </h3>
-            <div className="space-y-3">
-              {operadoresServicios.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>No hay operadores registrados</p>
-                </div>
-              )}
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                {operadoresServicios
-                .map((operador) => (
-                  <div
-                    key={operador.id}
-                    onClick={() => handleSeleccionarOperador(operador)}
-                    className={`p-4 rounded-xl cursor-pointer transition-all border ${
-                      operadorSeleccionado?.id === operador.id
-                        ? "border-4 bg-[var(--color-primary-blue)] text-white shadow-lg border-[var(--color-primary-yellow)] "
-                        : " hover:bg-[var(--color-primary-blue)]"
-                    }`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4
-                          className={`font-bold text-white ${
-                            operador.activo
-                              ? ""
-                              : "line-through text-red-500"
-                          }`}>
-                          {operador.nombre}
-                        </h4>
-                        {operador.puesto_numero && (
-                          <p
-                            className={`text-xs mt-1 ${
-                              operadorSeleccionado?.id === operador.id
-                                ? "text-white"
-                                : "text-white"
-                            }`}>
-                            Puesto: {operador.puesto_nombre}
-                          </p>
-                        )}
-                      </div>
-                      <div
-                        className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          operadorSeleccionado?.id === operador.id
-                            ? "bg-white/20 text-white"
-                            : "bg-blue-100 text-blue-700"
-                        }`}>
-                        {operador.servicios?.length || 0}
-                      </div>
-                    </div>
+        <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300">
+            <UserCog className="w-6 h-6" />
+        </div>
+      </div>
 
-                    {operador.servicios && operador.servicios.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {operador.servicios.map((servicio) => (
-                          <span
-                            key={servicio.id}
-                            className={`px-2 py-1 rounded text-xs font-semibold border-1 border-white ${
-                              operadorSeleccionado?.id === operador.id
-                                ? "bg-white/50 "
-                                : ""
-                            }`}
-                            style={{
-                              backgroundColor: servicio.color + "20",
-                              color: servicio.color,
-                            }}>
-                            {servicio.codigo}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+      <div className="flex-1 flex overflow-hidden">
+        {/* COLUMNA IZQUIERDA: OPERADORES */}
+        <div className="w-1/3 border-r bg-slate-50/50 flex flex-col">
+          <div className="p-4 bg-white/50 border-b">
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Seleccionar Operador</span>
           </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            {LoadingSpin ? (
+              <div>
 
-          {/* Servicios Disponibles */}
-          {loaditems ? (
-            <div className="flex lg:col-span-2 text-center justify-center mt-40">
-              <DotsLoader />
-            </div>
-          ) : (
-            <div className="lg:col-span-2 rounded-xl">
-              {operadorSeleccionado ? (
-                <div className="bg-white p-4 rounded-xl">
-                  <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">
-                      Servicios para: {operadorSeleccionado.nombre}
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      Selecciona los servicios que este operador puede atender
+                {/*  <Spinner /> */}
+              </div>
+              
+            ) : (
+              operadoresServicios.map((operador) => (
+                <div
+                  key={operador.id}
+                  onClick={() => handleSeleccionarOperador(operador)}
+                  className={`group p-4 rounded-2xl cursor-pointer transition-all border-2 flex items-center justify-between ${
+                    operadorSeleccionado?.id === operador.id
+                      ? "bg-white border-blue-600 shadow-md scale-[1.02]"
+                      : "bg-transparent border-transparent hover:bg-white hover:border-gray-200"
+                  }`}
+                >
+                  <div className="truncate">
+                    <h4 className={`font-black uppercase italic text-sm truncate ${operador.activo ? "text-slate-700" : "text-slate-300 line-through"}`}>
+                      {operador.nombre}
+                    </h4>
+                    <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">
+                      {operador.puesto_nombre || "Sin puesto"}
                     </p>
                   </div>
-                  <hr />
-                  {serviciosOperador.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                      <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                      <p className="text-lg">No hay servicios disponibles</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4  p-3">
-                        {serviciosOperador.map((servicio) => (
-                          <div
-                            title={
-                              !servicio.service_active
-                                ? "El servicio está deshabilitado"
-                                : servicio.descripcion
-                            }
-                            key={servicio.id}
-                            onClick={() => handleToggleServicio(servicio)}
-                            className={`flex shadow-md rounded ${
-                              servicio.asignado
-                                ? servicio.service_active
-                                  ? ""
-                                  : "bg-gray-200 border-gray-200"
-                                : ""
-                            }`}>
-                            <div className="flex gap-2">
-                              <div
-                                className={`w-6 h-6 rounded border-2 m-2 transition-all ${
-                                  servicio.service_active
-                                    ? servicio.asignado
-                                      ? "bg-green-500 border-green-500"
-                                      : "bg-red-400 border-red-300"
-                                    : "bg-gray-500 border-gray-500"
-                                }`}>
-                                {servicio.asignado ? (
-                                  <Check className="w-5 h-5 text-white" />
-                                ) : (
-                                  <X className="w-5 h-5 text-white" />
-                                )}
-                              </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
+                        operadorSeleccionado?.id === operador.id ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-500"
+                    }`}>
+                        {operador.servicios?.length || 0}
+                    </span>
+                    <ChevronRight className={`w-4 h-4 transition-transform ${operadorSeleccionado?.id === operador.id ? "translate-x-1 text-blue-600" : "text-slate-300"}`} />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
 
-                              <div className=" hover:cursor-pointer">
-                                <div
-                                  className={`flex items-center gap-3 mb-2 ${!servicio.service_active ? " text-gray-400" : ""}`}>
-                                  <div
-                                    className="text-3xl font-extrabold"
-                                    style={{
-                                      color: servicio.service_active
-                                        ? servicio.color
-                                        : "rgb(78, 78, 78, 0.2)",
-                                    }}>
-                                    {servicio.codigo}
-                                  </div>
-                                  <h4
-                                    className={`flex  text-lg font-bold  ${!servicio.service_active ? " text-gray-400" : "text-gray-800"}`}>
-                                    {servicio.nombre}
-                                  </h4>
-                                  <br />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+        {/* COLUMNA DERECHA: SERVICIOS */}
+        <div className="flex-1 flex flex-col bg-white">
+          {!operadorSeleccionado ? (
+            <div className="flex-1 flex flex-col items-center justify-center opacity-20 italic">
+              <UserCog className="w-20 h-20 mb-4" />
+              <p className="font-black uppercase tracking-widest">Selecciona un operador a la izquierda</p>
+            </div>
+          ) : loaditems ? (
+            <div className="flex-1 flex items-center justify-center">
+              {/* <Spinner /> */}
+              </div>
+          ) : (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-6 border-b flex justify-between items-end">
+                <div>
+                  <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">Configurando atención para:</span>
+                  <h3 className="text-2xl font-black uppercase italic text-slate-800">{operadorSeleccionado.nombre}</h3>
+                </div>
+                <div className="text-right">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase leading-none">Puesto Actual</span>
+                  <span className="text-sm font-black text-slate-700 uppercase italic">{operadorSeleccionado.puesto_nombre}</span>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {serviciosOperador.map((servicio) => (
+                    <div
+                      key={servicio.id}
+                      onClick={() => handleToggleServicio(servicio)}
+                      className={`relative group p-5 rounded-[2rem] border-2 cursor-pointer transition-all flex items-center gap-4 ${
+                        servicio.asignado 
+                        ? "bg-white border-green-500 shadow-sm" 
+                        : "bg-slate-50 border-transparent hover:border-slate-200"
+                      } ${!servicio.service_active && "opacity-40 grayscale pointer-events-none"}`}
+                    >
+                      <div 
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white font-black text-xl italic shadow-lg"
+                        style={{ backgroundColor: servicio.service_active ? servicio.color : '#cbd5e1' }}
+                      >
+                        {servicio.codigo}
+                      </div>
+
+                      <div className="flex-1 truncate">
+                        <h4 className="font-black uppercase text-sm text-slate-700 truncate leading-tight">
+                          {servicio.nombre}
+                        </h4>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                          {servicio.service_active ? "Área Activa" : "Área fuera de servicio"}
+                        </p>
+                      </div>
+
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                        servicio.asignado ? "bg-green-500 text-white" : "bg-slate-200 text-slate-400"
+                      }`}>
+                        {servicio.asignado ? <Check className="w-5 h-5" /> : <X className="w-4 h-4" />}
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-white">
-                    <UserCog className="w-24 h-24 mx-auto mb-4" />
-                    <p className="text-lg">
-                      Selecciona un operador para asignar servicios
-                    </p>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
         </div>
-      )}
+      </div>
+
+      {/* FOOTER */}
+      <div className="px-12 py-4 bg-slate-50 border-t flex items-center shrink-0">
+        <AlertCircleIcon className="w-4 h-4 mr-3 opacity-30" />
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            Nota: Solo los servicios asignados y activos aparecerán en la consola del operador.
+        </span>
+      </div>
     </div>
   );
 }

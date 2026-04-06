@@ -7,6 +7,8 @@ import {
   Trash2,
   PlayIcon,
   ImageOffIcon,
+  UploadCloud,
+  Eye,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { TabSpinner, Spinner } from "../../components/loading";
@@ -22,6 +24,13 @@ function MediosSection({
   const [editando, setEditando] = useState(null);
   const [formulario, setFormulario] = useState({});
   const [loadingUpload, setLoadingUpload] = useState(false);
+
+  const colors = {
+    primaryBlue: "#1e2a4f",
+    primaryYellow: "#fad824",
+    secondaryBlueDark: "#006ca1",
+    monoSilver: "#b2b2b2",
+  };
 
   const handleCrearMedio = () => {
     setEditando("nuevo");
@@ -42,58 +51,25 @@ function MediosSection({
       formulario.tipo === "imagen" ? 5 * 1024 * 1024 : 20 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error(
-        `El archivo es demasiado grande. Máximo: ${
-          formulario.tipo === "imagen" ? "5MB" : "20MB"
-        }`,
+        `Tamaño excedido. Máximo: ${formulario.tipo === "imagen" ? "5MB" : "20MB"}`,
       );
-      e.target.value = "";
-      return;
-    }
-
-    const validImageTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ];
-    const validVideoTypes = ["video/mp4", "video/webm", "video/ogg"];
-
-    if (formulario.tipo === "imagen" && !validImageTypes.includes(file.type)) {
-      toast.error("Tipo de archivo no válido. Solo: JPG, PNG, GIF, WebP");
-      e.target.value = "";
-      return;
-    }
-
-    if (formulario.tipo === "video" && !validVideoTypes.includes(file.type)) {
-      toast.error("Tipo de archivo no válido. Solo: MP4, WebM, OGG");
       e.target.value = "";
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const base64 = event.target.result;
-      if (!base64 || !base64.startsWith("data:")) {
-        toast.error("Error al procesar el archivo");
-        return;
-      }
       setFormulario({
         ...formulario,
-        url: base64,
+        url: event.target.result,
         nombre: formulario.nombre || file.name.split(".")[0],
       });
-    };
-    reader.onerror = () => {
-      toast.error("Error al leer el archivo");
     };
     reader.readAsDataURL(file);
   };
 
   const handleGuardar = async () => {
-    if (!validarMedio(formulario)) {
-      return;
-    }
+    if (!validarMedio(formulario)) return;
     setLoadingUpload(true);
     await onGuardarMedio(formulario);
     setLoadingUpload(false);
@@ -102,297 +78,274 @@ function MediosSection({
   };
 
   return (
-    <div className="bg-gradient-to-tl from-[var(--color-secondary-blue-light)] to-[var(--color-secondary-blue-dark)] rounded shadow-xl p-10 border border-[var(--color-mono-silver)]/30">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
-          <ImageIcon className="w-8 h-8 text-[var(--color-primary-yellow)]" />
-          Medios (Imágenes/Videos)
-        </h2>
+    <div
+      className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col"
+      style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}>
+      <div
+        className="absolute top-0 left-0 w-full h-3 z-10"
+        style={{ backgroundColor: colors.primaryBlue }}></div>
+
+      {/* HEADER */}
+      <div className="p-8 shrink-0 flex justify-between items-center border-b">
+        <div>
+          <h2
+            className="text-3xl font-black tracking-tighter uppercase"
+            style={{ color: colors.primaryBlue }}>
+            Galería de{" "}
+            <span style={{ color: colors.secondaryBlueDark }}>Contenido</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            Gestiona lo que el público ve en pantalla
+          </p>
+        </div>
         <button
           onClick={handleCrearMedio}
-          className="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Nuevo Medio
+          className="flex items-center gap-2 text-white px-6 py-3 rounded-2xl font-black uppercase text-xs tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-900/20"
+          style={{ backgroundColor: colors.primaryBlue }}>
+          <Plus className="w-4 h-4" />
+          Añadir Medio
         </button>
       </div>
-      <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5"></div>
-      {/* Formulario de edición/agregar medio */}
-      {editando && (
-        <div className="fixed inset-0 z-50 flex backdrop-blur-sm items-center justify-center bg-black/70">
-          <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 relative">
-            {/* Botón de cerrar */}
-            <button
-              onClick={() => {
-                setEditando(null);
-                setFormulario({});
-              }}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-            >
-              <X className="w-6 h-6" />
-            </button>
 
-            <h3 className="text-xl font-bold mb-4">Agregar Medio</h3>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tipo
-                </label>
-                <select
-                  value={formulario.tipo || "imagen"}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, tipo: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                >
-                  <option value="imagen">Imagen</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  value={formulario.nombre || ""}
-                  onChange={(e) =>
-                    setFormulario({ ...formulario, nombre: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-                  placeholder="Nombre descriptivo"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Seleccionar Archivo
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
-                <input
-                  type="file"
-                  accept={formulario.tipo === "imagen" ? "image/*" : "video/*"}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer inline-flex flex-col items-center"
-                >
-                  <svg
-                    className="w-12 h-12 text-gray-400 mb-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+      {/* LISTA DE MEDIOS */}
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/50">
+        {LoadingSpin ? (
+          <div className="h-full flex justify-center items-center">
+            {/* <TabSpinner /> */}
+          </div>
+        ) : medios.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
+            <ImageIcon className="w-20 h-20 mb-4" />
+            <p className="font-black uppercase tracking-widest">
+              No hay contenido disponible
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {medios.map((medio) => (
+              <div
+                key={medio.id}
+                className="group bg-white rounded-xl overflow-hidden border-2 border-black hover:border-blue-500 transition-all hover:shadow-2xl flex flex-col">
+                {/* Preview Area */}
+                <div className="aspect-video relative overflow-hidden bg-slate-200">
+                  {medio.tipo === "imagen" ? (
+                    <img
+                      src={medio.url}
+                      alt={medio.nombre}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
                     />
-                  </svg>
-                  <span className="text-sm text-gray-600 font-semibold">
-                    Click para seleccionar archivo
-                  </span>
-                  <span className="text-xs text-gray-500 mt-1">
-                    {formulario.tipo === "imagen"
-                      ? "PNG, JPG, GIF hasta 5MB"
-                      : "MP4, WebM hasta 20MB"}
-                  </span>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                      <PlayIcon className="text-white opacity-50 w-12 h-12" />
+                      <video
+                        src={medio.url}
+                        className="absolute inset-0 w-full h-full object-cover opacity-60"
+                        muted
+                      />
+                    </div>
+                  )}
+
+                  {/* Overlay Tags */}
+                  <div className="absolute top-3 left-3 flex gap-2">
+                    <span className="bg-black/50 backdrop-blur-md text-[9px] font-black text-white px-3 py-1 rounded-full uppercase italic">
+                      {medio.tipo}
+                    </span>
+                  </div>
+
+                  {/* Status Indicator */}
+                  <div
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity ${medio.medio_active === 1 ? "opacity-0" : "opacity-100 bg-slate-900/60"}`}>
+                    {medio.medio_active === 0 && (
+                      <span className="text-white font-black uppercase italic text-[10px] tracking-widest border border-white/30 px-4 py-2 rounded-xl backdrop-blur-sm">
+                        Inactivo
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Info & Actions */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3
+                    className="font-black uppercase italic text-slate-700 text-sm truncate mb-1"
+                    title={medio.nombre}>
+                    {medio.nombre}
+                  </h3>
+
+                   <div className="h-0.5 rounded-xl bg-black mb-4"></div>
+
+                  <div className="mt-auto space-y-2">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const modal = window.open(
+                            "",
+                            "_blank",
+                            "width=800,height=600",
+                          );
+                          if (medio.tipo === "imagen") {
+                            modal.document.write(
+                              `<img src="${medio.url}" style="max-width:100%; height:auto;">`,
+                            );
+                          } else {
+                            modal.document.write(
+                              `<video src="${medio.url}" controls autoplay style="max-width:100%;"></video>`,
+                            );
+                          }
+                        }}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-colors flex items-center justify-center">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          onSwitchMedio(medio.id, medio.medio_active)
+                        }
+                        className={`flex-[2] text-[10px] font-black uppercase italic rounded-xl transition-all ${
+                          medio.medio_active === 0
+                            ? "bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"
+                            : "bg-amber-100 text-amber-700 hover:bg-amber-600 hover:text-white"
+                        }`}>
+                        {medio.medio_active === 0 ? "Activar" : "Ocultar"}
+                      </button>
+                      <button
+                        onClick={() => onEliminarMedio(medio.id)}
+                        className="flex-1 bg-red-50 hover:bg-red-600 text-red-400 hover:text-white p-2 rounded-xl transition-all">
+                        <Trash2 className="w-4 h-4 mx-auto" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* MODAL FORMULARIO */}
+      {editando && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-[#1e2a4f]/80 backdrop-blur-md"
+            onClick={() => setEditando(null)}></div>
+
+          <div className="bg-white rounded-[3rem] shadow-2xl max-w-2xl w-full overflow-hidden relative animate-in fade-in zoom-in duration-300">
+            <div className="p-10">
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black uppercase italic text-slate-800">
+                  Nuevo <span className="text-blue-600">Recurso</span>
+                </h3>
+                <button
+                  onClick={() => setEditando(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-slate-400" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                    Tipo de Contenido
+                  </label>
+                  <select
+                    value={formulario.tipo}
+                    onChange={(e) =>
+                      setFormulario({ ...formulario, tipo: e.target.value })
+                    }
+                    className="w-full px-5 py-3 bg-slate-50 border-2 border-transparent focus:border-blue-600 rounded-2xl outline-none font-bold text-xs uppercase">
+                    <option value="imagen">Imagen</option>
+                    <option value="video">Video</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                    Nombre Identificador
+                  </label>
+                  <input
+                    type="text"
+                    value={formulario.nombre}
+                    onChange={(e) =>
+                      setFormulario({ ...formulario, nombre: e.target.value })
+                    }
+                    placeholder="Ej: Promo Verano"
+                    className="w-full px-5 py-3 bg-slate-50 border-2 border-transparent focus:border-blue-600 rounded-2xl outline-none font-bold text-xs uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-8">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                  Carga de Archivo
                 </label>
+                <div className="relative group">
+                  <input
+                    type="file"
+                    accept={
+                      formulario.tipo === "imagen" ? "image/*" : "video/*"
+                    }
+                    onChange={handleFileChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                    id="file-upload"
+                  />
+                  <div className="border-2 border-dashed border-slate-200 rounded-[2rem] p-10 text-center group-hover:border-blue-400 transition-all bg-slate-50">
+                    <UploadCloud className="w-12 h-12 text-slate-300 mx-auto mb-4 group-hover:text-blue-500 transition-colors" />
+                    <p className="text-xs font-black uppercase text-slate-500 italic">
+                      Click para explorar archivos
+                    </p>
+                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
+                      {formulario.tipo === "imagen"
+                        ? "PNG, JPG, WEBP (MÁX 5MB)"
+                        : "MP4, WEBM (MÁX 20MB)"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {formulario.url && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">
-                    Vista previa:
-                  </p>
-                  {formulario.tipo === "imagen" ? (
-                    <img
-                      src={formulario.url}
-                      alt="Preview"
-                      className="max-w-full h-48 object-contain mx-auto rounded-lg"
-                    />
-                  ) : (
-                    <video
-                      src={formulario.url}
-                      controls
-                      className="max-w-full h-48 mx-auto rounded-lg"
-                    />
-                  )}
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    Tamaño: {(formulario.url.length / 1024).toFixed(2)} KB
-                  </p>
+                <div className="mb-8 p-4 bg-blue-50 rounded-2xl flex items-center gap-4">
+                  <div className="w-16 h-10 bg-white rounded-lg overflow-hidden shrink-0 border border-blue-100">
+                    {formulario.tipo === "imagen" ? (
+                      <img
+                        src={formulario.url}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <PlayIcon className="w-4 h-4 mx-auto mt-3 text-blue-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 truncate">
+                    <p className="text-[10px] font-black uppercase text-blue-600 leading-none">
+                      Vista previa lista
+                    </p>
+                    <p className="text-[9px] font-bold text-blue-400 truncate mt-1">
+                      Archivo procesado correctamente
+                    </p>
+                  </div>
                 </div>
               )}
-            </div>
 
-            {loadingUpload && <Spinner onClose={loadingUpload} />}
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={handleGuardar}
-                disabled={!formulario.url || !formulario.nombre}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-              >
-                <Save className="w-5 h-5" />
-                Guardar
-              </button>
-              <button
-                onClick={() => {
-                  setEditando(null);
-                  setFormulario({});
-                }}
-                className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-              >
-                <X className="w-5 h-5" />
-                Cancelar
-              </button>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleGuardar}
+                  disabled={
+                    !formulario.url || !formulario.nombre || loadingUpload
+                  }
+                  className="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all hover:scale-105 disabled:opacity-50">
+                  Confirmar y Subir
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Lista de medios */}
-      <div
-        className={`${
-          LoadingSpin
-            ? ""
-            : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-4 max-h-[600px] overflow-y-auto pr-2"
-        }`}
-      >
-        {LoadingSpin ? (
-          <TabSpinner />
-        ) : medios.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg">No hay medios agregados</p>
-            <p className="text-sm mt-2">
-              Haz clic en "Nuevo Medio" para agregar uno
-            </p>
-          </div>
-        ) : (
-          medios.map((medio) => (
-            <div
-              key={medio.id}
-              className="bg-gray-50 rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-shadow"
-            >
-              <div className="aspect-video bg-gray-200 flex items-center justify-center relative">
-                {medio.tipo === "imagen" ? (
-                  <img
-                    src={medio.url}
-                    alt={medio.nombre}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src =
-                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RXJyb3I8L3RleHQ+PC9zdmc+";
-                    }}
-                  />
-                ) : (
-                  <video
-                    src={medio.url}
-                    className="w-full h-full object-cover"
-                    preload="metadata"
-                  />
-                )}
-                {medio.medio_active === 1 ? (
-                  ""
-                ) : (
-                  <div className="absolute inset-0 bg-gray-500/90"></div>
-                )}
+      {loadingUpload && <Spinner />}
 
-                <span
-                  className={`px-3 py-1 rounded text-xs font-semibold text-white absolute top-2 left-2 bg-black/70 ${
-                    medio.medio_active === 1 ? "bg-green-600" : "bg-red-600"
-                  }`}
-                >
-                  {medio.medio_active === 1
-                    ? "Mostrando en pantalla"
-                    : "No se muestra en pantalla"}
-                </span>
-
-                <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold capitalize">
-                  {medio.tipo}
-                </div>
-              </div>
-
-              <div className="p-4">
-                <h3
-                  className="font-bold text-gray-800 truncate"
-                  title={medio.nombre}
-                >
-                  {medio.nombre}
-                </h3>
-                {/* <p className="text-sm text-gray-600 capitalize mb-3">
-                  {medio.tipo} {medio.url.startsWith("data:") && "(Local)"}
-                </p> */}
-                <div className="h-0.5 rounded-xl bg-black mb-2"></div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      const modal = window.open(
-                        "",
-                        "_blank",
-                        "width=800,height=600",
-                      );
-                      if (medio.tipo === "imagen") {
-                        modal.document.write(
-                          `<img src="${medio.url}" style="max-width:100%; height:auto;">`,
-                        );
-                      } else {
-                        modal.document.write(
-                          `<video src="${medio.url}" controls autoplay style="max-width:100%;"></video>`,
-                        );
-                      }
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                    Ver
-                  </button>
-                  <button
-                    onClick={() => onEliminarMedio(medio.id)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar
-                  </button>
-                </div>
-
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={() => onSwitchMedio(medio.id, medio.medio_active)}
-                    className={`flex-1 flex items-center justify-center gap-2 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm ${
-                      medio.medio_active === 0
-                        ? "bg-green-600 hover:bg-green-800"
-                        : "bg-gray-600 hover:bg-gray-800"
-                    }`}
-                  >
-                    {medio.medio_active === 0 ? (
-                      medio.tipo === "imagen" ? (
-                        <ImageIcon className="w-6 h-6 font-bold" />
-                      ) : (
-                        <PlayIcon className="w-6 h-6 font-bold" />
-                      )
-                    ) : (
-                      <ImageOffIcon className="w-6 h-6" />
-                    )}
-                    <span className="px-3 py-1 rounded-full text-sm font-semibold text-white">
-                      {medio.medio_active === 0 ? "Mostrar" : "No mostrar"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
+      {/* FOOTER */}
+      <div className="px-12 py-4 bg-white border-t flex items-center shrink-0">
+        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          Formatos recomendados: 1920x1080 (Full HD) para evitar distorsiones en
+          pantalla.
+        </span>
       </div>
     </div>
   );
