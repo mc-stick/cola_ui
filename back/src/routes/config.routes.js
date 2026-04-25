@@ -26,19 +26,17 @@ router.get('/', async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split } = req.body;
+    const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split,blur } = req.body;
     console.log('Split:', req.body)
     await pool.query(
-      'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ?, Split=? WHERE id = ?',
-      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split, id]
+      'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ?, Split=?, blur=? WHERE id = ?',
+      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion*1000, Split, blur, id]
     );
     
     await registrarAuditoria({
       usuarioId: req.user.id,
       accion: 'ACTUALIZAR CONFIGURACIÓN',
-      modulo: 'Configuración',
-      detalles: `Empresa: ${nombre_empresa}`,
-      req
+      detalles: `${nombre_empresa}, Mostrar imagenes: ${mostrar_imagenes?"Si":"No"}, Mostrar Videos: ${mostrar_videos?"Si":"No"}, Dividir pantalla: ${Split?"Si":"No"}, Pantalla dinámica: ${blur?"Si":"No"}`
     });
     
     res.json({ success: true });

@@ -1,4 +1,4 @@
-import { CircleSlashIcon, StarIcon } from "lucide-react";
+import { AngryIcon, CircleSlashIcon, FrownIcon, LaughIcon, MehIcon, SmileIcon, StarIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
@@ -109,6 +109,75 @@ export function StarRatingButton({
   );
 }
 
+export function IconRatingButton({
+  value = 0,
+  onChange,
+  size = 32,
+  readOnly = false,
+}) {
+  const [hover, setHover] = useState(null);
+  const displayedValue = hover ?? value;
+
+  const icons = {
+    1: { label: "Muy malo", emoji: <AngryIcon className="w-10 h-10 text-red-500"/> },
+    2: { label: "Malo", emoji: <FrownIcon className="w-10 h-10 text-orange-500"/>  },
+    3: { label: "Bueno", emoji: <MehIcon className="w-10 h-10 text-yellow-500"/>  },
+    4: { label: "Muy bueno", emoji: <SmileIcon className="w-10 h-10 text-green-500"/>  },
+    5: { label: "Excelente", emoji: <LaughIcon className="w-10 h-10 text-blue-500"/>  },
+  };
+
+  return (
+    // Columna para que la etiqueta quede abajo de la fila de iconos
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      
+      {/* Contenedor de iconos */}
+      <div style={{ display: "flex", gap: 12 }}>
+        {Object.keys(icons).map((key) => {
+          const ratingValue = parseInt(key);
+          const isSelected = ratingValue === displayedValue;
+          const iconData = icons[ratingValue];
+
+          return (
+            <span
+              key={ratingValue}
+              role={readOnly ? "img" : "button"}
+              aria-label={iconData.label}
+              onClick={() => !readOnly && onChange?.(ratingValue)}
+              onMouseEnter={() => !readOnly && setHover(ratingValue)}
+              onMouseLeave={() => !readOnly && setHover(null)}
+              style={{
+                cursor: readOnly ? "default" : "pointer",
+                fontSize: size,
+                transform: isSelected ? "scale(1.3)" : "scale(1)",
+                opacity: isSelected ? 1 : 0.4,
+                transition: "all 0.2s ease-in-out",
+                display: "inline-flex",
+                userSelect: "none",
+              }}
+            >
+              {iconData.emoji}
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Etiqueta debajo: Solo aparece si hay un valor seleccionado o en hover */}
+      <div style={{ height: "20px" }}> {/* Altura fija para evitar saltos de layout */}
+        {displayedValue > 0 && (
+          <span style={{ 
+            fontWeight: "bold", 
+            color: "#555", 
+            fontSize: "14px",
+            animation: "fadeIn 0.3s" 
+          }}>
+            {icons[displayedValue].label}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function AnimatedRating({ value = 0 }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -198,8 +267,8 @@ export function AnimatedRating({ value = 0 }) {
         />
 
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-extrabold text-amber-600">
-            {display.toFixed(2)}
+          <span className="text-xl font-extrabold text-amber-600">
+            {display.toFixed(1)}
           </span>
           <span className="text-m font-bold text-gray-800">/ 5</span>
         </div>
@@ -240,7 +309,19 @@ export function EvaluacionTicket() {
   const [ratings, setRatings] = useState([]);
 
   const [hasZero, setHasZero] = useState(true);
-
+  
+  const colors = {
+    primaryBlue: "#1e2a4f",
+    primaryRed: "#cc132c",
+    primaryYellow: "#fad824",
+    primaryGreen: "#499c35",
+    secondaryBlueDark: "#006ca1",
+    secondaryBlueLight: "#4ec2eb",
+    monoWhite: "#ffffff",
+    monoBlack: "#000000",
+    monoSilver: "#b2b2b2",
+    monoGold: "#daab00"
+  };
   // 🔹 Inicializar ratings cuando lleguen los campos
   useEffect(() => {
     if (campos.length > 0) {
@@ -318,89 +399,90 @@ export function EvaluacionTicket() {
     );
   }
 
-  // 🔹 Pantalla de evaluación
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-950 px-4">
-      <AnimatedBubleBackground />
+  // 🔹 Pantalla de evaluación con corrección de scroll y estética móvil
+return (
+  <div className="min-h-screen w-full flex items-center justify-center bg-blue-950 px-3 py-6 relative overflow-hidden">
+    <AnimatedBubleBackground />
+    
+    <div className="w-full max-w-xl z-10">
       {enviado ? (
         <Mensaje
           titulo="¡Gracias por tu evaluación!"
           mensaje="Tu opinión nos ayuda a mejorar nuestro servicio."
         />
       ) : (
-        <div className="w-full max-w-md bg-gray-300/80 rounded-2xl shadow-xl p-6 text-center">
-          <h2 className="text-2xl font-semibold mb-2">
-            Tu opinión nos importa, <br />
-            ¿Cómo fue tu experiencia?
-          </h2>
+        <div 
+          className="w-full bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl border relative overflow-hidden flex flex-col"
+          style={{ borderColor: colors.monoSilver }}
+        >
+          {/* Línea decorativa superior: más delgada en móvil */}
+          <div className="absolute top-0 left-0 w-full h-2 md:h-3" style={{ backgroundColor: colors.primaryBlue }}></div>
 
-          {campos.map((data, index) => (
-            <div key={index}>
-              <div className="flex justify-between my-6">
-                <p className="text-black text-xl font-black">
-                  {data.nombre}
-                </p>
-
-                <StarRatingButton
-                  value={ratings[index] || 0}
-                  onChange={(value) => handleRatingChange(index, value)}
-                  size={36}
-                />
-              </div>
-
-              {index !== campos.length - 1 && (
-                <div className="h-1 bg-blue-600"></div>
-              )}
+          {/* Padding reducido en móvil (p-6) y amplio en desktop (p-10) */}
+          <div className="p-6 md:p-10">
+            
+            {/* Header: Título que no se desborda */}
+            <div className="mb-6 md:mb-8 text-center md:text-left">
+              <h2 className="text-xl md:text-3xl lg:text-4xl font-black tracking-tighter leading-tight" style={{ color: colors.primaryBlue }}>
+                TU OPINIÓN NOS IMPORTA
+              </h2>
+              <p className="text-[10px] md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mt-1">
+                ¿Cómo fue tu experiencia?
+              </p>
             </div>
-          ))}
 
-          {/* 
-          <div className="flex justify-center my-6">
-            <StarRatingButton value={rating} onChange={setRating} size={36} />
+            {/* Lista de campos: Espaciado controlado */}
+            <div className="space-y-1 mb-6">
+              {campos.map((data, index) => (
+                <div key={index}>
+                  <div className="flex justify-between items-center py-4 gap-2">
+                    <p className="text-gray-800 text-sm md:text-xl font-black uppercase tracking-tight truncate pr-2">
+                      {data.nombre}
+                    </p>
+
+                    {/* Contenedor de estrellas que no se sale */}
+                    <div className="shrink-0 scale-90 md:scale-100 origin-right">
+                      <IconRatingButton
+                        value={ratings[index] || 0}
+                        onChange={(value) => handleRatingChange(index, value)}
+                        size={window.innerWidth < 640 ? 24 : 36} 
+                      />
+                    </div>
+                  </div>
+
+                  {index !== campos.length - 1 && (
+                    <div className="h-[1px] w-full bg-gray-100"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer: Input y Botón */}
+            <div className="space-y-4">
+              <textarea
+                value={commentx}
+                onChange={(e) => setCommentx(e.target.value)}
+                placeholder=" (Opcional) Comentario adicional..."
+                className="w-full min-h-[80px] md:min-h-[120px] p-4 text-sm rounded-xl border border-gray-200 bg-gray-50 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition-all"
+              />
+
+              <button
+                onClick={handleSubmit}
+                disabled={hasZero}
+                className={`w-full py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-xs md:text-base uppercase tracking-[0.15em] transition-all transform active:scale-95 shadow-lg
+                  ${
+                    hasZero
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+                      : "bg-[#FFCC00] hover:bg-[#F5C200] text-blue-900"
+                  }`}
+              >
+                Enviar Evaluación
+              </button>
+            </div>
           </div>
-          <p className="text-black mb-6">
-            Toca una estrella para calificar el servicio
-          </p> */}
-
-          <div>
-            <textarea
-              value={commentx}
-              onChange={(e) => setCommentx(e.target.value)}
-              placeholder="Escribenos tu comentario ..."
-              className="
-                w-full
-                min-h-[100px]
-                p-3
-                text-sm
-                rounded-lg
-                border
-                border-gray-300
-                bg-white
-                placeholder-gray-400
-                resize-none
-                transition
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
-                focus:border-blue-500
-              "
-            />
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={hasZero}
-            className={`w-full py-3 rounded-lg font-medium text-black transition
-              ${
-                hasZero
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-warning hover:bg-warning"
-              }`}
-          >
-            Enviar mi evaluación
-          </button>
         </div>
       )}
     </div>
-  );
+  </div>
+);
 }

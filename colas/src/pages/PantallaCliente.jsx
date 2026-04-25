@@ -28,7 +28,7 @@ export const HeaderIndex = ({ config }) => {
               />
             ) : (
               <div className="w-14 h-14 bg-[#fad824] rounded-2xl flex items-center justify-center text-[#1e2a4f] font-black text-2xl shadow-xl">
-                U
+                .
               </div>
             )}
             {/* Punto de estado online */}
@@ -50,11 +50,11 @@ export const HeaderIndex = ({ config }) => {
         </div>
 
         <div className="hidden md:flex flex-col items-end">
-          <span className="text-[#daab00] text-sm font-black tracking-wide">
+          <span className="text-[#daab00] text-lg font-black tracking-wide">
             {hora}
           </span>
 
-          <span className="text-white/50 text-xs">
+          <span className="text-white/90 font-bold text-base">
             {fecha}
           </span>
         </div>

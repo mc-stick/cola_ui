@@ -41,7 +41,7 @@ export default function NotFound() {
             ¡ERROR DEL SERVIDOR!
           </h2>
           <p className="mt-3 text-gray-300 max-w-md mx-auto font-medium">
-            La página no fue encontrada.
+            Esperando por la conexión.
           </p>
         </motion.div>
 

@@ -89,7 +89,7 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
             className="px-6 py-2 rounded-xl bg-gray-400 text-white font-semibold hover:bg-gray-500 transition-colors">
             Cancelar
           </button>
-          <button
+          {/* <button
             onClick={confirmar}
             disabled={numero.length !== 3}
             className={`px-6 py-2 rounded-xl font-semibold transition-colors ${
@@ -98,7 +98,7 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}>
             Confirmar
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

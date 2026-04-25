@@ -1,7 +1,8 @@
 const ldap = require('ldapjs');
 
 const client = ldap.createClient({
-  url: 'ldaps://172.16.0.141:636',
+  url: 'ldap://prueba.local:389',
+  // url: 'ldap://ldap.pruebaitp.com:389',
   tlsOptions: {
     rejectUnauthorized: false // solo para pruebas
   }
@@ -12,6 +13,7 @@ client.on('error', (err) => {
 });
 
 client.bind('Administrador@prueba.local', 'Proyecto2026', (err) => {
+// client.bind('Administrator@ldap.pruebaitp.com', 'P@ssw0rd', (err) => {
   if (err) {
     console.error('❌ Bind falló:', err.message);
   } else {

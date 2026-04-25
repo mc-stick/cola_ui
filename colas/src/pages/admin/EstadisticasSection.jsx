@@ -8,8 +8,11 @@ import {
   ArrowRightLeftIcon,
   Users,
   Briefcase,
+  Filter,
+  CheckCircle,
+  ArrowRightLeft,
 } from "lucide-react";
-import { CardLoader,  } from "../../components/loading";
+import { CardLoader } from "../../components/loading";
 import {
   LineChart,
   Line,
@@ -23,6 +26,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AnimatedRating, StarRating } from "../../components/common/Rating";
+import api from "../../services/api";
 
 function EstadisticasSection({
   LoadingSpin,
@@ -48,461 +52,348 @@ function EstadisticasSection({
     }
 
     const datos = await onCargarEstadisticas(fechaInicio, fechaFin);
+    const dataLimpia = datos?.map(item => ({
+  ...item,
+  // Convertimos a número y unificamos nombres de claves
+  total_tickets: Number(item.total_tickets),
+  atendidos: Number(item.atendidos),
+  en_espera: Number(item.en_espera),
+  total_tickets: Number(item.total_tickets)
+}));
+    const dataop = await api.getEstadisticasOperadores(fechaInicio, fechaFin);
+    const dataser = await api.getEstadisticasServicios(fechaInicio, fechaFin);
+    console.log(dataop, "data estadistiopca");
     if (datos) {
-      setEstadisticasRango(datos.rango || []);
-      setEstadisticasServicios(datos.servicios || []);
-      setEstadisticasOperadores(datos.operadores || []);
+      setEstadisticasRango(dataLimpia || []);
+      setEstadisticasServicios(dataser || []);
+      setEstadisticasOperadores(dataop || []);
       setEstadisticasHoras(datos.horas || []);
-      setResumenGeneral(datos.resumen || null);
+      setResumenGeneral(datos[0] || null);
     }
   };
 
   useEffect(() => {
-    cargarEstadisticas()
-  }, [])
+    cargarEstadisticas();
+  }, []);
 
+  // --- Componentes Auxiliares para Limpieza Visual ---
+  const KPICard = ({ title, value, icon, color, unit = "", percentage }) => (
+    <div
+      className={`bg-gradient-to-br ${color} p-6 rounded-2xl text-white shadow-xl transform hover:-translate-y-1 transition-all`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold opacity-80 uppercase tracking-wider">
+          {title}
+        </h3>
+        <div className="p-2 bg-white/20 rounded-lg">{icon}</div>
+      </div>
+      <div className="text-3xl font-black">
+        {value}
+        {unit && <span className="text-lg ml-1 opacity-80">{unit}</span>}
+      </div>
+      {percentage !== undefined && (
+        <p className="text-xs mt-2 font-medium opacity-90 bg-black/10 w-fit px-2 py-0.5 rounded-full">
+          {percentage}% del volumen total
+        </p>
+      )}
+    </div>
+  );
 
+  const Stat = ({ label, value, color, Mini }) => (
+    <div className="text-center px-2">
+      <div className={`font-black ${Mini ? "text-xl" : "text-2xl"} ${color}`}>
+        {value || 0}
+      </div>
+      <div className="text-[10px] uppercase font-bold text-gray-500 tracking-tighter">
+        {label}
+      </div>
+    </div>
+  );
+
+  const EmptyState = ({ message }) => (
+    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+      <BarChartHorizontalBig className="w-12 h-12 mb-2 opacity-20" />
+      <p className="text-sm italic">{message}</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Filtros de Fecha */}
-      <div className=" rounded-2xl shadow-lg p-8 pb-0">
-        <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-          <BarChartHorizontalBig className="w-8 h-8 text-orange-600" />
-          Estadísticas
-        </h2>
-        <div className="h-1 w-full bg-[var(--color-primary-yellow)] rounded-full mb-5 mt-10"></div>
-        <div className="bg-gray-50 rounded-xl p-4 mb-2">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-600" />
-              <label className="text-sm font-semibold text-gray-700">
-                Desde:
-              </label>
-              <input
-                type="date"
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-                className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Hasta:
-              </label>
-              <input
-                type="date"
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-                className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
-              />
-            </div>
-            <div className="flex gap-2 ">
-            <button
-              onClick={cargarEstadisticas}
-              className={`flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors
-              ${estadisticasRango && estadisticasRango?.length > 0 ? "" : "bg-green-600 animate-pulse font-black"}`}>
-              <span
-                className={` ${estadisticasRango && estadisticasRango?.length > 0 ? "" : "animate-bounce mt-2"}`}>
-                <TrendingUp className="w-5 h-5 " />
-              </span>
-              Actualizar
-            </button>
-         
-            </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 relative overflow-hidden">
+        {/* Línea decorativa superior */}
+        <div className="absolute top-0 left-0 w-full h-3 bg-orange-500"></div>
+
+        {/* Encabezado */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+          <div>
+            <h2 className="text-4xl font-black tracking-tighter mb-2 uppercase text-gray-800">
+              Estadísticas de Atención
+            </h2>
+            <p className="text-lg font-medium opacity-50 uppercase tracking-widest">
+              Análisis de rendimiento y flujo de turnos
+            </p>
           </div>
+          <BarChartHorizontalBig className="w-20 h-20 opacity-10 text-orange-600 -rotate-12" />
         </div>
-      </div>
 
-      {/* Gráfica de Tickets por Día */}
-      {LoadingSpin ? (
-        <div div className="space-y-3 max-h-[580px] overflow-y-auto  p-6">
-        <CardLoader />
-        <CardLoader />
-        <CardLoader />
-        <CardLoader />
-        </div>
-      ) : (
-        <div div className="space-y-3 max-h-[580px] overflow-y-auto  p-6">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Tickets por Día
-            </h3>
-            
-            {estadisticasRango && estadisticasRango?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={estadisticasRango}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="fecha"
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return `${date.getDate()} - ${date
-                        .toLocaleString("es-ES", { month: "long" })
-                        .replace(/^./, (l) => l.toUpperCase())}`;
-                    }}
-                  />
-                  <YAxis />
-                  <Tooltip
-                    labelFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString("es-ES");
-                    }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="total_tickets"
-                    stroke="#3B82F6"
-                    strokeWidth={4}
-                    name="Total"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="atendidos"
-                    stroke="#10B981"
-                    strokeWidth={4}
-                    name="Atendidos"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="no_presentados"
-                    stroke="#EF4444"
-                    strokeWidth={4}
-                    name="No Atendido"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <p>No hay datos para mostrar en este período</p>
+        <div className="grid lg:grid-cols-3 gap-10">
+          {/* Panel Lateral de Filtros */}
+          <div className="space-y-6">
+            <div className="h-2 w-24 rounded-full bg-orange-400"></div>
+
+            <div className="bg-gray-50 rounded-3xl p-6 border border-dashed border-gray-300">
+              <div className="flex items-center gap-2 mb-6">
+                <Filter className="w-5 h-5 text-blue-600" />
+                <span className="font-bold uppercase tracking-wider text-sm opacity-70">
+                  Filtros de Reporte
+                </span>
               </div>
-            )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-black uppercase mb-1 block opacity-60">
+                    Desde
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaInicio}
+                    onChange={(e) => setFechaInicio(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-black uppercase mb-1 block opacity-60">
+                    Hasta
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaFin}
+                    onChange={(e) => setFechaFin(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                  />
+                </div>
+
+                <button
+                  onClick={cargarEstadisticas}
+                  disabled={LoadingSpin}
+                  className={`w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95
+                    ${LoadingSpin ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  {LoadingSpin ? "CARGANDO..." : "ACTUALIZAR VISTA"}
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Tickets por Servicio */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            
-           
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Tickets por Servicio
-            </h3>
-            {estadisticasServicios && estadisticasServicios?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={estadisticasServicios}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis fontWeight="bold" dataKey="nombre" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="total_tickets" fill="#3B82F6" name="Total" />
-                  <Bar dataKey="atendidos" fill="#10B981" name="Atendidos" />
-                  <Bar
-                    dataKey="no_presentados"
-                    fill="red"
-                    name="No Atendidos"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Contenido Principal (Gráficas) */}
+          <div className="lg:col-span-2 h-[550px] overflow-y-auto pr-4 custom-scrollbar">
+            {LoadingSpin ? (
+              <CardLoader />
             ) : (
-              <div className="text-center py-12 text-gray-500">
-                <p>No hay datos de servicios</p>
-              </div>
-            )}
-          </div>
-
-          {/* Tickets por Hora */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Tickets por Hora del Día ({fechaFin})
-            </h3>
-            {estadisticasHoras && estadisticasHoras?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={estadisticasHoras}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="hora"
-                    tickFormatter={(value) => `${value}:00`}
-                  />
-                  <YAxis />
-                  <Tooltip labelFormatter={(value) => `Hora: ${value}:00`} />
-                  <Legend />
-                  <Bar dataKey="total_tickets" fill="#3B82F6" name="Total" />
-                  <Bar dataKey="atendidos" fill="#10B981" name="Atendidos" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <p>No hay datos de tickets en este día</p>
-              </div>
-            )}
-          </div>
-
-          {/* Rendimiento por Operador */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Rendimiento por Operador
-            </h3>
-            <div className="space-y-4">
-              {estadisticasOperadores && estadisticasOperadores?.length > 0 ? (
-                estadisticasOperadores.map((operador) => (
-                  <div
-                    key={operador.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                        <span className="text-blue-700 font-bold">
-                          {operador.id || "?"}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-800">
-                          {operador.username}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          Puesto {operador.puesto_numero || "Sin asignar"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-8 text-center">
-                      <AnimatedRating value={operador.promedio_evaluacion || 0} />
-
-                      <div>
-                        <div className="text-2xl font-bold text-blue-600">
-                          {operador.total_tickets || 0}
-                        </div>
-                        <div className="text-xs text-gray-600">Total</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {operador.atendidos || 0}
-                        </div>
-                        <div className="text-xs text-gray-600">Atendidos</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-red-600">
-                          {(operador.total_tickets-operador.atendidos) || 0}
-                        </div>
-                        <div className="text-xs text-gray-600">No atendidos</div>
-                      </div>
-                      {/* <div>
-                        <div className="text-2xl font-bold text-yellow-600">
-                          {Math.round(operador.tiempo_promedio_servicio || 0)}{" "}
-                          min
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          Tiempo Promedio
-                          <p>de atención</p>
-                        </div>
-                      </div> */}
+              <div className="space-y-8">
+                {/* Gráficas Principales */}
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="font-bold mb-4">Tickets por Día</h3>
+                    <div className="h-[300px] w-full">
+                      {estadisticasRango?.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={estadisticasRango}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#f0f0f0"
+                            />
+                            <XAxis
+                              dataKey="total_tickets"
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#6b7280", fontSize: 12 }}
+                            />
+                            <YAxis
+                              axisLine={false}
+                              tickLine={false}
+                              tick={{ fill: "#6b7280" }}
+                            />
+                            <Tooltip />
+                            <Legend iconType="circle" />
+                            <Line
+                              type="monotone"
+                              dataKey="total_tickets"
+                              stroke="#3B82F6"
+                              strokeWidth={3}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="atendidos"
+                              stroke="#10B981"
+                              strokeWidth={3}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="no_presentados"
+                              stroke="#EF4444"
+                              strokeWidth={3}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <EmptyState message="No hay datos para este período" />
+                      )}
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-gray-500">
-                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p>No hay datos de operadores en este período</p>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Detalle de Servicios */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              Detalle por Servicio
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-4">
-              {estadisticasServicios && estadisticasServicios?.length > 0 ? (
-                estadisticasServicios.map((servicio) => (
-                  <div
-                    key={servicio.id}
-                    className={`p-6 ${
-                      servicio.service_active == 0 ? "bg-red-50" : "bg-gray-50"
-                    } rounded-xl border-2 hover:shadow-md transition-shadow`}
-                    style={{ borderColor: servicio.color }}>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div
-                        className="text-3xl font-bold"
-                        style={{ color: servicio.color }}>
-                        {servicio.codigo}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-800">
-                          {servicio.nombre}
-                        </h4>
-                      </div>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="font-bold mb-4">Tickets por Servicio</h3>
+                    <div className="h-[300px] w-full">
+                      {estadisticasServicios?.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={estadisticasServicios}>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              vertical={false}
+                              stroke="#f0f0f0"
+                            />
+                            <XAxis
+                              dataKey="nombre"
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis axisLine={false} tickLine={false} />
+                            <Tooltip />
+                            <Bar
+                              dataKey="atendidos"
+                              fill="#10B981"
+                              radius={[4, 4, 0, 0]}
+                            />
+                            <Bar
+                              dataKey="no_presentados"
+                              fill="#ff0000"
+                              radius={[4, 4, 0, 0]}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <EmptyState message="No hay datos de servicios" />
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-blue-600">
-                          {servicio.total_tickets || 0}
+                  </div>
+                </div>
+
+                {/* Rendimiento por Operador */}
+                <section className="pb-8">
+                  <h3 className="text-xl font-bold mb-4">
+                    Rendimiento por Operador
+                  </h3>
+                  <div className="space-y-3">
+                    {/* Aquí el mapeo de operadores se verá afectado por el scroll del padre */}
+                    {estadisticasOperadores?.length > 0 ? (
+                      estadisticasOperadores.map((operador) => (
+                        <div
+                          key={operador.id}
+                          className="group flex flex-wrap items-center justify-between p-5 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-200 hover:bg-white transition-all"
+                        >
+                          <div className="flex items-center gap-5">
+                            <div className="bg-blue-600 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-100 group-hover:scale-110 transition-transform">
+                              <span className="text-white font-bold text-xl">
+                                {operador.username?.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <h4 className="font-black text-gray-900 text-lg uppercase tracking-tight">
+                                {operador.nombre}
+                              </h4>
+                              <p className="text-sm text-gray-500 font-medium">
+                                Puesto:{" "}
+                                <span className="text-blue-600">
+                                  {operador.puesto_numero || "N/A"}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-8 items-center mt-4 lg:mt-0">
+                            <AnimatedRating
+                              value={operador.promedio_evaluacion || 0}
+                            />
+                            <Stat
+                              Mini
+                              label="Total"
+                              value={operador.total_tickets}
+                              color="text-blue-600"
+                            />
+                            <Stat
+                              Mini
+                              label="Atendidos"
+                              value={operador.atendidos}
+                              color="text-green-600"
+                            />
+                            <Stat
+                              Mini
+                              label="No Atendidos"
+                              value={
+                                operador.total_tickets - operador.atendidos
+                              }
+                              color="text-red-600"
+                            />
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600">Total</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {servicio.atendidos || 0}
-                        </div>
-                        <div className="text-xs text-gray-600">Atendidos</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-red-600">
-                          {servicio.no_presentados || 0}
-                        </div>
-                        <div className="text-xs text-gray-600">No Present.</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-yellow-600">
-                          {Math.round(servicio.tiempo_promedio_servicio || 0)}{" "}
-                          min
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          Tiempo Promedio de atención
-                        </div>
-                      </div>
-                    </div>
-                    {servicio.service_active == 0 && (
-                      <div className="flex-1 text-red-600 font-bold">
-                        No activo
+                      ))
+                    ) : (
+                      <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                        <p className="text-gray-500">
+                          No se encontraron operadores
+                        </p>
                       </div>
                     )}
                   </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12 text-gray-500">
-                  <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p>No hay datos de servicios en este período</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* RESUMEN GENERAL */}
-          {resumenGeneral && (
-            <div className="bg-white rounded-2xl shadow-lg p-4 mt-8">
-              <span>
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                  Resumen General Total{" "}
-                  <span className="italic font-normal text-base">
-                    {"(Los filtros no aplican para este resumen)"}
-                  </span>
-                </h3>
-              </span>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-                <div className="bg-gradient-to-br  from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      Total Tickets
-                    </h3>
-                    <TrendingUp className="w-6 h-6 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {resumenGeneral.total_tickets || 0}
-                  </div>
-                  <p className="text-sm opacity-75">Tickets procesados</p>
-                </div>
-
-                <div className="bg-gradient-to-br  from-green-500 to-green-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      Atendidos
-                    </h3>
-                    <TrendingUp className="w-6 h-6 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {resumenGeneral.atendidos || 0}
-                  </div>
-                  <p className="text-sm opacity-75">
-                    {resumenGeneral.total_tickets > 0
-                      ? `${Math.round(
-                          (resumenGeneral.atendidos /
-                            resumenGeneral.total_tickets) *
-                            100,
-                        )}% del total`
-                      : "0% del total"}
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br  from-yellow-500 to-yellow-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      Tiempo de Atención
-                    </h3>
-                    <Clock className="w-6 h-6 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {Math.round(resumenGeneral.tiempo_promedio_servicio || 0)}
-                    <span className="text-xl m-4">(min)</span>
-                  </div>
-                  <p className="text-sm opacity-75">
-                    Tiempo de atención aproximado
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br  from-orange-500 to-orange-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      Tiempo de Espera
-                    </h3>
-                    <Clock className="w-8 h-8 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {Math.round(resumenGeneral.tiempo_promedio_espera || 0)}
-                    <span className="text-xl m-4">(min)</span>
-                  </div>
-                  <p className="text-sm opacity-75">
-                    Promedio de espera aproximado
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br  from-red-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      No Atendido
-                    </h3>
-                    <X className="w-8 h-8 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {resumenGeneral.no_presentados || 0}
-                  </div>
-                  <p className="text-sm opacity-75">
-                    {resumenGeneral.total_tickets > 0
-                      ? `${Math.round(
-                          (resumenGeneral.no_presentados /
-                            resumenGeneral.total_tickets) *
-                            100,
-                        )}% del total`
-                      : "0% del total"}
-                  </p>
-                </div>
-
-                <div  className="bg-gradient-to-br  from-cyan-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold opacity-90">
-                      Transferidos
-                    </h3>
-                    <ArrowRightLeftIcon className="w-8 h-8 opacity-75" />
-                  </div>
-                  <div className="text-4xl font-bold mb-1 justify-self-auto">
-                    {resumenGeneral.transferido || 0}
-                  </div>
-                  <p className="text-sm opacity-75">
-                    {resumenGeneral.total_tickets > 0
-                      ? `${Math.round(
-                          (resumenGeneral.transferido /
-                            resumenGeneral.total_tickets) *
-                            100,
-                        )}% del total`
-                      : "0% del total"}
-                  </p>
-                </div>
+                </section>
+                {/* Resumen General (KPIs) */}
+                {resumenGeneral && (
+                  <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <KPICard
+                      title="Total"
+                      value={resumenGeneral.total_tickets || 0}
+                      icon={<TrendingUp />}
+                      color="from-blue-500 to-blue-700"
+                    />
+                    <KPICard
+                      title="Atendidos"
+                      value={resumenGeneral.atendidos || 0}
+                      icon={<CheckCircle />}
+                      color="from-green-500 to-green-700"
+                    />
+                    <KPICard
+                      title="T. Atención"
+                      value={Math.round(
+                        resumenGeneral.tiempo_promedio_servicio /
+                          resumenGeneral.total_tickets || 0,
+                      )}
+                      unit="Min Aprox."
+                      icon={<Clock />}
+                      color="from-yellow-500 to-orange-600"
+                    />
+                    <KPICard
+                      title="No Atendido"
+                      value={resumenGeneral.no_presentados || 0}
+                      icon={<X />}
+                      color="from-red-500 to-red-700"
+                    />
+                    <KPICard
+                      title="Transferidos"
+                      value={resumenGeneral.tickets_transferidos || 0}
+                      icon={<ArrowRightLeft />}
+                      color="from-cyan-500 to-blue-600"
+                    />
+                  </section>
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

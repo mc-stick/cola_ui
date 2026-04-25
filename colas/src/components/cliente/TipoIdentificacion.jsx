@@ -78,7 +78,7 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Título de Paso */}
-      <div id="titulo-paso" className="text-center mb-10">
+      <div  className="text-center mb-10">
         <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
           ¿Cómo deseas identificarte?
         </h2>
@@ -86,11 +86,12 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
       </div>
 
       {/* Grid de Opciones Estilo Dashboard */}
-      <div id="grid-opciones" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {opciones.map((s) => (
+      <div id="titulo-paso" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {opciones.map((s,ind) => (
           <button
             key={s.id}
             onClick={s.action}
+            id={`grid-opcion${ind+1}`}
             className="group relative bg-slate-100 border-slate-400-200 border p-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 flex flex-col items-center text-center overflow-hidden"
           >
             {/* Decoración de fondo al hacer hover */}

@@ -12,14 +12,14 @@ router.get('/auditoria', async (req, res) => {
     const { fecha_inicio, fecha_fin, usuario_id } = req.query;
     let query = `
       SELECT *
-      FROM view_auditoria
+      FROM vista_auditoria
       WHERE 1 = 1
     `;
     const params = [];
 
     if (fecha_inicio) {
       query += ' AND fecha >= ?';
-      params.push(fecha_inicio);
+      params.push(fecha_inicio+" 00:00:00");
     }
 
     if (fecha_fin) {
@@ -28,11 +28,11 @@ router.get('/auditoria', async (req, res) => {
     }
 
     if (usuario_id) {
-      query += ' AND usuario_id = ?';
+      query += ' AND id_user = ? ';
       params.push(usuario_id);
     }
 
-    query += ' ORDER BY auditoria_id DESC';
+    query += ' ORDER BY id DESC';
 
     const [rows] = await pool.query(query, params);
     res.json(rows);
@@ -60,10 +60,10 @@ router.get('/historial', async (req, res) => {
     
     if (fecha_inicio) {
       query += ' AND created_at >= ?';
-      params.push(fecha_inicio+"T23:59:56.000Z");
+      params.push(fecha_inicio+"T00:00:00.000Z");
     }
     
-    if (fecha_fin) {
+    if (fecha_fin && estado!="1") {
       query += ' AND finalizado_at <= ?';
       params.push(fecha_fin+"T23:59:56.000Z");
       console.log('fecha fin history',fecha_fin)
@@ -85,8 +85,8 @@ router.get('/historial', async (req, res) => {
     // }
     
     query += ' ORDER BY id DESC LIMIT 100';
-    
     const [rows] = await pool.query(query, params);
+    console.log('params', params)
     
     res.json(rows);
   } catch (error) {

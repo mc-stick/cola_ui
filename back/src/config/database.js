@@ -42,7 +42,7 @@ function validarConexionLDAP() {
           error: err.message,
         });
        
-      }
+      }console.log("ldap reject pas err")
 
       // 👇 conexión exitosa
       client.unbind();

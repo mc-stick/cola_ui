@@ -61,10 +61,9 @@ export default function PasoIngresoId({
     return identificacion;
   };
 
-  console.log(state.paso)
 
   return (
-    <div className="w-full max-w-xl mx-auto">
+    <div  className="w-full max-w-xl mx-auto">
       {/* Encabezado del Paso */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mb-4">
@@ -105,7 +104,7 @@ export default function PasoIngresoId({
       </div>
 
       {/* Teclado Numérico */}
-      <div className="w-full max-w-sm mx-auto bg-slate-50 p-4 rounded-[2.5rem] mb-12 shadow-sm">
+      <div id="visualizador-id" className="w-full max-w-sm mx-auto bg-slate-50 p-4 rounded-[2.5rem] mb-12 shadow-sm">
         <NumericKeypad
           value={identificacion}
           onAdd={agregar}

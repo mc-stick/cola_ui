@@ -318,7 +318,7 @@ function PantallaAdmin() {
         <div className="flex items-center gap-4 bg-black/20 px-4 py-2 rounded-full border border-white/10">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: colors.primaryGreen }}></div>
           <span className="text-xs font-bold text-white uppercase tracking-widest">
-            ID: {usuario.usuario} | {usuario.nombre}
+             {usuario.nombre}
           </span>
         </div>
       </header>
@@ -395,7 +395,7 @@ function PantallaAdmin() {
             {seccion === "4" && <UsuariosSection usuarios={usuarios} puestos={puestos} LoadingSpin={LoadingSpin} onGuardarUsuario={async (f, e) => { if (e === "nuevo") await API.createUsuario(f); else await API.updateUsuario(e, f); cargarDatos(); }} onSwitchUser={async (id) => { await API.switchUser(id); cargarDatos(); }} onDeleteUser={async (id) => { if (window.confirm("¿Eliminar?")) { await API.deleteUser(id); cargarDatos(); } }} validarUsuario={validarUsuario} />}
             {seccion === "5" && <AsignarServiciosSection operadoresServicios={operadoresServicios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onToggleServicio={cargarDatos} API={API} />}
             {seccion === "6" && <MediosSection medios={medios} LoadingSpin={LoadingSpin} onGuardarMedio={async (f) => { await API.createMedio(f); cargarDatos(); }} onEliminarMedio={async (id) => { await API.deleteMedio(id); cargarDatos(); }} onSwitchMedio={async (id) => { await API.SwitchMedio(id); cargarDatos(); }} validarMedio={validarMedio} />}
-            {seccion === "7" && <HistorialSection historial={historial} setHistorial={setHistorial} servicios={servicios} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarHistorial={async (f) => { const d = await API.getHistorial(f); setHistorial(d.reverse()); }} validarFiltrosHistorial={validarFiltrosHistorial} />}
+            {seccion === "7" && <HistorialSection historial={historial} setHistorial={setHistorial} servicios={servicios} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarHistorial={async (f) => { const d = await API.getHistorial(f); setHistorial(d); }} validarFiltrosHistorial={validarFiltrosHistorial} />}
             {seccion === "8" && <EstadisticasSection LoadingSpin={LoadingSpin} onCargarEstadisticas={async (i, f) => { return await API.getEstadisticasRango(i, f); }} validarFechasEstadisticas={() => true} />}
             {seccion === "9" && <AuditoriaSection auditoria={auditoria} setAuditoria={setAuditoria} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarAuditoria={async (f) => { setAuditoria(await API.getAuditoria(f)); }} />}
           </div>

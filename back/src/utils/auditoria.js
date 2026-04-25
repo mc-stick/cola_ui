@@ -9,18 +9,17 @@ const { pool } = require('../config/database');
  * @param {string} params.detalles - Detalles adicionales de la acción
  * @param {Object} params.req - Objeto request de Express para obtener IP y user-agent
  */
-async function registrarAuditoria({ usuarioId, accion, modulo, detalles }) {
+async function registrarAuditoria({ usuarioId, accion, detalles }) {
 
   
   try {
     await pool.query(
       `INSERT INTO auditoria 
-       (usuario_id, accion_id, modulo, detalles)
-       VALUES (?, ?, ?, ?)`,
+       (usuario_id, accion, detalle)
+       VALUES (?, ?, ?)`,
       [
         usuarioId,
         accion,
-        modulo,
         detalles || null,
       ]
     );

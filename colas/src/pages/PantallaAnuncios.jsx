@@ -6,11 +6,10 @@ import "./../styles/Pantalla.css";
 import { useFecha, useHora } from "../components/common/clok";
 
 // Duración que permanece visible cada modal antes de pasar al siguiente
-const MODAL_DURACION_MS = 9000;
+const MODAL_DURACION_MS = 5000;
 
 function PantallaAnuncios() {
-
-  const hora =useHora();
+  const hora = useHora();
   const fecha = useFecha();
   const [config, setConfig] = useState(null);
   const [ticketsLlamados, setTicketsLlamados] = useState([]);
@@ -20,9 +19,9 @@ function PantallaAnuncios() {
   const [historialTickets, setHistorialTickets] = useState({});
 
   // ── Cola de tickets pendientes de mostrar ──────────────────────────────────
-  const colaRef = useRef([]);           // tickets pendientes
-  const mostrandoRef = useRef(false);   // ¿hay un modal activo ahora mismo?
-  const timeoutRef = useRef(null);      // timeout del modal actual
+  const colaRef = useRef([]); // tickets pendientes
+  const mostrandoRef = useRef(false); // ¿hay un modal activo ahora mismo?
+  const timeoutRef = useRef(null); // timeout del modal actual
 
   // Ticket que se muestra en pantalla (null = modal oculto)
   const [ticketVisible, setTicketVisible] = useState(null);
@@ -63,7 +62,6 @@ function PantallaAnuncios() {
   }, []);
 
   // ── Reloj ──────────────────────────────────────────────────────────────────
-  
 
   // ── Datos generales ────────────────────────────────────────────────────────
   const cargarDatos = async () => {
@@ -197,46 +195,110 @@ function PantallaAnuncios() {
   // ── Componente de anuncios ─────────────────────────────────────────────────
   const Ads = () => (
     <div
-      className="flex items-center justify-center pt-1"
-      style={{ height: "calc(100vh - 90px)" }}
+      className="flex items-center justify-center overflow-hidden w-full"
+      style={{ height: "calc(100vh - 140px)" }} // Altura fija garantizada
     >
       {medios.length > 0 && (
-        <div className="w-full h-full mx-auto">
-          <div className="relative rounded-3xl shadow-2xl overflow-hidden h-full">
-            <div className="relative w-full h-full flex items-center rounded-3xl pb-2 justify-center">
-              {medios[mediaIndex].tipo === "imagen" ? (
-                <img
-                  src={medios[mediaIndex].url}
-                  alt={medios[mediaIndex].nombre}
-                  className="w-full h-full object-contain rounded-xl"
-                />
-              ) : (
-                <video
-                  key={medios[mediaIndex].url}
-                  src={medios[mediaIndex].url}
-                  className="w-full h-full object-contain rounded-xl"
-                  autoPlay
-                  muted
-                  onEnded={handleVideoEnded}
-                />
-              )}
-            </div>
+        <div className="w-full h-full p-4 flex flex-col">
+          {/* Marco Dorado con altura flexible para llenar el padre (flex-grow) */}
+          <div
+            className="relative rounded-[3rem] shadow-[0_20px_50px_rgba(30,42,79,0.2)] overflow-hidden flex-grow border-[6px] bg-black"
+            style={{ borderColor: "var(--color-mono-gold)" }}
+          >
+            {/* Contenedor Interno: 
+            Usamos absolute inset-0 para que no dependa del tamaño del contenido hijo
+          */}
+
+            {!config?.blur ? (
+              <div className="absolute inset-0 w-full h-full overflow-hidden rounded-[2.8rem]">
+                <div className="absolute inset-0 z-0">
+                  {medios[mediaIndex].tipo === "imagen" ? (
+                    <img
+                      src={medios[mediaIndex].url}
+                      alt=""
+                      className={`w-full h-full object-contain ${!config?.Split && "blur-xl"}  scale-100 `}
+                    />
+                  ) : (
+                    <video
+                      src={medios[mediaIndex].url}
+                      className="w-full h-full object-cover blur-3xl scale-100 "
+                      autoPlay
+                      muted
+                      loop
+                    />
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 w-full h-full overflow-hidden rounded-[2.8rem]">
+                {/* 1. CAPA DE FONDO (BLUR) */}
+                <div className="absolute inset-0 z-0">
+                  {medios[mediaIndex].tipo === "imagen" ? (
+                    <img
+                      src={medios[mediaIndex].url}
+                      alt=""
+                      className="w-full h-full object-cover blur-3xl scale-125 opacity-70"
+                    />
+                  ) : (
+                    <video
+                      src={medios[mediaIndex].url}
+                      className="w-full h-full object-cover blur-3xl scale-125 opacity-70"
+                      autoPlay
+                      muted
+                      loop
+                    />
+                  )}
+                </div>
+
+                {/* 2. OVERLAY OSCURO (Para dar profundidad) */}
+                <div className="absolute inset-0 bg-black/40 z-10" />
+
+                {/* 3. CONTENIDO PRINCIPAL (SIN DEFORMAR) */}
+                <div className="relative z-20 flex items-center justify-center w-full h-full p-2">
+                  {medios[mediaIndex].tipo === "imagen" ? (
+                    <img
+                      src={medios[mediaIndex].url}
+                      alt={medios[mediaIndex].nombre}
+                      // max-h-full y w-auto asegura que nunca se corte ni se estire
+                      className="max-w-full max-h-full rounded-xl object-contain drop-shadow-2xl"
+                    />
+                  ) : (
+                    <video
+                      key={medios[mediaIndex].url}
+                      src={medios[mediaIndex].url}
+                      className="max-w-full max-h-full rounded-xl object-contain drop-shadow-2xl"
+                      autoPlay
+                      muted
+                      onEnded={handleVideoEnded}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Overlay gradiente inferior para los puntos */}
+            <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/80 via-transparent to-transparent z-30 pointer-events-none" />
+
+            {/* Indicadores de progreso */}
             {medios.length > 1 && (
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-3 z-40">
                 {medios.map((_, index) => (
                   <div
                     key={index}
-                    className={`h-2 rounded-full transition-all duration-300 ${
+                    className={`h-2.5 rounded-full transition-all duration-500 ${
                       index === mediaIndex
-                        ? "w-8 bg-[var(--color-primary-yellow)]"
-                        : "w-2 bg-gray-800"
+                        ? "w-10 bg-[var(--color-primary-yellow)] shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                        : "w-2.5 bg-white/30 backdrop-blur-md"
                     }`}
                   />
                 ))}
               </div>
             )}
-            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
-              {mediaIndex + 1} / {medios.length}
+
+            {/* Contador superior */}
+            <div className="absolute top-6 right-6 z-40 bg-black/50 backdrop-blur-xl text-white px-5 py-2 rounded-full text-xs font-black border border-white/20 tracking-tighter">
+              {mediaIndex + 1} <span className="text-white/40 mx-1">/</span>{" "}
+              {medios.length}
             </div>
           </div>
         </div>
@@ -244,303 +306,187 @@ function PantallaAnuncios() {
     </div>
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render Principal ───────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[var(--color-primary-blue)] relative">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-primary-green)] text-white px-5 py-3 shadow-lg">
+    <div className="h-screen w-screen bg-[#edf2f7] relative overflow-hidden flex flex-col">
+      {/* Header con personalidad */}
+      <header className="bg-[var(--color-primary-blue)] px-10 py-5 shadow-xl relative z-20 shrink-0">
         <div className="mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             {config?.logo_url && (
-              <img
-                src={config.logo_url}
-                alt="Logo"
-                className="w-16 h-16 drop-shadow-lg object-contain rounded-lg p-1"
-              />
-            )}
-            <h1 className="flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold">
-              {config?.nombre_empresa || "MI EMPRESA"}
-            </h1>
-          </div>
-          <div className="text-right">
-            <div className="capitalize">{fecha}</div>
-            <div className="text-2xl font-bold">{hora}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Modal con cola ─────────────────────────────────────────────────── */}
-      {ticketVisible && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-white rounded-3xl p-8 sm:p-16 max-w-2xl w-full mx-4 shadow-2xl border-4 border-gradient-to-r from-[var(--color-primary-blue)] to-[var(--color-primary-yellow)] animate-bounce-in">
-            <div className="text-center">
-              {/* Badge de turno + indicador de cola */}
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <div className="bg-[var(--color-primary-yellow)] text-[var(--color-mono-black)] text-sm font-bold px-4 py-2 rounded-full">
-                  TURNO SIGUIENTE
-                </div>
-                {colaRef.current.length > 0 && (
-                  <div className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-full">
-                    +{colaRef.current.length} en espera
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-[var(--color-primary-green)] w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                <BellRing className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
-              </div>
-              <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 text-[var(--color-primary-blue)]">
-                ¡Turno Llamado!
-              </h2>
-              <div
-                className="text-7xl sm:text-8xl font-extrabold mb-6"
-                style={{ color: ticketVisible.servicio_color }}
-              >
-                {ticketVisible.numero}
-              </div>
-              <div className="mt-2 p-4">
-                <hr
-                  className="border-2"
-                  style={{ borderColor: ticketVisible.servicio_color }}
+              <div className="bg-transparent p-2 rounded-2xl shadow-inner border border-white/10">
+                <img
+                  src={config.logo_url}
+                  alt="Logo"
+                  className="w-16 h-16 object-contain"
                 />
               </div>
-              <div className="text-6xl sm:text-7xl font-extrabold text-[var(--color-primary-red)]">
-                {ticketVisible.puesto_nombre}
-              </div>
-              <DemoSpeaker
-                number={ticketVisible.numero}
-                text={ticketVisible.puesto_nombre}
-                song={true}
-              />
+            )}
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase leading-none">
+                {config?.nombre_empresa || "MI EMPRESA"}
+              </h1>
+              {/* <div className="flex items-center gap-2 mt-1">
+                <span className="h-1 w-10 bg-[var(--color-primary-yellow)] rounded-full"></span>
+                <p className="text-xs font-bold text-[var(--color-secondary-blue-light)] uppercase tracking-[0.2em]">
+                  Sistema de Atención Inteligente
+                </p>
+              </div> */}
+            </div>
+          </div>
+
+          {/* Widget de Tiempo */}
+          <div className=" backdrop-blur-md rounded-3xl p-4  text-center min-w-[200px]">
+            <div className="text-white/60 text-xl font-bold uppercase mb-1 tracking-widest">
+              {fecha}
+            </div>
+            <div className="text-4xl font-black text-[var(--color-primary-yellow)] leading-none tabular-nums">
+              {hora}
             </div>
           </div>
         </div>
-      )}
+      </header>
 
-      {config?.Split ? (
-        <div
-          className={`grid grid-cols-1 ${
-            ticketsLlamados.length > 0 ? "lg:grid-cols-[30%_70%]" : ""
-          } h-[calc(100vh-00px)]`}
-        >
-          {/* ===================== LISTA DE TICKETS ===================== */}
-          {ticketsLlamados.length > 0 && (
-            <div className="bg-[var(--color-primary-blue-dark)] p-6 overflow-hidden">
-              <h2 className="text-3xl font-bold text-white text-center mb-8 uppercase">
-                Tickets en Atención
-              </h2>
-              <ul className="space-y-4 max-w-4xl mx-auto">
-                {Object.entries(ticketsPorServicio).flatMap(([, data]) =>
-                  data.tickets.map((ticket) => {
-                    const esActual = ticketActual?.id === ticket.id;
-                    return (
+      {/* Área de Contenido */}
+      <main className="flex-grow overflow-hidden relative">
+        {config?.Split ? (
+          <div
+            className={`grid grid-cols-1 ${ticketsLlamados.length > 0 ? "lg:grid-cols-[35%_65%]" : ""} h-full`}
+          >
+            {/* LISTA LATERAL */}
+            {ticketsLlamados.length > 0 && (
+              <div className="bg-[#e2e8f0] p-8 overflow-y-auto border-r-4 border-[var(--color-mono-gold)]/20 shadow-inner">
+                <div className="flex items-center justify-between mb-8 border-b-2 border-[var(--color-primary-blue)]/10 pb-4">
+                  <h2 className="text-2xl font-black text-[var(--color-primary-blue)] uppercase">
+                    En Ventanilla
+                  </h2>
+                  <span className="bg-[var(--color-primary-green)] text-white text-[10px] px-3 py-1 rounded-full font-bold animate-pulse">
+                    EN VIVO
+                  </span>
+                </div>
+
+                <ul className="space-y-6">
+                  {Object.entries(ticketsPorServicio).flatMap(([, data]) =>
+                    data.tickets.map((ticket) => (
                       <li
                         key={ticket.id}
-                        className={`flex justify-between items-center rounded-2xl bg-white/85 shadow-xl py-2 px-4 transition-all duration-300 ${
-                          esActual
-                            ? "scale-[1.02] border-4 animate-pulse"
-                            : "border-l-8"
-                        }`}
-                        style={{ borderColor: data.color }}
+                        className="flex justify-between items-center rounded-[2.5rem] bg-white shadow-lg p-6 border-b-[8px] transition-all hover:scale-[1.02]"
+                        style={{ borderBottomColor: data.color }}
                       >
                         <div>
-                          <span
-                            className="flex text-3xl font-extrabold leading-none"
-                            style={{ color: data.color }}
-                          >
+                          <span className="block text-3xl font-black tracking-tighter text-[var(--color-primary-blue)]">
                             {ticket.numero}
                           </span>
-                          {ticket.llamado > 1 && (
-                            <span className="text-lg font-bold text-yellow-600">
-                              {ticket.llamado} llamados
-                            </span>
-                          )}
+                          <span className="text-[10px] font-black text-[var(--color-mono-silver)] uppercase tracking-widest italic">
+                            {ticket.llamado > 1
+                              ? `${ticket.llamado} llamados`
+                              : "Atendiendo"}
+                          </span>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <span className="text-xl font-semibold text-gray-800 mt-2 uppercase">
+                        <div className="text-right bg-[var(--color-primary-blue)] text-white p-4 rounded-3xl min-w-[120px]">
+                          <span className="text-xl font-black block uppercase leading-none">
                             {ticket.puesto_nombre}
                           </span>
                         </div>
                       </li>
-                    );
-                  }),
-                )}
-              </ul>
-            </div>
-          )}
-
-          {/* ===================== MEDIA ===================== */}
-          {ticketsLlamados.length > 0 ? (
-            <div className="bg-black flex items-center justify-center p-4 overflow-hidden">
-              {medios.length > 0 && (
-                <div className="w-full h-full relative rounded-3xl overflow-hidden flex items-center justify-center">
-                  {medios[mediaIndex].tipo === "imagen" ? (
-                    <img
-                      src={medios[mediaIndex].url}
-                      alt={medios[mediaIndex].nombre}
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  ) : (
-                    <video
-                      key={medios[mediaIndex].url}
-                      src={medios[mediaIndex].url}
-                      className="max-w-full max-h-full object-contain"
-                      autoPlay
-                      muted
-                      onEnded={handleVideoEnded}
-                    />
+                    )),
                   )}
-                  <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    {mediaIndex + 1} / {medios.length}
-                  </div>
-                </div>
-              )}
+                </ul>
+              </div>
+            )}
+
+            <div className="bg-white overflow-hidden h-full flex items-center justify-center">
+              <Ads />
             </div>
-          ) : (
-            <Ads />
-          )}
-        </div>
-      ) : (
-        <>
-          {ticketsLlamados.length > 0 ? (
-            <div className="p-4 sm:p-6 md:p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-[calc(100vh-100px)]">
-                <div className="lg:col-span-5 overflow-y-auto pr-2">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-mono-white)] mb-4 uppercase flex justify-center items-center gap-2 sticky top-0 pb-3 z-10">
-                    Atendiendo los siguientes tickets
-                  </h2>
-                  <hr className="border-2 border-gray-400 mb-4" />
-
-                  <div className="flex justify-center w-full">
+          </div>
+        ) : (
+          /* VISTA GRID (Tarjetas blancas sobre fondo gris azulado suave) */
+          <div className="p-8 h-full overflow-y-auto">
+            {ticketsLlamados.length > 0 ? (
+              <div className="max-w-[1600px] mx-auto grid gap-8 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                {Object.entries(ticketsPorServicio).map(
+                  ([servicioNombre, data]) => (
                     <div
-                      className={`grid gap-4 w-full ${
-                        Object.keys(ticketsPorServicio).length === 1
-                          ? "grid-cols-1 max-w-md mx-auto"
-                          : Object.keys(ticketsPorServicio).length === 2
-                            ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
-                            : Object.keys(ticketsPorServicio).length === 3
-                              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
-                              : Object.keys(ticketsPorServicio).length === 4
-                                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto"
-                                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-                      }`}
+                      key={servicioNombre}
+                      className="bg-white rounded-[3.5rem] p-8 shadow-xl border-t-[12px] flex flex-col h-fit relative"
+                      style={{ borderTopColor: data.color }}
                     >
-                      {Object.entries(ticketsPorServicio).map(
-                        ([servicioNombre, data]) => (
-                          <div
-                            key={servicioNombre}
-                            className="bg-[var(--color-mono-white)] rounded-xl p-4 shadow-lg flex flex-col h-fit border-t-8"
-                            style={{ borderTopColor: data.color }}
+                      <div className="mb-6">
+                        <h3 className="text-3xl font-black text-[var(--color-primary-blue)] uppercase tracking-tighter">
+                          {servicioNombre}
+                        </h3>
+                        <div className="text-[10px] font-bold text-[var(--color-primary-green)] bg-[var(--color-primary-green)]/10 px-3 py-1 rounded-full inline-block mt-2 italic">
+                          {data.tickets.length} personas en turno
+                        </div>
+                      </div>
+
+                      <ul className="space-y-4">
+                        {data.tickets.map((ticket, index) => (
+                          <li
+                            key={ticket.id}
+                            className={`p-6 rounded-[2.5rem] flex justify-between items-center border-2 transition-all ${
+                              index === 0 && ticketActual?.id === ticket.id
+                                ? "bg-[var(--color-secondary-yellow-light)] border-[var(--color-mono-gold)] shadow-lg scale-[1.05]"
+                                : "bg-[#f8fafc] border-transparent shadow-sm"
+                            }`}
                           >
-                            <div className="flex flex-col items-center gap-2 mb-3 pb-2 border-b-2 border-gray-200">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: data.color }}
-                                />
-                                <h3
-                                  className="text-3xl font-bold flex-1 uppercase"
-                                  style={{ color: data.color }}
-                                >
-                                  {servicioNombre}
-                                </h3>
-                              </div>
-                              {data.tickets.length ? (
-                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold w-fit">
-                                  {data.tickets.length} activos
-                                </span>
-                              ) : (
-                                <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-bold w-fit">
-                                  {data.tickets.length} activos
-                                </span>
-                              )}
+                            <div className="text-6xl font-black tracking-tighter text-[var(--color-primary-blue)]">
+                              {ticket.numero}
                             </div>
-
-                            {/* Tickets activos */}
-                            <ul role="list" className="divide-y divide-white/10 space-y-3 mb-3">
-                              {data.tickets.map((ticket, index) => (
-                                <li
-                                  key={ticket.id}
-                                  className={`flex justify-between gap-x-4 p-4 rounded-2xl shadow-md border-2 transition-all ${
-                                    index === 0 && ticketActual?.id === ticket.id
-                                      ? "bg-gradient-to-r from-[var(--color-secondary-yellow-light)] to-[var(--color-primary-yellow)] border-[var(--color-primary-yellow)]"
-                                      : index === 1
-                                        ? "bg-gradient-to-r from-[var(--color-secondary-green-light)] to-[var(--color-primary-green)] border-[var(--color-primary-green)]"
-                                        : "bg-gradient-to-r from-[var(--color-secondary-blue-light)] to-[var(--color-primary-blue)] border-[var(--color-primary-blue)]"
-                                  }`}
-                                >
-                                  <div className="flex min-w-0 gap-x-4 items-center">
-                                    <div className="min-w-0 flex-auto">
-                                      <div className="min-w-0 flex-auto font-bold text-[var(--color-mono-black)] text-3xl">
-                                        {ticket.numero}
-                                      </div>
-                                      {index === 0 && ticketActual?.id === ticket.id ? (
-                                        <div className="px-3 py-1 rounded-full font-bold text-sm text-[var(--color-mono-white)] bg-[var(--color-primary-green)] shadow-md">
-                                          AHORA
-                                        </div>
-                                      ) : (
-                                        <div className="px-3 py-1 rounded-full font-bold text-sm text-[var(--color-mono-white)] bg-[var(--color-primary-blue)] shadow">
-                                          ATENDIENDO
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-end gap-2 shrink-0">
-                                    <p className="text-xl font-bold text-[var(--color-mono-black)] truncate">
-                                      {ticket.puesto_nombre}
-                                    </p>
-                                    {ticket.llamado > 1 && (
-                                      <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-primary-yellow)] text-[var(--color-mono-black)] text-xs font-bold">
-                                        <AlertTriangle className="w-8 h-8" />
-                                        <p className="text-lg text-black/70">
-                                          {ticket.llamado} Llamado
-                                          {ticket.llamado !== 1 ? "s" : ""}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-
-                            {/* Historial */}
-                            {historialTickets[servicioNombre]?.length > 0 && (
-                              <div className="pt-3 border-t-2 border-white/10">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <CheckCircle className="w-4 h-4 text-[var(--color-primary-green)]" />
-                                  <h4 className="text-xs font-bold text-black/80 uppercase">
-                                    Últimos Atendidos
-                                  </h4>
-                                </div>
-                                <ul role="list" className="divide-y divide-white/10 space-y-2">
-                                  {historialTickets[servicioNombre].map((ticket) => (
-                                    <li
-                                      key={`hist-${ticket.id}-${ticket.finalizado_at}`}
-                                      className="flex justify-between items-center p-3 rounded-2xl shadow-inner border-2 border-white/10 bg-gradient-to-tl from-[var(--color-secondary-blue-dark)] to-[var(--color-primary-blue)]"
-                                    >
-                                      <div className="text-xl font-bold line-through text-white/70">
-                                        {ticket.numero}
-                                      </div>
-                                      <div className="text-sm font-bold line-through text-white/80">
-                                        {ticket.puesto_nombre}
-                                      </div>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        ),
-                      )}
+                            <div className="text-right">
+                              <p className="font-black text-xl uppercase text-[var(--color-secondary-blue-dark)]">
+                                {ticket.puesto_nombre}
+                              </p>
+                              {index === 0 &&
+                                ticketActual?.id === ticket.id && (
+                                  <span className="flex h-2 w-2 rounded-full bg-[var(--color-primary-red)] animate-ping ml-auto mt-2"></span>
+                                )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                </div>
+                  ),
+                )}
+              </div>
+            ) : (
+              <Ads />
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Modal de Turno Llamado */}
+      {ticketVisible && (
+        <div className="fixed inset-0 bg-[var(--color-primary-blue)]/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+          <div className="bg-[#fdfdfd] rounded-[5rem] p-12 max-w-3xl w-full shadow-[0_40px_100px_rgba(0,0,0,0.4)] relative overflow-hidden border-[10px] border-[var(--color-primary-yellow)]">
+            <div className="text-center">
+              <div className="mb-4 inline-block bg-[var(--color-secondary-blue-dark)] text-white px-8 py-2 rounded-full font-black text-xl animate-bounce">
+                ¡SU TURNO!
+              </div>
+              <div
+                className="text-[8rem] font-black mb-2 tracking-tighter leading-none italic"
+                style={{
+                  color:
+                    ticketVisible.servicio_color || "var(--color-primary-blue)",
+                }}
+              >
+                {ticketVisible.numero}
+              </div>
+              <div className="h-1 w-40 bg-[var(--color-mono-silver)]/30 mx-auto mb-8 rounded-full"></div>
+              <div className="text-6xl font-black text-[var(--color-primary-red)] tracking-tight uppercase">
+                {ticketVisible.puesto_nombre}
+              </div>
+              <div className="mt-8">
+                <DemoSpeaker
+                  number={ticketVisible.numero}
+                  text={ticketVisible.puesto_nombre}
+                  song={true}
+                />
               </div>
             </div>
-          ) : (
-            <Ads />
-          )}
-        </>
+          </div>
+        </div>
       )}
     </div>
   );

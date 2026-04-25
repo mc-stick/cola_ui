@@ -48,7 +48,6 @@ function ServiciosSection({
     await onEliminarServicio(id);
     setOpen(null);
   };
-
   return (
     <div 
       className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col" 
@@ -111,7 +110,7 @@ function ServiciosSection({
                       <h3 className="font-black uppercase italic text-lg leading-none" style={{ color: colors.primaryBlue }}>
                         {servicio.nombre}
                       </h3>
-                      {servicio.dar_prioridad && (
+                      {servicio?.dar_prioridad !=0 && (
                         <span className="bg-amber-100 text-amber-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
                           Prioritario
                         </span>

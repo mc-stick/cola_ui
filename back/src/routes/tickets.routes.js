@@ -436,7 +436,7 @@ router.post('/:id/evaluar', async (req, res) => {
     await pool.query('UPDATE tickets SET  expirado=1, cli_comment=? WHERE id=?', [comment, id]);
 
     const [data]= await pool.query(`SELECT * FROM ticket_detail WHERE ticket_id=?`,[id])
-
+let v=0;
    for (const stars of evaluation) {
   await pool.query(
     `INSERT INTO evaluacion (
@@ -449,12 +449,13 @@ router.post('/:id/evaluar', async (req, res) => {
     VALUES (?,?,?,?,?)`,
     [
       id,
-      data[0]?.id_persona,
-      data[0]?.id_usuario,
-      data[0]?.id_servicio,
+      data[v]?.id_persona,
+      data[v]?.id_usuario,
+      data[v]?.id_servicio,
       stars
     ]
   );
+  v++;
 }
     
 

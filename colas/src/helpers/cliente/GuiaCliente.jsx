@@ -24,11 +24,11 @@ export default function GuiaUsuario({ activar, setActivar }) {
           },
           { 
             element: '#grid-opcion2', 
-            popover: { title: 'ID', description: 'Usa tu ID para identificarte en el sistema.', side: "top"} 
+            popover: { title: 'ID', description: 'Usa tu ID de campus en el sistema.', side: "top"} 
           },
           { 
             element: '#grid-opcion3', 
-            popover: { title: 'Invitado', description: 'Continua como invitado si no tienes un ID de CAMPUS.', side: "top"} 
+            popover: { title: 'Invitado', description: 'Continua como invitado "No tengo un ID de CAMPUS".', side: "top"} 
           },
           { 
             element: '#btn-tk', 

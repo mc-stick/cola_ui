@@ -34,7 +34,6 @@ export function usePantallaCliente() {
   const seleccionarServicio = async (servicio) => {
     setServicioSeleccionado(servicio);
 
-    console.log(servicio,"servicio creado ticket")
 
     const ticket = await API.createTicket({
       servicio_id: servicio,
@@ -47,7 +46,7 @@ export function usePantallaCliente() {
     setPaso(5);
 
     if (tipoId === "telefono") {
-      SendTwilioSms("mensaje a enviar", identificacion);
+      SendTwilioSms(`Kiosco de autoservicio UCNE,\nNúmero de ticket asignado:\n\n ${ticket.numero}.\n\nPor favor, espere por su turno. `, identificacion);
     } else {
       //console.log("PRINTING", ticket.numero, servicio.nombre);
       await API.PrintTicket(ticket, servicio.nombre);
@@ -57,7 +56,6 @@ export function usePantallaCliente() {
   const seleccionarDepartamento = async (departamento) => {
     setDepartamentoSeleccionado(departamento);
 
-    console.log(departamento,"departamento seleccionado")
     setPaso(4);
   };
 

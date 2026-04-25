@@ -55,12 +55,26 @@ export const useTickets = (usuario, serviciosAsignados) => {
       alert("Ya tienes un ticket en atención");
       return;
     }
+     const idGuardado = localStorage.getItem('idnumt');
 
     try {
       const ticketsOrdenados = [
-        ...ticketsEspera.filter((t) => t.prior === 1),
-        ...ticketsEspera.filter((t) => t.prior !== 1).reverse(), // mismo ajuste que hiciste arriba
-      ];
+    ...ticketsEspera.filter((t) => t.priority === 1),
+    ...ticketsEspera.filter((t) => t.priority !== 1),
+  ].filter((t) => {
+    // Verificamos si el ID del ticket coincide con el almacenado
+    console.log(t.id,idGuardado,"saved")
+    // Usamos String() para asegurar que la comparación sea correcta independientemente del tipo
+    if (idGuardado && String(t.id) === String(idGuardado)) {
+      console.log(`🚀 Ticket ignorado (ya procesado): ID ${t.id} - Número ${t.numero}`);
+      return false; // No incluir en la lista
+    }
+    return true; // Incluir en la lista
+  })
+      // const ticketsOrdenados = [
+      //   ...ticketsEspera.filter((t) => t.prior === 1),
+      //   ...ticketsEspera.filter((t) => t.prior !== 1), // mismo ajuste que hiciste arriba
+      // ];
 
       const siguiente = ticketsOrdenados[0];
 

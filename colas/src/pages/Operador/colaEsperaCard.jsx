@@ -23,17 +23,35 @@ export const ColaEsperaCard = ({
     return "Llamar Siguiente";
   };
 
-  const isButtonDisabled =
-    ticketsEspera.length === 0 ||
-    ticketActual !== null ||
-    serviciosAsignados.length === 0 ||
-    usuario.puesto_numero === null;
+  const idGuardado = localStorage.getItem('idnumt');
+
+ 
 
   // Ordenar: Prioridad 1 primero
+  // const ticketsOrdenados = [
+  //   ...ticketsEspera.filter((t) => t.priority === 1),
+  //   ...ticketsEspera.filter((t) => t.priority !== 1),
+  // ].slice(0, 10);
+
   const ticketsOrdenados = [
     ...ticketsEspera.filter((t) => t.priority === 1),
     ...ticketsEspera.filter((t) => t.priority !== 1),
-  ].slice(0, 10);
+  ].filter((t) => {
+    if (idGuardado && String(t.id) === String(idGuardado)) {
+      return false; 
+    }
+    return true; 
+  })
+  .slice(0, 10);
+
+ const isButtonDisabled =
+    ticketsEspera.length === 0 ||
+    ticketActual !== null ||
+    serviciosAsignados.length === 0 ||
+    usuario.puesto_numero === null ||
+    ticketsOrdenados.length === 0;
+
+
 
   return (
     <div id="espera-tk" className="bg-white rounded-[2.5rem] shadow-sm border p-8 relative overflow-hidden flex flex-col h-full" style={{ borderColor: colors.monoSilver }}>
@@ -51,7 +69,7 @@ export const ColaEsperaCard = ({
         </div>
         <div className="flex flex-col items-end">
           <span className="text-3xl font-black leading-none" style={{ color: colors.primaryBlue }}>
-            {ticketsEspera.length}
+            {ticketsOrdenados.length}
           </span>
           <span className="text-[9px] font-black uppercase tracking-tighter opacity-30">Tickets</span>
         </div>

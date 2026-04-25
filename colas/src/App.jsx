@@ -5,7 +5,7 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import MenuInicial from "./pages/MenuInicial";
 import PantallaAnuncios from "./pages/PantallaAnuncios";
@@ -49,61 +49,52 @@ const HomeRedirect = () => {
 };
 
 function App() {
-  const [paso, setPaso] = useState(1);
-  const [runTour, setRunTour] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [runTour, setRunTour] = useState(false);
+  const [paso, setPaso] = useState(1);
+  
+  // 📍 Guardamos la última ruta válida antes del error
+  const lastValidPath = useRef(window.location.pathname);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const API_URL = import.meta.env.VITE_API_URL;
-    let finished = false;
 
     const checkHealth = async () => {
       try {
         const res = await fetch(`${API_URL}/health`);
         const data = await res.json();
 
-        // ❌ API falla → ir a 404
-        if (!data.ok && location.pathname !== "/404") {
-          navigate("/404");
+        if (data.ok) {
+         
+          if (location.pathname === "/404") {
+            const destination = lastValidPath.current === "/404" ? "/" : lastValidPath.current;
+            navigate(destination, { replace: true });
+          } else {
+            
+            lastValidPath.current = location.pathname;
+          }
+        } else {
+          if (location.pathname !== "/404") {
+            lastValidPath.current = location.pathname; 
+            navigate("/404", { replace: true });
+          }
         }
-
-        // ✅ API vuelve → salir de 404
-        if (data.ok && location.pathname === "/404") {
-          navigate("/login");
-        }
-      } catch {
+      } catch (error) {
         if (location.pathname !== "/404") {
-          navigate("/404");
+          lastValidPath.current = location.pathname;
+          navigate("/404", { replace: true });
         }
       } finally {
-        if (!finished) {
-          finished = true;
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     checkHealth();
 
-    // ⏱️ máximo 5s loader
-    const timeout = setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        setLoading(false);
-      }
-    }, 5000);
+    const healthInterval = setInterval(checkHealth, 3000); 
 
-    // 🔄 recargar SOLO si estás en /404
-    const reloadInterval = setInterval(() => {
-      if (location.pathname === "/404") {
-        window.location.reload();
-      }
-    }, 15000);
-
-    // 🧠 bloquear clic derecho / selección
     const handleContextMenu = (e) => e.preventDefault();
     const handleSelectStart = (e) => {
       if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
@@ -115,16 +106,12 @@ function App() {
     window.addEventListener("selectstart", handleSelectStart);
 
     return () => {
-      clearTimeout(timeout);
-      clearInterval(reloadInterval);
+      clearInterval(healthInterval);
       window.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("selectstart", handleSelectStart);
     };
   }, [navigate, location.pathname]);
 
-  /* ============================= */
-  /* ⏳ LOADER GLOBAL */
-  /* ============================= */
   if (loading) {
     return (
       <div className="flex">
@@ -133,9 +120,6 @@ function App() {
     );
   }
 
-  /* ============================= */
-  /* 🚀 APP */
-  /* ============================= */
   return (
     <div className="font-karla">
       <ToastContainer
@@ -153,6 +137,7 @@ function App() {
       />
 
       <Routes>
+        <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/anuncios" element={<PantallaAnuncios />} />
         <Route path="/evaluar/:id" element={<EvaluacionTicket />} />
@@ -177,7 +162,8 @@ function App() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Cambiado Navigate a /404 o login según prefieras */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

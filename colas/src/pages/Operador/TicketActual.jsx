@@ -34,6 +34,8 @@ export const TicketActualCard = ({
 
   useEffect(() => {
     if (!ticketActual) return;
+    console.log(ticketActual.id,"tid")
+    localStorage.setItem("idnumt", ticketActual?.id);
     setbtns(true);
     const timer = setTimeout(() => setbtns(false), 5000);
     return () => clearTimeout(timer);
@@ -75,8 +77,8 @@ export const TicketActualCard = ({
               </div>
             )}
 
-            <div className="flex text-[6rem] font-black gap-2 leading-none tracking-tighter mb-2" style={{ color: ticketActual.color || colors.primaryBlue }}>
-              <TicketIcon className="opacity-50 mt-1 mr-4" size={80} />{ticketActual.numero}
+            <div className="flex text-[3rem] font-black gap-2 leading-none tracking-tighter mb-2" style={{ color: ticketActual.color || colors.primaryBlue }}>
+              <TicketIcon className="opacity-50 mt-1 mr-4" size={40} />{ticketActual.numero}
             </div>
             
             <p className="text-sm font-black uppercase tracking-[0.3em] opacity-40 mb-4">{ticketActual.servicio_nombre}</p>
@@ -98,7 +100,7 @@ export const TicketActualCard = ({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div id="btns-tk" className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <BotonReLlamar ticketActual={ticketActual} onReLlamar={onReLlamar} disabledbtn={btns} />
                   
                   <button

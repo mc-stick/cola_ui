@@ -14,6 +14,7 @@ const ldapUrl = process.env.LDAP_URL;
 const baseDN = process.env.LDAP_DN;
 
 function autenticarLDAP(username, password) {
+  
   return new Promise((resolve, reject) => {
     const client = ldap.createClient({
       url: ldapUrl,
@@ -22,7 +23,6 @@ function autenticarLDAP(username, password) {
       //   rejectUnauthorized: false // solo para pruebas
       // }
     });
-
     const serviceUser = process.env.LDAP_BIND_USER;
     const servicePass = process.env.LDAP_BIND_PASSWORD;
 
@@ -52,8 +52,9 @@ function autenticarLDAP(username, password) {
           "employeeID",
         ],
       };
+console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,dc=com'))
 
-      client.search(baseDN, opts, (err, res) => {
+      client.search('dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => { //modificar y agregar basedn en el string y eliminar string
         if (err) {
           client.unbind();
           return reject({
@@ -75,6 +76,7 @@ function autenticarLDAP(username, password) {
               });
 
               userData.memberOf = grupos;
+              console.log(grupos)
 
               if (grupos.includes("admin-cola")) {
                 userData.rol = "admin";
@@ -142,7 +144,7 @@ function ValidarLDAP(username) {
         attributes: ["dn", "cn", "displayName", "employeeID"],
       };
 
-      client.search(baseDN, opts, (err, res) => {
+      client.search("dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
         if (err) {
           client.unbind();
           return reject({
