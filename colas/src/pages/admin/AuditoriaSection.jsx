@@ -60,7 +60,7 @@ function AuditoriaSection({
   const handleLimpiar = () => {
     setFiltros({ fecha_inicio: "", fecha_fin: "", usuario_id: "" });
     setAuditoria([]);
-    toast.success("Filtros limpiados");
+    toast.success("Filtros eliminados");
   };
 
   useEffect(() => {
@@ -71,21 +71,18 @@ function AuditoriaSection({
     <div className="max-w-7xl mx-auto">
       <div
         className="bg-white rounded-3xl shadow-sm border p-8 md:p-12 relative overflow-hidden"
-        style={{ borderColor: colors.monoSilver }}
-      >
+        style={{ borderColor: colors.monoSilver }}>
         {/* Línea decorativa superior */}
         <div
           className="absolute top-0 left-0 w-full h-3"
-          style={{ backgroundColor: colors.primaryBlue }}
-        ></div>
+          style={{ backgroundColor: colors.primaryBlue }}></div>
 
         {/* Encabezado Estilo Index */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <h2
               className="text-5xl font-black tracking-tighter mb-2"
-              style={{ color: colors.primaryBlue }}
-            >
+              style={{ color: colors.primaryBlue }}>
               AUDITORÍA DEL SISTEMA
             </h2>
             <p className="text-lg font-medium opacity-50 uppercase tracking-widest">
@@ -103,8 +100,7 @@ function AuditoriaSection({
           <div className="space-y-6">
             <div
               className="h-2 w-24 rounded-full"
-              style={{ backgroundColor: colors.primaryYellow }}
-            ></div>
+              style={{ backgroundColor: colors.primaryYellow }}></div>
 
             <div className="bg-gray-50 rounded-3xl p-6 border border-dashed">
               <div className="flex items-center gap-2 mb-6">
@@ -156,8 +152,7 @@ function AuditoriaSection({
                       setFiltros({ ...filtros, usuario_id: e.target.value })
                     }
                     className="w-full bg-white border rounded-xl px-4 py-2 focus:ring-2 outline-none transition-all"
-                    style={{ borderColor: colors.monoSilver }}
-                  >
+                    style={{ borderColor: colors.monoSilver }}>
                     <option value="">Todos los usuarios</option>
                     {usuarios.map(
                       (user) =>
@@ -174,30 +169,30 @@ function AuditoriaSection({
                   <button
                     onClick={handleBuscar}
                     className="w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-bold transition-transform active:scale-95"
-                    style={{ backgroundColor: colors.primaryBlue }}
-                  >
+                    style={{ backgroundColor: colors.primaryBlue }}>
                     <Search className="w-4 h-4" /> BUSCAR
                   </button>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={handleLimpiar}
-                      className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-xl text-xs font-bold transition-colors"
-                    >
+                      className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-xl text-xs font-bold transition-colors">
                       <PaintbrushIcon className="w-3 h-3" /> LIMPIAR
                     </button>
                     <button
-                      onClick={() => exportarCSV(auditoria,`Auditoria-${filtros.fecha_inicio}-al-${filtros.fecha_fin}`)}
+                      onClick={() =>
+                        exportarCSV(
+                          auditoria,
+                          `Auditoria-${filtros.fecha_inicio}-al-${filtros.fecha_fin}`,
+                        )
+                      }
                       disabled={auditoria.length === 0}
-                      className="flex items-center justify-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
-                    >
+                      className="flex items-center justify-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50">
                       <Download className="w-3 h-3" /> EXPORTAR
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-
-            
           </div>
 
           {/* Listado de Logs */}
@@ -211,8 +206,7 @@ function AuditoriaSection({
                 {auditoria.map((log) => (
                   <div
                     key={log.id}
-                    className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-default"
-                  >
+                    className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-default">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -233,8 +227,7 @@ function AuditoriaSection({
 
                         <button
                           onClick={() => setDetalleSeleccionado(log)}
-                          className="flex items-center gap-1 text-[10px] font-black uppercase text-blue-500 hover:text-blue-700 transition-colors"
-                        >
+                          className="flex items-center gap-1 text-[10px] font-black uppercase text-blue-500 hover:text-blue-700 transition-colors">
                           <Eye className="w-3 h-3" /> Ver detalle completo
                         </button>
                       </div>
@@ -258,7 +251,6 @@ function AuditoriaSection({
                     </div>
                   </div>
                 ))}
-                
               </div>
             ) : (
               <div className="bg-gray-50 rounded-3xl p-20 flex flex-col justify-center items-center border border-dashed text-center">
@@ -271,9 +263,6 @@ function AuditoriaSection({
             )}
           </div>
         </div>
-        
-        
-      
       </div>
 
       {/* Modal de Detalle */}
@@ -282,8 +271,7 @@ function AuditoriaSection({
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
             <div
               className="p-6 flex justify-between items-center border-b"
-              style={{ backgroundColor: colors.secondaryBlueLight }}
-            >
+              style={{ backgroundColor: colors.secondaryBlueLight }}>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white rounded-lg shadow-sm">
                   <ShieldAlert
@@ -302,15 +290,23 @@ function AuditoriaSection({
               </div>
               <button
                 onClick={() => setDetalleSeleccionado(null)}
-                className="p-2 hover:bg-white/50 rounded-full transition-colors"
-              >
+                className="p-2 hover:bg-white/50 rounded-full transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="p-8">
               <div className="mb-6">
+                <div className="flex gap-4">
                 <label className="text-[12px] font-black text-black uppercase tracking-widest block mb-2">
+                  Acción: 
+                </label>
+                <Monitor className="w-4 h-4 opacity-40" />
+                <span className="text-xs font-black uppercase tracking-widest text-blue-600">
+                  {detalleSeleccionado.accion}
+                </span></div>
+                <br />
+                <label className="text-[12px] font-black text-gray-500 uppercase tracking-widest block mb-2">
                   Descripción de cambios realizados
                 </label>
                 <div className="bg-gray-50 rounded-2xl p-6 border text-gray-700 leading-relaxed font-medium">
@@ -346,8 +342,7 @@ function AuditoriaSection({
               <button
                 onClick={() => setDetalleSeleccionado(null)}
                 className="px-8 py-3 rounded-xl font-black text-sm transition-all active:scale-95"
-                style={{ backgroundColor: colors.primaryBlue, color: "white" }}
-              >
+                style={{ backgroundColor: colors.primaryBlue, color: "white" }}>
                 CERRAR
               </button>
             </div>

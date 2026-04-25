@@ -117,6 +117,8 @@ function EstadisticasSection({
     </div>
   );
 
+console.log(resumenGeneral, 'estadisticas')
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 relative overflow-hidden">
@@ -194,7 +196,7 @@ function EstadisticasSection({
               <div className="space-y-8">
                 {/* Gráficas Principales */}
                 <div className="grid grid-cols-1 gap-6">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 className="font-bold mb-4">Tickets por Día</h3>
                     <div className="h-[300px] w-full">
                       {estadisticasRango?.length > 0 ? (
@@ -242,12 +244,12 @@ function EstadisticasSection({
                         <EmptyState message="No hay datos para este período" />
                       )}
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 className="font-bold mb-4">Tickets por Servicio</h3>
                     <div className="h-[300px] w-full">
-                      {estadisticasServicios?.length > 0 ? (
+                      {estadisticasServicios?.length > 0 && (estadisticasServicios[0].atendidos > 0 || estadisticasServicios[0].no_presentados > 0)  ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={estadisticasServicios}>
                             <CartesianGrid
@@ -366,6 +368,12 @@ function EstadisticasSection({
                       color="from-green-500 to-green-700"
                     />
                     <KPICard
+                      title="En Espera"
+                      value={resumenGeneral.en_espera || 0}
+                      icon={<CheckCircle />}
+                      color="from-amber-300 to-amber-900"
+                    />
+                    <KPICard
                       title="T. Atención"
                       value={Math.round(
                         resumenGeneral.tiempo_promedio_servicio /
@@ -376,7 +384,7 @@ function EstadisticasSection({
                       color="from-yellow-500 to-orange-600"
                     />
                     <KPICard
-                      title="No Atendido"
+                      title="No Atendidos"
                       value={resumenGeneral.no_presentados || 0}
                       icon={<X />}
                       color="from-red-500 to-red-700"

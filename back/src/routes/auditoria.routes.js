@@ -24,13 +24,14 @@ router.get('/auditoria', async (req, res) => {
 
     if (fecha_fin) {
       query += ' AND fecha <= ?';
-      params.push(fecha_fin);
+      params.push(fecha_fin+" 23:00:00");
     }
 
     if (usuario_id) {
       query += ' AND id_user = ? ';
       params.push(usuario_id);
     }
+    console.log("first, ",fecha_fin, fecha_inicio)
 
     query += ' ORDER BY id DESC';
 

@@ -319,13 +319,19 @@ router.post('/:id/transferir', authenticateToken, async (req, res) => {
        [id, usuario, servicio_nvo, comentario]
      
     );
-    //  UPDATE tickets SET estado=1 ,last_user=?, servicio=? WHERE id=?',
-    //   [usuario,servicio_id, id]
+    const [rows] = await pool.query(
+      'SELECT nombre FROM servicios WHERE id=?',
+      [servicio_nvo]
+    );
+    const [rows2] = await pool.query(
+      'SELECT numero FROM tickets WHERE id=?',
+      [id]
+    );
     await registrarAuditoria({
       usuarioId: req.user.id,
       accion: 6,
       modulo: 'Tickets',
-      detalles: `Ticket ID: "${id}", Transferido.`,
+      detalles: `Ticket ID: "${id}", Secuencia: "${rows2[0]?.numero}", Transferido a servicio: "${rows[0]?.nombre}"`,
       req
     });
     

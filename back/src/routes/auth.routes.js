@@ -54,7 +54,7 @@ function autenticarLDAP(username, password) {
       };
 console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,dc=com'))
 
-      client.search('dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => { //modificar y agregar basedn en el string y eliminar string
+      client.search(baseDN || 'dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => { //modificar y agregar basedn en el string y eliminar string
         if (err) {
           client.unbind();
           return reject({
@@ -144,7 +144,7 @@ function ValidarLDAP(username) {
         attributes: ["dn", "cn", "displayName", "employeeID"],
       };
 
-      client.search("dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
+      client.search(basedn || "dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
         if (err) {
           client.unbind();
           return reject({
@@ -350,13 +350,13 @@ router.post("/login", async (req, res) => {
       { expiresIn: "8h" },
     );
 
-    // await registrarAuditoria({
-    //   usuarioId: userDB.id,
-    //   accion: 1, // 1 es para login
-    //   modulo: "Autenticación",
-    //   detalles: `Usuario LDAP "${userDB.nombre}" inicia sesión`,
-    //   req,
-    // });
+    await registrarAuditoria({
+      usuarioId: userDB.id,
+      accion: "INICIO DE SESIÓN",
+      modulo: "Autenticación",
+      detalles: `Usuario "${userDB.nombre}" inicia sesión`,
+      req,
+    });
 
     return res.json({
       success: true,
@@ -364,13 +364,12 @@ router.post("/login", async (req, res) => {
       token,
     });
   } catch (error) {
-    // await registrarAuditoria({
-    //   usuarioId: username,
-    //   accion: "LOGIN FALLIDO",
-    //   modulo: "Autenticación",
-    //   detalles: "Error en autenticación LDAP",
-    //   req,
-    // });
+    await registrarAuditoria({
+      usuarioId: username,
+      accion: `LOGIN FALLIDO CON: ${username}`,
+      detalles: "Error en autenticación",
+      req,
+    });
 
     console.error("LDAP error:", error.message);
 

@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `finalizar_ticket` (IN `p_ticket_id` INT, IN `p_estado` INT)   BEGIN
+CREATE or replace procedure `finalizar_ticket` (IN `p_ticket_id` INT, IN `p_estado` INT)   BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM tickets WHERE id = p_ticket_id) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El Ticket no existe';
@@ -54,7 +54,7 @@ LIMIT 1;
     WHERE id = p_ticket_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `generar_numero_ticket` (IN `p_servicio_id` INT, OUT `p_numero` VARCHAR(20))   BEGIN
+CREATE or replace procedure `generar_numero_ticket` (IN `p_servicio_id` INT, OUT `p_numero` VARCHAR(20))   BEGIN
     DECLARE v_codigo VARCHAR(10);
     DECLARE v_ultimo_numero VARCHAR(20);
     DECLARE v_correlativo INT;
@@ -87,7 +87,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `generar_numero_ticket` (IN `p_servi
     SET p_numero = CONCAT(v_codigo, '-', LPAD(v_correlativo, 3, '0'));
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `llamar_ticket` (IN `p_ticket_id` INT, IN `p_usuario_id` INT, IN `p_puesto_id` INT, IN `p_servicio_id` INT)   BEGIN
+CREATE or replace procedure `llamar_ticket` (IN `p_ticket_id` INT, IN `p_usuario_id` INT, IN `p_puesto_id` INT, IN `p_servicio_id` INT)   BEGIN
     DECLARE
         v_numero VARCHAR(20) ; DECLARE v_id_persona INT ; DECLARE v_detail_id INT ;
     START TRANSACTION
@@ -171,7 +171,7 @@ SELECT
     v_numero AS numero ;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `transferir` (IN `p_ticket_id` INT, IN `p_usuario_id` INT, IN `p_servicio_nvo` INT, IN `p_comentario` VARCHAR(255))   BEGIN
+CREATE or replace procedure `transferir` (IN `p_ticket_id` INT, IN `p_usuario_id` INT, IN `p_servicio_nvo` INT, IN `p_comentario` VARCHAR(255))   BEGIN
     DECLARE v_id_persona INT;
     DECLARE v_puesto_id INT;
     DECLARE v_existe INT DEFAULT 0;

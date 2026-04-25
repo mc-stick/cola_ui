@@ -34,6 +34,7 @@ import HistorialSection from "./admin/HistorialSection";
 import EstadisticasSection from "./admin/EstadisticasSection";
 import AuditoriaSection from "./admin/AuditoriaSection";
 import DepartamentoSection from "./admin/departamentoSection";
+import { usePantallaCliente } from "../hooks/UsePantallaCliente";
 
 function PantallaAdmin() {
   // Estado del usuario autenticado
@@ -51,6 +52,8 @@ function PantallaAdmin() {
   const [operadoresServicios, setOperadoresServicios] = useState([]);
   const [historial, setHistorial] = useState([]);
   const [auditoria, setAuditoria] = useState([]);
+
+  const state = usePantallaCliente();
 
   // Estados de UI
   const [LoadingSpin, setLoadingSpin] = useState(false);
@@ -312,8 +315,18 @@ function PantallaAdmin() {
         }}
       >
         <h1 className="text-2xl font-black text-white flex items-center gap-3 italic tracking-tighter">
-          <Building className="w-8 h-8" style={{ color: colors.primaryYellow }} />
-          ADMIN <span style={{ color: colors.primaryYellow }}>PANEL</span>
+          <div className="relative">
+            {state?.config?.logo_url && (
+              <img
+                src={state?.config.logo_url}
+                alt="Logo UCNE"
+                className="w-12 h-12 object-contain rounded-xl p-2 shadow-xl"
+              />
+            )}
+            {/* Punto de estado online */}
+            
+          </div>
+          PANEL  <span style={{ color: colors.primaryYellow }}>ADMINISTRATIVO</span>
         </h1>
         <div className="flex items-center gap-4 bg-black/20 px-4 py-2 rounded-full border border-white/10">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: colors.primaryGreen }}></div>

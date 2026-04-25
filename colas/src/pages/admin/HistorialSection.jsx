@@ -301,7 +301,7 @@ function HistorialSection({
                 style={{ color: colors.secondaryBlueDark }}
               >
                 Los datos mostrados corresponden al flujo histórico de la
-                sucursal seleccionada.
+                fecha seleccionada.
               </span>
             </div>
           </div>
