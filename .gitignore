@@ -27,3 +27,5 @@ dist-ssr
 *.sln
 *.sw?
 
+back/package-lock.json
+colas/package-lock.json
