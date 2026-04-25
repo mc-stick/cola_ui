@@ -57,8 +57,7 @@ function EstadisticasSection({
   // Convertimos a número y unificamos nombres de claves
   total_tickets: Number(item.total_tickets),
   atendidos: Number(item.atendidos),
-  en_espera: Number(item.en_espera),
-  total_tickets: Number(item.total_tickets)
+  en_espera: Number(item.en_espera)
 }));
     const dataop = await api.getEstadisticasOperadores(fechaInicio, fechaFin);
     const dataser = await api.getEstadisticasServicios(fechaInicio, fechaFin);
