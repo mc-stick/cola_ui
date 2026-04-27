@@ -58,16 +58,15 @@ function DepartamentoSection({
       <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }}></div>
 
       {/* HEADER FIJO */}
-      <div className="p-8 md:p-12 pb-6 shrink-0">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="p-8 md:p-6 pb-6 shrink-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-2 uppercase" style={{ color: colors.primaryBlue }}>
-              Gestión de <span style={{ color: colors.secondaryBlueDark }}>Departamentos</span>
-            </h2>
-            <div className="h-1.5 w-24 rounded-full" style={{ backgroundColor: colors.primaryYellow }}></div>
-          </div>
-          
-          <button
+          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
+            Gestión de <span style={{ color: colors.secondaryBlueDark }}>departamentos</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestiona los departamentos del sistema</p>
+        </div>
+        <button
             onClick={handleCrearDepartamento}
             disabled={LoadingSpin}
             className="flex items-center gap-3 bg-[var(--color-primary-blue)] hover:scale-105 active:scale-95 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl uppercase text-xs tracking-widest"
@@ -77,6 +76,7 @@ function DepartamentoSection({
             Nuevo Departamento
           </button>
         </div>
+        
       </div>
 
       {/* ÁREA CON SCROLL (Listado) */}

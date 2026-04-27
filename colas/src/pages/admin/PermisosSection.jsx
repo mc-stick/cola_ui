@@ -85,14 +85,14 @@ function PermisosSection({
       <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }}></div>
 
       {/* HEADER */}
-      <div className="p-8 md:p-12 pb-6 shrink-0">
+      <div className="p-8 md:p-6 pb-6 shrink-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-2 uppercase" style={{ color: colors.primaryBlue }}>
-              Control de <span style={{ color: colors.secondaryBlueDark }}>Accesos</span>
-            </h2>
-            <div className="h-1.5 w-24 rounded-full" style={{ backgroundColor: colors.primaryYellow }}></div>
-          </div>
+          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
+            Control de <span style={{ color: colors.secondaryBlueDark }}>acceso</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestiona los permisos de cada administrador</p>
+        </div>
           
           {/* Indicador de Modo Lectura */}
           {esMismoUsuario && (

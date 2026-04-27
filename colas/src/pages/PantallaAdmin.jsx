@@ -17,6 +17,10 @@ import {
   Tags,
   MonitorCheck,
   LibraryBigIcon,
+  ScreenShareIcon,
+  Tv2Icon,
+  WallpaperIcon,
+  TvIcon,
 } from "lucide-react";
 
 import { Spinner, TabSpinner } from "../components/loading";
@@ -35,6 +39,8 @@ import EstadisticasSection from "./admin/EstadisticasSection";
 import AuditoriaSection from "./admin/AuditoriaSection";
 import DepartamentoSection from "./admin/departamentoSection";
 import { usePantallaCliente } from "../hooks/UsePantallaCliente";
+import PantallasSection from "./admin/PantallaSetting";
+import AsignarServiciosPantallaSection from "./admin/AsignarPantalla";
 
 function PantallaAdmin() {
   // Estado del usuario autenticado
@@ -76,15 +82,18 @@ function PantallaAdmin() {
   const MENU_ITEMS = [
     { id: "1", icon: Settings, label: "Configuración" },
     { id: "10", icon: Building, label: "Departamentos" },
+    { id: "11", icon: TvIcon, label: "Pantallas" },
     { id: "2", icon: Tags, label: "Servicios" },
     { id: "3", icon: MonitorCheck, label: "Puestos" },
     { id: "4", icon: Users, label: "Usuarios" },
     { id: "5", icon: LibraryBigIcon, label: "Asignar Servicios" },
     { id: "0", icon: UserCheck2Icon, label: "Asignar Permisos" },
+    { id: "12", icon: WallpaperIcon, label: "Asignar Pantallas" },
     { id: "6", icon: Image, label: "Medios" },
     { id: "7", icon: History, label: "Historial" },
     { id: "8", icon: BarChart3, label: "Estadísticas" },
     { id: "9", icon: ShieldAlertIcon, label: "Auditoría" },
+
   ];
 
   // ============================================
@@ -257,12 +266,12 @@ function PantallaAdmin() {
       className="flex flex-col flex-shrink-0 text-white w-64 p-4 sticky top-0 min-h-[calc(100vh-80px)] shadow-2xl"
       style={{ backgroundColor: colors.primaryBlue }}
     >
-      <div className="flex items-center mb-8 px-2">
+      {/* <div className="flex items-center mb-8 px-2">
         <div className="p-2 rounded-lg mr-3" style={{ backgroundColor: colors.primaryYellow }}>
           <Settings2 className="w-6 h-6" style={{ color: colors.primaryBlue }} />
         </div>
         <span className="font-black text-lg tracking-tighter uppercase">Navegación</span>
-      </div>
+      </div> */}
 
       <ul className="flex flex-col flex-1 space-y-2">
         {menuFiltrado.map((item) => {
@@ -285,19 +294,27 @@ function PantallaAdmin() {
               </button>
             </li>
           );
-        })}
-      </ul>
-
-      <div className="mt-auto">
-        <button
+        })}<div className="">
+          <button
+                onClick={handleLogout}
+                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-bold transition-all duration-200 `}
+                style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
+              >
+                <DoorOpenIcon className="w-5 h-5"  />
+                <span className="text-sm">CERRAR SESIÓN</span>
+              </button>
+        {/* <button
           onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-black transition-transform active:scale-95 shadow-lg"
+          className="flex items-center justify-center gap-2 w-full py-2 rounded-2xl font-black transition-transform active:scale-95 shadow-lg"
           style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
         >
           <DoorOpenIcon className="w-5 h-5" />
           CERRAR SESIÓN
-        </button>
+        </button> */}
       </div>
+      </ul>
+
+      
     </div>
   );
 
@@ -411,6 +428,9 @@ function PantallaAdmin() {
             {seccion === "7" && <HistorialSection historial={historial} setHistorial={setHistorial} servicios={servicios} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarHistorial={async (f) => { const d = await API.getHistorial(f); setHistorial(d); }} validarFiltrosHistorial={validarFiltrosHistorial} />}
             {seccion === "8" && <EstadisticasSection LoadingSpin={LoadingSpin} onCargarEstadisticas={async (i, f) => { return await API.getEstadisticasRango(i, f); }} validarFechasEstadisticas={() => true} />}
             {seccion === "9" && <AuditoriaSection auditoria={auditoria} setAuditoria={setAuditoria} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarAuditoria={async (f) => { setAuditoria(await API.getAuditoria(f)); }} />}
+            
+            {seccion === "11" && <PantallasSection auditoria={auditoria} setAuditoria={setAuditoria} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarAuditoria={async (f) => { setAuditoria(await API.getAuditoria(f)); }} />}
+            {seccion === "12" && <AsignarServiciosPantallaSection auditoria={auditoria} setAuditoria={setAuditoria} usuarios={usuarios} LoadingSpin={LoadingSpin} setLoadingSpin={setLoadingSpin} onCargarAuditoria={async (f) => { setAuditoria(await API.getAuditoria(f)); }} />}
           </div>
         </main>
       </div>

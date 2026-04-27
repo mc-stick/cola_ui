@@ -436,7 +436,7 @@ class API {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error( "Error: hay objetos que dependen del servicio.");
+        toast.error("Error: hay objetos que dependen del servicio.");
         throw new Error(result.error || "Error al eliminar servicio");
       }
 
@@ -467,7 +467,7 @@ class API {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error( "Error: hay objetos que dependen del departamento.");
+        toast.error("Error: hay objetos que dependen del departamento.");
         throw new Error(result.error || "Error al eliminar departamento");
       }
 
@@ -644,7 +644,6 @@ class API {
         },
         body: JSON.stringify({ username }),
       });
-      
 
       const result = await response.json();
 
@@ -1270,12 +1269,12 @@ class API {
     }
   }
 
-  async llamarTicket(id, usuario_id,puesto, servicio) {
+  async llamarTicket(id, usuario_id, puesto, servicio) {
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/llamar`, {
         method: "POST",
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ usuario_id,puesto, servicio}),
+        body: JSON.stringify({ usuario_id, puesto, servicio }),
       });
 
       if (this.handleAuthError(response)) {
@@ -1303,12 +1302,12 @@ class API {
     }
   }
 
-  async rellamarTicket(id, usuario_id,puesto, servicio) {
+  async rellamarTicket(id, usuario_id, puesto, servicio) {
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/rellamar`, {
         method: "POST",
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ usuario_id,puesto, servicio}),
+        body: JSON.stringify({ usuario_id, puesto, servicio }),
       });
 
       if (this.handleAuthError(response)) {
@@ -1338,23 +1337,23 @@ class API {
 
   async llamarVolver(id) {
     //console.log(id)
-  try {
-    const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
-      method: "POST",
-    });
+    try {
+      const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
+        method: "POST",
+      });
 
-    if (!response.ok) { 
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error || "Error al llamar el ticket";
-      throw new Error(errorMessage);
-    } 
-    
-    return await response.json();
-  } catch (error) {
-    console.error("Error en llamarVolver:", error.message);  
-    throw error;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Error al llamar el ticket";
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error en llamarVolver:", error.message);
+      throw error;
+    }
   }
-}
 
   async SendEvaluation(ticketId, ratings, comment) {
     try {
@@ -1413,17 +1412,13 @@ class API {
       const data = await response.json();
 
       //console.log(data.data,"dataticket")
-    
+
       return {
         expirado: data.expirado || false,
         yaEvaluado: data.yaEvaluado || false,
         notfound: data.notfound || false,
-        data:data.data || []
+        data: data.data || [],
       };
-      
-        
-
-      
     } catch (error) {
       //console.error('Error en GetTicketEvaluationState:', error);
       return { expirado: true, yaEvaluado: false }; // asumimos expirado si hay error
@@ -1508,7 +1503,7 @@ class API {
             servicio_nvo: servicio_id,
             comentario: comentario,
             servicio_act: servicio_nm,
-            usuario: ticketactual.usuario
+            usuario: ticketactual.usuario,
           }),
         },
       );
@@ -1719,6 +1714,231 @@ class API {
       console.error("Error en getAuditoria:", error);
       if (!error.message.includes("toast")) {
         toast.error("Error al cargar auditoría");
+      }
+      throw error;
+    }
+  }
+
+  // ── Pantallas ──────────────────────────────────────────────────────────────
+
+  async getPantallas() {
+    try {
+      const response = await fetch(`${API_URL}/pantallas`);
+      if (!response.ok) {
+        toast.error("Error al obtener pantallas");
+        throw new Error("Error al obtener pantallas");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getPantallas:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar pantallas");
+      }
+      throw error;
+    }
+  }
+
+
+  async crearPantalla(nombre, token) {
+    try {
+      const response = await fetch(`${API_URL}/pantallas`, {
+        method: "POST",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ nombre, token }),
+      });
+
+      if (this.handleAuthError(response)) throw new Error("No autorizado");
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Error al crear pantalla");
+        throw new Error(result.error || "Error al crear pantalla");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error en crearPantalla:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al crear pantalla");
+      }
+      throw error;
+    }
+  }
+
+  async actualizarPantalla(id, nombre, token) {
+    try {
+      const response = await fetch(`${API_URL}/pantallas/${id}`, {
+        method: "PUT",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({ nombre, token }),
+      });
+
+      if (this.handleAuthError(response)) throw new Error("No autorizado");
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Error al actualizar pantalla");
+        throw new Error(result.error || "Error al actualizar pantalla");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error en actualizarPantalla:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al actualizar pantalla");
+      }
+      throw error;
+    }
+  }
+
+  async eliminarPantalla(id) {
+    try {
+      const response = await fetch(`${API_URL}/pantallas/${id}`, {
+        method: "DELETE",
+        headers: this.getAuthHeaders(),
+      });
+
+      if (this.handleAuthError(response)) throw new Error("No autorizado");
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Error al eliminar pantalla");
+        throw new Error(result.error || "Error al eliminar pantalla");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error en eliminarPantalla:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al eliminar pantalla");
+      }
+      throw error;
+    }
+  }
+
+  // ── Pantallas ↔ Servicios ──────────────────────────────────────────────────
+
+  async getPantallaServicios(pantallaId) {
+    try {
+      const response = await fetch(
+        `${API_URL}/pantallas-servicios/${pantallaId}/servicios`,
+      );
+      if (!response.ok) {
+        toast.error("Error al obtener servicios de la pantalla");
+        throw new Error("Error al obtener servicios de la pantalla");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getPantallaServicios:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar servicios de la pantalla");
+      }
+      throw error;
+    }
+  }
+
+  async getTicketsPorPantalla(token) {
+    try {
+      const response = await fetch(
+        `${API_URL}/pantallas-servicios/token/${token}/tickets`,
+      );
+      if (!response.ok) {
+        toast.error("Error al obtener tickets de la pantalla");
+        throw new Error("Error al obtener tickets de la pantalla");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getTicketsPorPantalla:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar tickets");
+      }
+      throw error;
+    }
+  }
+
+  async asignarServicioPantalla(pantallaId, servicioId) {
+    try {
+      const response = await fetch(
+        `${API_URL}/pantallas-servicios/${pantallaId}/servicios/${servicioId}`,
+        {
+          method: "POST",
+          headers: this.getAuthHeaders(),
+        },
+      );
+
+      if (this.handleAuthError(response)) throw new Error("No autorizado");
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Error al asignar servicio");
+        throw new Error(result.error || "Error al asignar servicio");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error en asignarServicioPantalla:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al asignar servicio a pantalla");
+      }
+      throw error;
+    }
+  }
+
+  async desasignarServicioPantalla(pantallaId, servicioId) {
+    try {
+      const response = await fetch(
+        `${API_URL}/pantallas-servicios/${pantallaId}/servicios/${servicioId}`,
+        {
+          method: "DELETE",
+          headers: this.getAuthHeaders(),
+        },
+      );
+
+      if (this.handleAuthError(response)) throw new Error("No autorizado");
+
+      const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.error || "Error al desasignar servicio");
+        throw new Error(result.error || "Error al desasignar servicio");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error en desasignarServicioPantalla:", error);
+      if (
+        !error.message.includes("toast") &&
+        !error.message.includes("autorizado")
+      ) {
+        toast.error("Error al desasignar servicio de pantalla");
+      }
+      throw error;
+    }
+  }
+
+  async getPantallasConServicios() {
+    try {
+      const response = await fetch(`${API_URL}/pantallas-servicios`);
+      if (!response.ok) {
+        toast.error("Error al obtener pantallas con servicios");
+        throw new Error("Error al obtener pantallas con servicios");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error en getPantallasConServicios:", error);
+      if (!error.message.includes("toast")) {
+        toast.error("Error al cargar pantallas con servicios");
       }
       throw error;
     }

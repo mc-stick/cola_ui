@@ -5,6 +5,8 @@ import DemoSpeaker from "../TTS/DEMOindex";
 import "./../styles/Pantalla.css";
 import { useFecha, useHora } from "../components/common/clok";
 
+import { useSearchParams } from "react-router-dom";
+
 // Duración que permanece visible cada modal antes de pasar al siguiente
 const MODAL_DURACION_MS = 5000;
 
@@ -54,6 +56,23 @@ function PantallaAnuncios() {
     [procesarCola],
   );
 
+  //token de la url:
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Buscamos el parámetro llamado 'token' en la URL
+    const token = searchParams.get("token");
+
+    if (token) {
+      // Si el token existe en la URL, lo guardamos
+      localStorage.setItem("app_token", token);
+      console.log("Token guardado correctamente");
+    } else {
+      localStorage.removeItem("app_token");
+      console.log("Acceso sin token en URL");
+    }
+  }, [searchParams]);
+
   // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
@@ -83,60 +102,74 @@ function PantallaAnuncios() {
   }, []);
 
   // ── Polling de tickets ─────────────────────────────────────────────────────
-  useEffect(() => {
-    let ticketsAnteriores = [];
+  // 1. Agrega este Ref al inicio de tu componente con los demás useRef
+  const ticketsAnterioresRef = useRef([]);
 
+  // 2. Actualiza el useEffect de polling
+  useEffect(() => {
     const cargarTickets = async () => {
       try {
-        const tickets = await API.getTicketsLlamados();
+        // Cargas iniciales
+        const filterScreen = await API.getPantallasConServicios();
+        const ticketsBase = await API.getTicketsLlamados();
         const esperaTickets = await API.getTicketsEspera();
 
-        if (tickets.length > 0) {
-          if (ticketsAnteriores.length === 0) {
-            // Primera carga: encolar el primer ticket visible
-            encolarTicket(tickets[0]);
+        const tokenAlmacenado = localStorage.getItem("app_token");
+        const tokenLimpio = tokenAlmacenado?.trim().toLowerCase();
+
+        let ticketsParaMostrar = ticketsBase;
+
+        // --- LÓGICA DE FILTRADO POR TOKEN ---
+        if (tokenLimpio) {
+          const pantallaActual = filterScreen.find(
+            (p) => p.token?.trim().toLowerCase() === tokenLimpio,
+          );
+
+          if (pantallaActual && pantallaActual.servicios) {
+            ticketsParaMostrar = ticketsBase.filter((ticket) =>
+              pantallaActual.servicios.some(
+                (s) => String(s.id) === String(ticket.servicio),
+              ),
+            );
           } else {
-            // Ticket nuevo (no existía antes)
-            const nuevoTicket = tickets.find(
-              (t) => !ticketsAnteriores.some((ta) => ta.id === t.id),
+            // Si hay token pero no se encuentra la pantalla, no mostramos nada
+            // o decides si mostrar todos. Aquí pondré vacío para ser estrictos.
+            ticketsParaMostrar = [];
+          }
+        }
+
+        // --- LÓGICA DE ENCOLAMIENTO (MODAL) ---
+        if (ticketsParaMostrar.length > 0) {
+          const previos = ticketsAnterioresRef.current;
+
+          // Caso A: Primer ticket cuando la lista estaba vacía
+          if (previos.length === 0) {
+            encolarTicket(ticketsParaMostrar[0]);
+          } else {
+            // Caso B: Detectar tickets totalmente nuevos
+            const nuevoTicket = ticketsParaMostrar.find(
+              (t) => !previos.some((ta) => ta.id === t.id),
             );
             if (nuevoTicket) {
               encolarTicket(nuevoTicket);
             }
 
-            // Rellamado: ticket que aumentó su contador "llamado"
-            tickets.forEach((ticket) => {
-              const ticketAnterior = ticketsAnteriores.find(
-                (ta) => ta.id === ticket.id,
-              );
+            // Caso C: Rellamados (el contador 'llamado' subió)
+            ticketsParaMostrar.forEach((ticket) => {
+              const ticketAnterior = previos.find((ta) => ta.id === ticket.id);
               if (ticketAnterior && ticket.llamado > ticketAnterior.llamado) {
                 encolarTicket(ticket);
               }
             });
-
-            // Tickets finalizados → historial
-            const ticketsFinalizados = ticketsAnteriores.filter(
-              (ta) => !tickets.some((t) => t.id === ta.id),
-            );
-            if (ticketsFinalizados.length > 0) {
-              setHistorialTickets((prevHistorial) => {
-                const nuevoHistorial = { ...prevHistorial };
-                ticketsFinalizados.forEach((ticket) => {
-                  const svc = ticket.servicio_nombre;
-                  if (!nuevoHistorial[svc]) nuevoHistorial[svc] = [];
-                  nuevoHistorial[svc] = [
-                    { ...ticket, finalizado_at: new Date() },
-                    ...nuevoHistorial[svc],
-                  ].slice(0, 5);
-                });
-                return nuevoHistorial;
-              });
-            }
           }
         }
 
-        ticketsAnteriores = tickets;
-        setTicketsLlamados(tickets);
+        // --- ACTUALIZACIÓN DE ESTADOS ---
+        // Guardamos en el Ref para la siguiente comparación
+        ticketsAnterioresRef.current = ticketsParaMostrar;
+
+        // Actualizamos UI
+        setTicketsLlamados(ticketsParaMostrar);
         setTicketEspera(esperaTickets);
       } catch (error) {
         console.error("Error cargando tickets:", error);
@@ -203,8 +236,7 @@ function PantallaAnuncios() {
           {/* Marco Dorado con altura flexible para llenar el padre (flex-grow) */}
           <div
             className="relative rounded-[3rem] shadow-[0_20px_50px_rgba(30,42,79,0.2)] overflow-hidden flex-grow border-[6px] bg-black"
-            style={{ borderColor: "var(--color-mono-gold)" }}
-          >
+            style={{ borderColor: "var(--color-mono-gold)" }}>
             {/* Contenedor Interno: 
             Usamos absolute inset-0 para que no dependa del tamaño del contenido hijo
           */}
@@ -351,8 +383,7 @@ function PantallaAnuncios() {
       <main className="flex-grow overflow-hidden relative">
         {config?.Split ? (
           <div
-            className={`grid grid-cols-1 ${ticketsLlamados.length > 0 ? "lg:grid-cols-[35%_65%]" : ""} h-full`}
-          >
+            className={`grid grid-cols-1 ${ticketsLlamados.length > 0 ? "lg:grid-cols-[35%_65%]" : ""} h-full`}>
             {/* LISTA LATERAL */}
             {ticketsLlamados.length > 0 && (
               <div className="bg-[#e2e8f0] p-8 overflow-y-auto border-r-4 border-[var(--color-mono-gold)]/20 shadow-inner">
@@ -371,8 +402,7 @@ function PantallaAnuncios() {
                       <li
                         key={ticket.id}
                         className="flex justify-between items-center rounded-[2.5rem] bg-white shadow-lg p-6 border-b-[8px] transition-all hover:scale-[1.02]"
-                        style={{ borderBottomColor: data.color }}
-                      >
+                        style={{ borderBottomColor: data.color }}>
                         <div>
                           <span className="block text-3xl font-black tracking-tighter text-[var(--color-primary-blue)]">
                             {ticket.numero}
@@ -409,8 +439,7 @@ function PantallaAnuncios() {
                     <div
                       key={servicioNombre}
                       className="bg-white rounded-[3.5rem] p-8 shadow-xl border-t-[12px] flex flex-col h-fit relative"
-                      style={{ borderTopColor: data.color }}
-                    >
+                      style={{ borderTopColor: data.color }}>
                       <div className="mb-6">
                         <h3 className="text-3xl font-black text-[var(--color-primary-blue)] uppercase tracking-tighter">
                           {servicioNombre}
@@ -428,8 +457,7 @@ function PantallaAnuncios() {
                               index === 0 && ticketActual?.id === ticket.id
                                 ? "bg-[var(--color-secondary-yellow-light)] border-[var(--color-mono-gold)] shadow-lg scale-[1.05]"
                                 : "bg-[#f8fafc] border-transparent shadow-sm"
-                            }`}
-                          >
+                            }`}>
                             <div className="text-6xl font-black tracking-tighter text-[var(--color-primary-blue)]">
                               {ticket.numero}
                             </div>
@@ -458,26 +486,36 @@ function PantallaAnuncios() {
 
       {/* Modal de Turno Llamado */}
       {ticketVisible && (
-        <div className="fixed inset-0 bg-[var(--color-primary-blue)]/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
-          <div className="bg-[#fdfdfd] rounded-[5rem] p-12 max-w-3xl w-full shadow-[0_40px_100px_rgba(0,0,0,0.4)] relative overflow-hidden border-[10px] border-[var(--color-primary-yellow)]">
-            <div className="text-center">
-              <div className="mb-4 inline-block bg-[var(--color-secondary-blue-dark)] text-white px-8 py-2 rounded-full font-black text-xl animate-bounce">
-                ¡SU TURNO!
+        <div className="fixed inset-0 bg-gradient-to-br from-[#003366a6] via-[#0056b3a6] to-[#003366a6] flex items-center justify-center z-50 p-6">
+          <div className="relative w-full max-w-3xl rounded-[2.5rem] bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_rgba(0,0,0,0.25)] border border-white/30 overflow-hidden">
+            {/* Accent top bar */}
+            <div className="h-3 w-full bg-gradient-to-r from-[#0056b3] to-[#0056b346]" />
+
+            <div className="p-12 text-center">
+              {/* Badge */}
+              <div className="inline-block mb-6 px-6 py-2 rounded-full bg-[#003366] text-white font-bold text-lg tracking-wide shadow-md animate-pulse">
+                SU TURNO
               </div>
+
+              {/* Ticket number */}
               <div
-                className="text-[8rem] font-black mb-2 tracking-tighter leading-none italic"
+                className="text-[7rem] md:text-[8rem] font-black leading-none tracking-tight"
                 style={{
-                  color:
-                    ticketVisible.servicio_color || "var(--color-primary-blue)",
-                }}
-              >
+                  color: ticketVisible.servicio_color || "#003366",
+                }}>
                 {ticketVisible.numero}
               </div>
-              <div className="h-1 w-40 bg-[var(--color-mono-silver)]/30 mx-auto mb-8 rounded-full"></div>
-              <div className="text-6xl font-black text-[var(--color-primary-red)] tracking-tight uppercase">
+
+              {/* Divider */}
+              <div className="h-[3px] w-32 bg-[#ffcc00] mx-auto my-8 rounded-full" />
+
+              {/* Counter / Puesto */}
+              <div className="text-5xl font-extrabold text-[#CC0000] tracking-wide uppercase">
                 {ticketVisible.puesto_nombre}
               </div>
-              <div className="mt-8">
+
+              {/* Speaker */}
+              <div className="mt-10">
                 <DemoSpeaker
                   number={ticketVisible.numero}
                   text={ticketVisible.puesto_nombre}
@@ -485,6 +523,10 @@ function PantallaAnuncios() {
                 />
               </div>
             </div>
+
+            {/* Decorative glow */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-[#FFCC00]/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-[#CC0000]/20 rounded-full blur-3xl" />
           </div>
         </div>
       )}

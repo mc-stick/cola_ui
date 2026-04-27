@@ -52,13 +52,13 @@ function EstadisticasSection({
     }
 
     const datos = await onCargarEstadisticas(fechaInicio, fechaFin);
-    const dataLimpia = datos?.map(item => ({
-  ...item,
-  // Convertimos a número y unificamos nombres de claves
-  total_tickets: Number(item.total_tickets),
-  atendidos: Number(item.atendidos),
-  en_espera: Number(item.en_espera)
-}));
+    const dataLimpia = datos?.map((item) => ({
+      ...item,
+      // Convertimos a número y unificamos nombres de claves
+      total_tickets: Number(item.total_tickets),
+      atendidos: Number(item.atendidos),
+      en_espera: Number(item.en_espera),
+    }));
     const dataop = await api.getEstadisticasOperadores(fechaInicio, fechaFin);
     const dataser = await api.getEstadisticasServicios(fechaInicio, fechaFin);
     console.log(dataop, "data estadistiopca");
@@ -78,8 +78,7 @@ function EstadisticasSection({
   // --- Componentes Auxiliares para Limpieza Visual ---
   const KPICard = ({ title, value, icon, color, unit = "", percentage }) => (
     <div
-      className={`bg-gradient-to-br ${color} p-6 rounded-2xl text-white shadow-xl transform hover:-translate-y-1 transition-all`}
-    >
+      className={`bg-gradient-to-br ${color} p-6 rounded-2xl text-white shadow-xl transform hover:-translate-y-1 transition-all`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-bold opacity-80 uppercase tracking-wider">
           {title}
@@ -116,25 +115,26 @@ function EstadisticasSection({
     </div>
   );
 
-console.log(resumenGeneral, 'estadisticas')
+  console.log(resumenGeneral, "estadisticas");
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 md:p-12 relative overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-4  relative overflow-hidden">
         {/* Línea decorativa superior */}
-        <div className="absolute top-0 left-0 w-full h-3 bg-orange-500"></div>
+        <div className="absolute top-0 left-0 w-full h-3 bg-blue-900"></div>
 
         {/* Encabezado */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-2 uppercase text-gray-800">
-              Estadísticas de Atención
-            </h2>
-            <p className="text-lg font-medium opacity-50 uppercase tracking-widest">
-              Análisis de rendimiento y flujo de turnos
-            </p>
+        <div className="p-8 md:p-6 pb-6 shrink-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-3xl font-black tracking-tighter uppercase">
+                Estadísticas de <span>Atención</span>
+              </h2>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Gestiona el Análisis de rendimiento y flujo de turnos
+              </p>
+            </div>
           </div>
-          <BarChartHorizontalBig className="w-20 h-20 opacity-10 text-orange-600 -rotate-12" />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
@@ -178,8 +178,7 @@ console.log(resumenGeneral, 'estadisticas')
                   onClick={cargarEstadisticas}
                   disabled={LoadingSpin}
                   className={`w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-bold transition-all shadow-lg active:scale-95
-                    ${LoadingSpin ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
-                >
+                    ${LoadingSpin ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}>
                   <TrendingUp className="w-4 h-4" />
                   {LoadingSpin ? "CARGANDO..." : "ACTUALIZAR VISTA"}
                 </button>
@@ -188,7 +187,7 @@ console.log(resumenGeneral, 'estadisticas')
           </div>
 
           {/* Contenido Principal (Gráficas) */}
-          <div className="lg:col-span-2 h-[550px] overflow-y-auto pr-4 custom-scrollbar">
+          <div className="lg:col-span-2 h-[600px] overflow-y-auto pr-4 custom-scrollbar">
             {LoadingSpin ? (
               <CardLoader />
             ) : (
@@ -248,7 +247,9 @@ console.log(resumenGeneral, 'estadisticas')
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 className="font-bold mb-4">Tickets por Servicio</h3>
                     <div className="h-[300px] w-full">
-                      {estadisticasServicios?.length > 0 && (estadisticasServicios[0].atendidos > 0 || estadisticasServicios[0].no_presentados > 0)  ? (
+                      {estadisticasServicios?.length > 0 &&
+                      (estadisticasServicios[0].atendidos > 0 ||
+                        estadisticasServicios[0].no_presentados > 0) ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={estadisticasServicios}>
                             <CartesianGrid
@@ -293,8 +294,7 @@ console.log(resumenGeneral, 'estadisticas')
                       estadisticasOperadores.map((operador) => (
                         <div
                           key={operador.id}
-                          className="group flex flex-wrap items-center justify-between p-5 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-200 hover:bg-white transition-all"
-                        >
+                          className="group flex flex-wrap items-center justify-between p-5 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-200 hover:bg-white transition-all">
                           <div className="flex items-center gap-5">
                             <div className="bg-blue-600 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-100 group-hover:scale-110 transition-transform">
                               <span className="text-white font-bold text-xl">

@@ -39,34 +39,21 @@ function ConfiguracionSection({
   return (
     <div
       className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col"
-      style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}
-    >
+      style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}>
       {/* Barra superior de acento fijo */}
       <div
         className="absolute top-0 left-0 w-full h-3 z-10"
-        style={{ backgroundColor: colors.primaryBlue }}
-      ></div>
+        style={{ backgroundColor: colors.primaryBlue }}></div>
 
       {/* HEADER FIJO */}
-      <div className="p-8 md:p-12 pb-6 shrink-0">
-        <div className="flex justify-between items-center">
+      <div className="p-8 md:p-6 pb-6 shrink-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2
-              className="text-4xl font-black tracking-tighter mb-2"
-              style={{ color: colors.primaryBlue }}
-            >
-              CONFIGURACIÓN{" "}
-              <span style={{ color: colors.secondaryBlueDark }}>SISTEMA</span>
-            </h2>
-            <div
-              className="h-1.5 w-20 rounded-full"
-              style={{ backgroundColor: colors.primaryYellow }}
-            ></div>
-          </div>
-          <Settings2
-            className="w-16 h-16 opacity-10 rotate-12 hidden md:block"
-            style={{ color: colors.primaryBlue }}
-          />
+          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
+            Configuración del <span style={{ color: colors.secondaryBlueDark }}>sistema</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Configura los parámetros del sistema.</p>
+        </div>
         </div>
       </div>
 
@@ -110,8 +97,7 @@ function ConfiguracionSection({
                   />
                   <label
                     htmlFor="logo-upload"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
+                    className="cursor-pointer flex flex-col items-center">
                     {configuracion.logo_url ? (
                       <img
                         src={configuracion.logo_url}
@@ -123,8 +109,7 @@ function ConfiguracionSection({
                     )}
                     <span
                       className="font-black text-[10px] uppercase tracking-widest"
-                      style={{ color: colors.primaryBlue }}
-                    >
+                      style={{ color: colors.primaryBlue }}>
                       Actualizar Logotipo
                     </span>
                   </label>
@@ -135,13 +120,15 @@ function ConfiguracionSection({
               <div className="space-y-6">
                 <div
                   className="bg-white border p-6 rounded-3xl"
-                  style={{ borderColor: colors.monoSilver }}
-                >
+                  style={{ borderColor: colors.monoSilver }}>
                   <label className="block text-[10px] font-black text-gray-400 mb-4 uppercase tracking-widest">
                     Rotación de Imágenes (en segundos)
                   </label>
                   <input
                     type="number"
+                    max={30}
+                    min={1}
+                    onKeyDown={(e) => e.preventDefault()}
                     value={
                       configuracion.tiempo_rotacion
                         ? configuracion.tiempo_rotacion
@@ -155,9 +142,9 @@ function ConfiguracionSection({
                         tiempo_rotacion: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-6 py-3 bg-gray-50 border border-gray-100 rounded-xl font-black text-2xl"
+                    className=" px-6 py-3 mr-5 bg-gray-50 border border-gray-100 rounded-xl font-black text-2xl"
                     style={{ color: colors.primaryBlue }}
-                  />
+                  /> <span className=" text-xs">segundos para cada imagen</span> 
                 </div>
 
                 <div
@@ -165,16 +152,14 @@ function ConfiguracionSection({
                   style={{
                     backgroundColor: `${colors.secondaryBlueLight}10`,
                     borderColor: colors.secondaryBlueLight,
-                  }}
-                >
+                  }}>
                   <AlertCircleIcon
                     className="mr-3 mt-1 shrink-0 w-5 h-5"
                     style={{ color: colors.secondaryBlueDark }}
                   />
                   <p
                     className="font-bold text-xs leading-relaxed"
-                    style={{ color: colors.secondaryBlueDark }}
-                  >
+                    style={{ color: colors.secondaryBlueDark }}>
                     Los cambios realizados aquí se verán reflejados en todas las
                     pantallas de visualización de turnos activas.
                   </p>
@@ -220,13 +205,11 @@ function ConfiguracionSection({
                       borderColor: configuracion[item.key]
                         ? colors.primaryGreen
                         : "#eee",
-                    }}
-                  >
+                    }}>
                     <div>
                       <p
                         className="font-black text-xs uppercase tracking-tighter"
-                        style={{ color: colors.primaryBlue }}
-                      >
+                        style={{ color: colors.primaryBlue }}>
                         {item.label}
                       </p>
                       <p className="text-[9px] text-gray-400 font-bold uppercase">
@@ -257,8 +240,7 @@ function ConfiguracionSection({
         <button
           onClick={onGuardar}
           className="group flex items-center gap-4 px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-95 shadow-xl"
-          style={{ backgroundColor: colors.monoGold }}
-        >
+          style={{ backgroundColor: colors.monoGold }}>
           <Save className="w-5 h-5 transition-transform group-hover:rotate-12" />
           Actualizar Configuración
         </button>

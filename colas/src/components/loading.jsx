@@ -150,6 +150,7 @@ export function InfoModal({ ticket = {}, modal = () => {} }) {
           </button>
 
           <div className="flex flex-col md:flex-row md:items-center gap-5">
+            <div>
             <div
               className="px-4 py-2 rounded-2xl flex flex-col items-center justify-center text-white font-black shadow-lg w-fit"
               style={{ backgroundColor: ticket.color || "#3b82f6" }}
@@ -163,10 +164,11 @@ export function InfoModal({ ticket = {}, modal = () => {} }) {
                     size={window.innerWidth < 640 ? 16 : 18}
                   />
                 ) : (
-                  ""
+                  " "
                 )}
               </span>
-            </div>
+              
+            </div><span className="text-gray-500 justify-center flex text-sm">{promedio == 0 && "No evaluado."}</span></div>
 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">

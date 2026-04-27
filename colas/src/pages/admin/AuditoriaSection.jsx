@@ -70,7 +70,7 @@ function AuditoriaSection({
   return (
     <div className="max-w-7xl mx-auto">
       <div
-        className="bg-white rounded-3xl shadow-sm border p-8 md:p-12 relative overflow-hidden"
+        className="bg-white rounded-3xl shadow-sm border p-8 md:p-6 relative overflow-hidden"
         style={{ borderColor: colors.monoSilver }}>
         {/* Línea decorativa superior */}
         <div
@@ -78,22 +78,20 @@ function AuditoriaSection({
           style={{ backgroundColor: colors.primaryBlue }}></div>
 
         {/* Encabezado Estilo Index */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div>
-            <h2
-              className="text-5xl font-black tracking-tighter mb-2"
-              style={{ color: colors.primaryBlue }}>
-              AUDITORÍA DEL SISTEMA
-            </h2>
-            <p className="text-lg font-medium opacity-50 uppercase tracking-widest">
-              Seguridad y Seguimiento de Acciones
-            </p>
+         <div className="p-8 md:p-6 pb-6 shrink-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-3xl font-black tracking-tighter uppercase">
+                AUDITORÍA DEL SISTEMA
+              </h2>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Seguridad y Seguimiento de Acciones
+              </p>
+            </div>
           </div>
-          <ShieldAlert
-            className="w-20 h-20 opacity-10 rotate-12"
-            style={{ color: colors.primaryBlue }}
-          />
         </div>
+
+       
 
         <div className="grid lg:grid-cols-3 gap-10 mb-4">
           {/* Panel Lateral de Filtros */}
@@ -202,7 +200,7 @@ function AuditoriaSection({
                 <CardLoader />
               </div>
             ) : auditoria.length > 0 ? (
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
                 {auditoria.map((log) => (
                   <div
                     key={log.id}
@@ -349,12 +347,7 @@ function AuditoriaSection({
           </div>
         </div>
       )}
-      <div className="px-12 py-4 bg-white border-t flex items-center shrink-0">
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Formatos recomendados: 1920x1080 (Full HD) para evitar distorsiones en
-          pantalla.
-        </span>
-      </div>
+      
     </div>
   );
 }

@@ -42,13 +42,13 @@ function HistorialSection({
   });
 
   const colors = {
-  primaryBlue: "#003366",
-  primaryYellow: "#FFCC00",
-  primaryRed: "#CC0000",
-  secondaryBlueLight: "#E6F0FA",
-  secondaryBlueDark: "#0056b3",
-  monoSilver: "#E2E8F0",
-};
+    primaryBlue: "#003366",
+    primaryYellow: "#FFCC00",
+    primaryRed: "#CC0000",
+    secondaryBlueLight: "#E6F0FA",
+    secondaryBlueDark: "#0056b3",
+    monoSilver: "#E2E8F0",
+  };
 
   const getEstadoBadge = (estado) => {
     const estados = {
@@ -114,33 +114,26 @@ function HistorialSection({
     }
   };
 
-  console.log(historial)
+  console.log(historial);
 
   return (
     <div className="max-w-7xl mx-auto">
       <div
-        className="bg-white rounded-3xl shadow-sm border p-8 md:p-12 relative overflow-hidden"
-        style={{ borderColor: colors.monoSilver }}
-      >
+        className="bg-white rounded-3xl shadow-sm border p-8 md:p-6 relative overflow-hidden"
+        style={{ borderColor: colors.monoSilver }}>
         {/* Línea decorativa superior */}
         <div
           className="absolute top-0 left-0 w-full h-3"
-          style={{ backgroundColor: colors.primaryBlue }}
-        ></div>
+          style={{ backgroundColor: colors.primaryBlue }}></div>
 
         {/* Encabezado Estilo Index */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-6">
           <div>
-            <h2
-              className="text-5xl font-black tracking-tighter mb-2 uppercase"
-              style={{ color: colors.primaryBlue }}
-            >
-              Registro de Actividad
-            </h2>
-            <p className="text-lg font-medium opacity-50 uppercase tracking-widest">
-              Historial de turnos y tickets generados
-            </p>
-          </div>
+          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
+            registro de <span style={{ color: colors.secondaryBlueDark }}>actividad</span>
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Vincula operadores con sus áreas de atención</p>
+        </div>
           <History
             className="w-20 h-20 opacity-10 -rotate-12"
             style={{ color: colors.primaryBlue }}
@@ -152,8 +145,7 @@ function HistorialSection({
           <div className="space-y-6">
             <div
               className="h-2 w-24 rounded-full"
-              style={{ backgroundColor: colors.primaryYellow }}
-            ></div>
+              style={{ backgroundColor: colors.primaryYellow }}></div>
 
             <div className="bg-gray-50 rounded-3xl p-6 border border-dashed">
               <div className="flex items-center gap-2 mb-6">
@@ -214,8 +206,7 @@ function HistorialSection({
                       })
                     }
                     className="w-full bg-white border rounded-xl px-4 py-2 focus:ring-2 outline-none transition-all text-sm"
-                    style={{ borderColor: colors.monoSilver }}
-                  >
+                    style={{ borderColor: colors.monoSilver }}>
                     <option value="">Todos los servicios</option>
                     {servicios.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -237,8 +228,7 @@ function HistorialSection({
                       })
                     }
                     className="w-full bg-white border rounded-xl px-4 py-2 focus:ring-2 outline-none transition-all text-sm"
-                    style={{ borderColor: colors.monoSilver }}
-                  >
+                    style={{ borderColor: colors.monoSilver }}>
                     <option value="">Cualquier estado</option>
                     <option value="4">Atendido</option>
                     <option value="1">En Espera</option>
@@ -250,8 +240,7 @@ function HistorialSection({
                   <button
                     onClick={handleCargarHistorial}
                     className="w-full flex items-center justify-center gap-2 text-white py-3 rounded-xl font-bold transition-transform active:scale-95 shadow-lg shadow-blue-200"
-                    style={{ backgroundColor: colors.primaryBlue }}
-                  >
+                    style={{ backgroundColor: colors.primaryBlue }}>
                     <Search className="w-4 h-4" /> ACTUALIZAR VISTA
                   </button>
                   <div className="grid grid-cols-2 gap-2">
@@ -264,8 +253,7 @@ function HistorialSection({
                         });
                         setHistorial([]);
                       }}
-                      className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-xl text-xs font-bold transition-colors"
-                    >
+                      className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-xl text-xs font-bold transition-colors">
                       <PaintbrushIcon className="w-3 h-3" /> LIMPIAR
                     </button>
                     <button
@@ -276,33 +264,12 @@ function HistorialSection({
                         )
                       }
                       disabled={historial.length === 0}
-                      className="flex items-center justify-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
-                    >
+                      className="flex items-center justify-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50">
                       <Download className="w-3 h-3" /> EXPORTAR
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div
-              className="flex items-center p-6 rounded-2xl border-l-8"
-              style={{
-                backgroundColor: `${colors.secondaryBlueLight}60`,
-                borderColor: colors.secondaryBlueLight,
-              }}
-            >
-              <AlertCircleIcon
-                className="mr-4 shrink-0"
-                style={{ color: colors.secondaryBlueDark }}
-              />
-              <span
-                className="font-bold text-xs"
-                style={{ color: colors.secondaryBlueDark }}
-              >
-                Los datos mostrados corresponden al flujo histórico de la
-                fecha seleccionada.
-              </span>
             </div>
           </div>
 
@@ -313,7 +280,8 @@ function HistorialSection({
                 <CardLoader />
               </div>
             ) : historial.length > 0 ? (
-              <div className="space-y-4 max-h-[700px] overflow-y-auto pr-4 custom-scrollbar">
+              <div className="space-y-4 max-h-[550px] overflow-y-auto pr-4 custom-scrollbar">
+                
                 <p className="text-slate-400 text-[11px] font-black uppercase tracking-widest mb-2">
                   {historial.length} Registros encontrados
                 </p>
@@ -323,8 +291,7 @@ function HistorialSection({
                     <div
                       key={ticket.id}
                       onClick={() => setModalinfo(ticket)}
-                      className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer"
-                    >
+                      className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
                       <div className="flex justify-between items-start gap-4">
                         <div className="flex gap-4">
                           {/* Identificador de Ticket Estilizado */}
@@ -333,8 +300,7 @@ function HistorialSection({
                             style={{
                               backgroundColor:
                                 ticket.color || colors.primaryBlue,
-                            }}
-                          >
+                            }}>
                             <span className="text-2xl leading-none">
                               {ticket.numero}
                             </span>
@@ -346,8 +312,7 @@ function HistorialSection({
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <span
-                                className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 ${info.bg} ${info.text}`}
-                              >
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 ${info.bg} ${info.text}`}>
                                 <info.icon className="w-3 h-3" /> {info?.label}
                               </span>
                               {/* <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">
@@ -387,6 +352,7 @@ function HistorialSection({
                     </div>
                   );
                 })}
+                
               </div>
             ) : (
               <div className="bg-gray-50 rounded-3xl p-20 flex flex-col justify-center items-center border border-dashed text-center">
@@ -398,6 +364,25 @@ function HistorialSection({
                 </p>
               </div>
             )}
+            {historial.length > 0 && (
+                  <div
+                    className="flex items-center p-2 rounded-2xl text-[10px] border-l-8"
+                    style={{
+                      backgroundColor: `${colors.secondaryBlueLight}60`,
+                      borderColor: colors.secondaryBlueLight,
+                    }}>
+                    <AlertCircleIcon
+                      className="mr-4 shrink-0"
+                      style={{ color: colors.secondaryBlueDark }}
+                    />
+                    <span
+                      className="font-bold "
+                      style={{ color: colors.secondaryBlueDark }}>
+                      Los datos mostrados corresponden al flujo histórico de la
+                      fecha seleccionada.
+                    </span>
+                  </div>
+                )}
           </div>
         </div>
       </div>

@@ -19,6 +19,9 @@ const ticketsRoutes = require('./src/routes/tickets.routes');
 const estadisticasRoutes = require('./src/routes/estadisticas.routes');
 const auditoriaRoutes = require('./src/routes/auditoria.routes');
 
+const pantallaRoutes = require('./src/routes/pantallas.routes');
+const pantallaServicioRoutes = require('./src/routes/pantalla-servicios.routes');
+
 const app = express();
 const PORT = process.env.PORT || 4001;
 
@@ -43,6 +46,9 @@ app.use('/api', operadorServiciosRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/estadisticas', estadisticasRoutes);
 app.use('/api', auditoriaRoutes);
+
+app.use('/api/pantallas', pantallaRoutes);
+app.use('/api/pantallas-servicios', pantallaServicioRoutes);
 
 
 
