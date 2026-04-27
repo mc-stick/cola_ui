@@ -21,6 +21,7 @@ export default function GuiaVolver({ activar, setActivar }) {
               description:
                 "Presiona para continuar.",
               side: "top",
+              showButtons: []
             },
              
             onHighlightStarted: (element) => {
@@ -35,53 +36,15 @@ export default function GuiaVolver({ activar, setActivar }) {
                 { once: true }
               );
             },
-          },{
-            element: "#slider-services",
-            popover: {
-              title: "Selecciona el servicio que se muestra en tu ticket.",
-              description:
-                "Usa los botones para cambiar el tipo de servicio.",
-              side: "left",
-            },
           },
           {
             element: "#modaltk",
             popover: {
               title: "Coloca tu número de ticket",
               description:
-                "Ingresa los tres números restantes del ticket y presiona siguiente.",
+                "Usa los botones laterales para seleccionar el servicio y luego ingresa los tres números restantes del ticket y presiona listo.",
               side: "right",
             },
-          },
-          {
-            element: "#btn-accept",
-            popover: {
-              title: "Presiona para continuar.",
-              description:
-                "",
-              side: "top",
-            }, 
-            onHighlightStarted: (element) => {
-              element.addEventListener(
-                "click",
-                () => {
-                  setTimeout(() => {
-                    driverObj.moveNext();
-                  }, 500);
-                  
-                },
-                { once: true }
-              );
-            },
-          },
-          {
-            element: "#validate-tk",
-            popover: {
-              title: "Confirmación.",
-              description:
-                "Aquí finaliza el tutorial, presiona aceptar para cerrar.",
-              side: "right",
-            }, 
             onHighlightStarted: (element) => {
               element.addEventListener(
                 "click",

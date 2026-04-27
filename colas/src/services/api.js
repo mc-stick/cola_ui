@@ -1458,12 +1458,13 @@ class API {
     }
   }
 
-  async finalizarTicket(id, usuarioId, estado, comentario) {
+  async finalizarTicket({id, usuarioId, estado, comentario, nopresento=false}) {
+    console.log("nopresento",nopresento)
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/finalizar`, {
         method: "POST",
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ usuario_id: usuarioId, estado, comentario }),
+        body: JSON.stringify({ usuario_id: usuarioId, estado, comentario, nopresentado:nopresento }),
       });
 
       if (this.handleAuthError(response)) {

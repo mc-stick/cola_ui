@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { BackBtnCli } from "../../pages/PantallaCliente";
 import { esTelefonoRDValido } from "../../utils/validar";
 import NumericKeypad from "../common/NumKeypad";
-import { Smartphone, Fingerprint, ChevronRight, ChevronLeft } from "lucide-react";
+import {
+  Smartphone,
+  Fingerprint,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import { usePantallaCliente } from "../../hooks/UsePantallaCliente";
 
 export default function PasoIngresoId({
@@ -14,7 +19,7 @@ export default function PasoIngresoId({
 }) {
   const [runTour, setRunTour] = useState(false);
 
-   const state = usePantallaCliente();
+  const state = usePantallaCliente();
 
   const agregar = (d) => {
     setIdentificacion((prev) => {
@@ -61,9 +66,8 @@ export default function PasoIngresoId({
     return identificacion;
   };
 
-
   return (
-    <div  className="w-full max-w-xl mx-auto">
+    <div className="w-full max-w-xl mx-auto">
       {/* Encabezado del Paso */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mb-4">
@@ -79,6 +83,7 @@ export default function PasoIngresoId({
       </div>
 
       {/* Visualizador Estilo Input Gigante */}
+      <div id="visualizador-id">
       <div className="mb-6">
         <div className="relative bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-center shadow-inner">
           <div className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight min-h-[40px] flex items-center justify-center">
@@ -86,7 +91,7 @@ export default function PasoIngresoId({
               renderIdentificacion()
             ) : (
               <span className="text-slate-300 opacity-50 text-xl md:text-2xl uppercase tracking-widest font-bold">
-                 {tipoId === "telefono" ? "000-000-0000" : "00000000"}
+                {tipoId === "telefono" ? "000-000-0000" : "00000000"}
               </span>
             )}
           </div>
@@ -102,29 +107,31 @@ export default function PasoIngresoId({
           />
         </div>
       </div>
-
-      {/* Teclado Numérico */}
-      <div id="visualizador-id" className="w-full max-w-sm mx-auto bg-slate-50 p-4 rounded-[2.5rem] mb-12 shadow-sm">
-        <NumericKeypad
-          value={identificacion}
-          onAdd={agregar}
-          onDelete={borrar}
-          onConfirm={onConfirm}
-          confirmDisabled={disabled}
-        />
+       
+        <div className="w-full max-w-sm mx-auto mb-12 bg-slate-50 p-4 rounded-[2.5rem] shadow-sm ">
+          <NumericKeypad
+            value={identificacion}
+            onAdd={agregar}
+            onDelete={borrar}
+            onConfirm={onConfirm}
+            confirmDisabled={disabled}
+          />
+        </div></div>
+       
+      <div className="max-w-5xl mx-auto px-6 mb-6">
+        <button
+          id="btn-regresar"
+          onClick={() => {
+            setPaso(1);
+            setIdentificacion("");
+          }}
+          className="group flex items-center gap-2 text-slate-400 hover:text-blue-600 font-bold transition-all duration-300">
+          <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+            <ChevronLeft className="w-6 h-6" />
+          </div>
+          <span className="text-sm uppercase tracking-wider">Regresar</span>
+        </button>
       </div>
-       <div className="max-w-5xl mx-auto px-6 mb-6">
-      <button
-        id="btn-regresar"
-        onClick={()=>{setPaso(1); setIdentificacion("")}}
-        className="group flex items-center gap-2 text-slate-400 hover:text-blue-600 font-bold transition-all duration-300"
-      >
-        <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
-          <ChevronLeft className="w-6 h-6" />
-        </div>
-        <span className="text-sm uppercase tracking-wider">Regresar</span>
-      </button>
-    </div>
 
       {/* Botón de Confirmación Principal (Solo si el teclado no lo tiene integrado) */}
       {/* {!disabled && (

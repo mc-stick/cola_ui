@@ -40,35 +40,20 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 mx-4">
+    <div  className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div id="modaltk" className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 mx-4">
         {/* Título */}
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
           Ingrese su número de ticket
         </h2>
 
-        {/* Selector y ticket */}
-        <div className="flex flex-col sm:flex-row items-center gap-6 mb-6 w-full max-w-md mx-auto">
-          {/* Slider de servicios */}
-          <div className="w-full sm:w-1/2 flex flex-col items-center">
-            <SliderUpDown
-              servicios={servicios}
-              onSelect={(s) => seleccionarServicio(s)}
-            />
-          </div>
-
-          {/* Ticket seleccionado */}
-          <div className="w-full sm:w-1/2 flex flex-col items-center bg-white rounded-2xl shadow-lg p-4 transition-transform transform hover:scale-105">
-            <p className="text-gray-600 mb-2 text-sm font-medium">
-              Número de ticket
-            </p>
-            <input
-              type="text"
-              value={servicio ? `${servicio}-${numero}` : ""}
-              readOnly
-              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-center font-bold text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-            />
-          </div>
+        {/* 🔥 Slider + Ticket integrado */}
+        <div className="w-full mb-8">
+          <SliderUpDown
+            servicios={servicios}
+            numero={numero}
+            onSelect={(s) => seleccionarServicio(s)}
+          />
         </div>
 
         {/* Keypad */}
@@ -78,7 +63,7 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
             onAdd={agregarNumero}
             onDelete={borrarNumero}
             onConfirm={confirmar}
-            confirmDisabled={numero.length === 3 ? false : true}
+            confirmDisabled={numero.length !== 3}
           />
         </div>
 
@@ -89,16 +74,6 @@ export default function LlamarTicketModal({ open, onClose, onConfirm }) {
             className="px-6 py-2 rounded-xl bg-gray-400 text-white font-semibold hover:bg-gray-500 transition-colors">
             Cancelar
           </button>
-          {/* <button
-            onClick={confirmar}
-            disabled={numero.length !== 3}
-            className={`px-6 py-2 rounded-xl font-semibold transition-colors ${
-              numero.length === 3
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}>
-            Confirmar
-          </button> */}
         </div>
       </div>
     </div>

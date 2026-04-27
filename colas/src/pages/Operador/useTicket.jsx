@@ -140,8 +140,9 @@ export const useTickets = (usuario, serviciosAsignados) => {
 
   const handleAtendido = async () => {
     if (!ticketActual) return;
+    if (!confirm("¿Confirmar acción?")) return;
     try {
-      await API.finalizarTicket(ticketActual.id, usuario.id, 4, comentario);
+      await API.finalizarTicket({id:ticketActual.id, usuarioId:usuario.id, estado:4, comentario});
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);
@@ -156,7 +157,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
     if (!confirm("¿Confirmar que el cliente NO se presentó?")) return;
 
     try {
-      await API.finalizarTicket(ticketActual.id, usuario.id, 5, comentario);
+      await API.finalizarTicket({id:ticketActual.id, usuarioId:usuario.id, estado:5, comentario, nopresento:true});
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);
@@ -170,7 +171,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
     if (!confirm("¿Esta seguro de realizar esta acción?")) return;
 
     try {
-      await API.finalizarTicket(ticketActual.id, usuario.id, 7, comentario);
+      await API.finalizarTicket({id:ticketActual.id, usuarioId:usuario.id, estado:7, comentario});
       setTicketActual(null);
       setComentario("");
       setTimeout(() => cargarTickets(), 500);

@@ -59,9 +59,9 @@ export default function NumericKeypad({
       </div>
       
       {/* Tip de seguridad/ayuda opcional abajo del teclado para rellenar espacio si sobra */}
-      <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-6">
+      {/* <p className="text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-6">
         Sistema de identificación seguro
-      </p>
+      </p> */}
     </div>
   );
 }

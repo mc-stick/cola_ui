@@ -9,22 +9,22 @@ export const getTutorialDeAcceso = (onGuide) => [
       onClick: ()=>onGuide(1)
     }
   },
-  {
-    title: "Crea un ticket usando tu Teléfono",
-    content: ["Te ayudaré a crear un ticket usando tu número de teléfono, enviaremos un SMS a tu teléfono."],
-    action: {
-      label: "Crear un ticket",
-      onClick: ()=>onGuide(2) 
-    }
-  },
-  {
-    title: "Crea un ticket usando tu ID",
-    content: ["Te ayudaré a crear un ticket usando su ID de CAMPUS."],
-    action: {
-      label: "Crear un ticket",
-      onClick: ()=>onGuide(3) 
-    }
-  },
+  // {
+  //   title: "Crea un ticket usando tu Teléfono",
+  //   content: ["Te ayudaré a crear un ticket usando tu número de teléfono, enviaremos un SMS a tu teléfono."],
+  //   action: {
+  //     label: "Crear un ticket",
+  //     onClick: ()=>onGuide(2) 
+  //   }
+  // },
+  // {
+  //   title: "Crea un ticket usando tu ID",
+  //   content: ["Te ayudaré a crear un ticket usando su ID de CAMPUS."],
+  //   action: {
+  //     label: "Crear un ticket",
+  //     onClick: ()=>onGuide(3) 
+  //   }
+  // },
   {
     title: "Crea un ticket como Invitado",
     content: ["Te ayudaré a crear un ticket como Invitado si no estás registrado con un ID de CAMPUS."],

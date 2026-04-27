@@ -1,4 +1,6 @@
 import { Check, Smartphone, Receipt, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { useEffect } from "react";
 // import TicketQR from "../common/Qr"; // Descomenta si vas a usarlo
 
 export default function PasoConfirmacion({ 
@@ -9,14 +11,24 @@ export default function PasoConfirmacion({
   identificacion, 
   setIdentificacion 
 }) {
+  const [contador, setContador] = useState(10);
 
   const fin = () => {
     setIdentificacion("");
     onReset();
   };
 
+  useEffect(() => {
+    if (contador === 0) {
+      fin();
+      return;
+    }
+    const timer = setTimeout(() => setContador((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [contador]);
+
   return (
-    <div className="w-full max-w-2xl mx-auto animate-fade-in pb-5">
+    <div id="ticket-creado" className="w-full max-w-2xl mx-auto animate-fade-in pb-5">
       <div className="bg-white rounded-[3rem] overflow-hidden">
         {/* Encabezado de Éxito */}
         <div className="flex bg-emerald-500 p-5 text-center relative">
@@ -85,6 +97,7 @@ export default function PasoConfirmacion({
           </button>
         </div>
       </div>
+      
 
     </div>
   );

@@ -192,8 +192,8 @@ function MediosSection({
                             );
                           }
                         }}
-                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-xl transition-colors flex items-center justify-center">
-                        <Eye className="w-4 h-4" />
+                        className="flex-1 text-[10px] font-black uppercase italic bg-slate-100 hover:bg-slate-300 text-slate-600 p-2 rounded-xl transition-colors flex items-center justify-center">
+                        <Eye className="w-4 h-4 mr-1" />  ver
                       </button>
                       <button
                         onClick={() =>

@@ -67,7 +67,7 @@ export default function PasoSeleccionDep({
   return (
     <div className="w-full max-w-5xl mx-auto animate-fade-in">
       {show ? (
-        <div id="table-service" className="flex flex-col items-center">
+        <div id="table-dep" className="flex flex-col items-center">
           {/* Header de Bienvenida */}
           <div className="text-center mb-10">
             <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest mb-4">
