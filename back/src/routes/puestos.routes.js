@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,89 +11,89 @@ const router = express.Router();
  * GET /api/puestos
  * Obtener todos los puestos activos
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM puestos WHERE activo = TRUE ORDER BY id'
     );
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo puestos:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch positions', error);
   }
-});
+}));
 
 /**
  * POST /api/puestos
  * Crear un nuevo puesto
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
+  const { numero, nombre } = req.body;
+
+  const validation = validateRequired(req.body, ['nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
+  const nombreStr = nombre != null ? nombre.toString().trim() : '';
+
+  if (!nombreStr) {
+    return sendError(res, 'VALIDATION_ERROR', 'Position name cannot be empty');
+  }
+
   try {
-    const { numero, nombre } = req.body;
-
-    const nombreStr = nombre != null ? nombre.toString().trim() : '';
-
-    if (!nombreStr) {
-      return res.status(400).json({
-        error: 'nombre no puede estar vacío'
-      });
-    }
-
     const [existentes] = await pool.query(
       'SELECT * FROM puestos WHERE nombre = ?',
       [nombreStr]
     );
 
     if (existentes.length > 0) {
-      return res.status(400).json({
-        error: 'Ya existe un puesto con el mismo nombre'
-      });
+      return sendError(res, 'DUPLICATE_ENTRY', 'A position with this name already exists');
     }
 
     const [result] = await pool.query(
-      'INSERT INTO puestos ( nombre) VALUES (?)',
+      'INSERT INTO puestos (nombre) VALUES (?)',
       [nombreStr]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 4,
+      accion: 'CREAR PUESTO',
       modulo: 'Puestos',
-      detalles: `Nombre: ${nombreStr}, ID: ${result.insertId}`,
-      req
+      detalles: `Nombre: ${nombreStr}, ID: ${result.insertId}`
     });
 
-    res.json({ id: result.insertId, success: true });
+    sendSuccess(res, { id: result.insertId, success: true }, 201);
     
-
   } catch (error) {
-    console.error('Error creando puesto:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to create position', error);
   }
-});
+}));
 
 /**
  * PUT /api/puestos/:id
  * Actualizar un puesto existente
  */
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { numero, nombre, activo } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid position ID');
+  }
+
+  const validation = validateRequired(req.body, ['nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
-    const { id } = req.params;
-    const { numero, nombre, activo } = req.body;
-
-    console.log(numero, nombre, activo, "puestos -----------------")
-
     const [existentes] = await pool.query(
       'SELECT * FROM puestos WHERE (nombre = ?) AND id != ?',
       [nombre, id]
     );
 
-    console.log(existentes,"existente")
-
     if (existentes.length > 0) {
-      return res.status(400).json({
-        error: 'Ya existe otro puesto con el mismo nombre'
-      });
+      return sendError(res, 'DUPLICATE_ENTRY', 'Another position with this name already exists');
     }
 
     await pool.query(
@@ -101,45 +103,46 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 3,
+      accion: 'ACTUALIZAR PUESTO',
       modulo: 'Puestos',
-      detalles: `ID: ${id}, Nombre: ${nombre}`,
-      req
+      detalles: `ID: ${id}, Nombre: ${nombre}`
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
 
   } catch (error) {
-    console.error('Error actualizando puesto:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update position', error);
   }
-});
+}));
 
 /**
  * DELETE /api/puestos/:id/switch
  * Alternar el estado activo/inactivo de un puesto
  */
-router.delete('/:id/switch', authenticateToken, async (req, res) => {
+router.delete('/:id/switch', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid position ID');
+  }
+
   try {
-    const puestoId = req.params.id;
     const [rows] = await pool.query(
       'SELECT puesto_active, nombre FROM puestos WHERE id = ?',
-      [puestoId]
+      [id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Puesto no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'Position not found');
     }
 
     const [usuariosAsignados] = await pool.query(
       'SELECT COUNT(*) AS total FROM usuarios WHERE puesto_id = ?',
-      [puestoId]
+      [id]
     );
 
     if (usuariosAsignados[0].total > 0) {
-      return res.status(400).json({
-        error: 'No se puede desactivar el puesto porque tiene usuarios asignados'
-      });
+      return sendError(res, 'CONFLICT', 'Cannot deactivate position - it has assigned users');
     }
 
     const nuevoValor = !rows[0].puesto_active;
@@ -147,23 +150,21 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
 
     await pool.query(
       'UPDATE puestos SET puesto_active = ? WHERE id = ?',
-      [nuevoValor, puestoId]
+      [nuevoValor, id]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion:  3,
+      accion: nuevoValor ? 'ACTIVAR PUESTO' : 'DESACTIVAR PUESTO',
       modulo: 'Puestos',
-      detalles: `ID: ${puestoId}, NOMBRE: ${name}`,
-      req
+      detalles: `ID: ${id}, Nombre: ${name}`
     });
 
-    res.json({ success: true, puesto_active: nuevoValor });
+    sendSuccess(res, { success: true, puesto_active: nuevoValor });
 
   } catch (error) {
-    console.error('Error modificando puesto:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update position status', error);
   }
-});
+}));
 
 module.exports = router;

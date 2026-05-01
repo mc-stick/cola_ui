@@ -1,5 +1,7 @@
 const express = require('express');
 const { pool } = require('../config/database');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -7,7 +9,7 @@ const router = express.Router();
  * GET /api/auditoria
  * Obtener registros de auditoría con filtros opcionales
  */
-router.get('/auditoria', async (req, res) => {
+router.get('/auditoria', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin, usuario_id } = req.query;
     let query = `
@@ -31,27 +33,23 @@ router.get('/auditoria', async (req, res) => {
       query += ' AND id_user = ? ';
       params.push(usuario_id);
     }
-    console.log("first, ",fecha_fin, fecha_inicio)
 
     query += ' ORDER BY id DESC';
 
     const [rows] = await pool.query(query, params);
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo auditoría:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch audit records', error);
   }
-});
+}));
 
 /**
  * GET /api/historial
  * Obtener historial de tickets con filtros opcionales
  */
-router.get('/historial', async (req, res) => {
+router.get('/historial', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin, servicio_id, estado, operador } = req.query;
-   
-   
     
     let query = `
       SELECT * FROM vista_tickets WHERE 1=1
@@ -67,7 +65,6 @@ router.get('/historial', async (req, res) => {
     if (fecha_fin && estado!="1") {
       query += ' AND finalizado_at <= ?';
       params.push(fecha_fin+"T23:59:56.000Z");
-      console.log('fecha fin history',fecha_fin)
     }
     
     if (servicio_id) {
@@ -79,46 +76,34 @@ router.get('/historial', async (req, res) => {
       query += ' AND estado = ?';
       params.push(estado);
     }
-
-    // if (operador) {
-    //   query += ' AND t.usuario_id = ?';
-    //   params.push(operador);
-    // }
     
     query += ' ORDER BY id DESC LIMIT 100';
     const [rows] = await pool.query(query, params);
-    console.log('params', params)
     
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo historial:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch ticket history', error);
   }
-});
+}));
 
-
-router.get('/historial/:id', async (req, res) => {
+router.get('/historial/:id', asyncHandler(async (req, res) => {
   try {
     const  id  = req.params.id;
    
-    
-
     let query = `
       SELECT * FROM vista_ticket_detail WHERE Identificador= ?
     `;
     
     const params = [id];
     
-    
     query += ' ORDER BY Identificador DESC LIMIT 50';
     
     const [rows] = await pool.query(query, params);
     
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo historial:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch ticket details', error);
   }
-});
+}));
 
 module.exports = router;

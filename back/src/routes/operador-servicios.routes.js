@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,9 +11,13 @@ const router = express.Router();
  * GET /api/operadores/:usuario_id/servicios
  * Obtener servicios asignados a un operador
  */
-router.get('/operadores/:usuario_id/servicios', async (req, res) => {
+router.get('/operadores/:usuario_id/servicios', asyncHandler(async (req, res) => {
   try {
     const { usuario_id } = req.params;
+    
+    if (!isValidId(usuario_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid operator ID');
+    }
     
     const [rows] = await pool.query(
       `SELECT s.*, 
@@ -27,20 +33,23 @@ router.get('/operadores/:usuario_id/servicios', async (req, res) => {
       [usuario_id]
     );
     
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo servicios del operador:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch operator services', error);
   }
-});
+}));
 
 /**
  * POST /api/operadores/:usuario_id/servicios/:servicio_id
  * Asignar un servicio a un operador
  */
-router.post('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
+router.post('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { usuario_id, servicio_id } = req.params;
+    
+    if (!isValidId(usuario_id) || !isValidId(servicio_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid operator or service ID');
+    }
     
     await pool.query(
       `INSERT INTO operador_servicios (usuario_id, servicio_id) 
@@ -53,24 +62,26 @@ router.post('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken,
       usuarioId: req.user.id,
       accion: 'ASIGNAR SERVICIO A OPERADOR',
       modulo: 'Operadores-Servicios',
-      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`,
-      req
+      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error asignando servicio:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to assign service to operator', error);
   }
-});
+}));
 
 /**
  * DELETE /api/operadores/:usuario_id/servicios/:servicio_id
  * Desasignar un servicio de un operador
  */
-router.delete('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
+router.delete('/operadores/:usuario_id/servicios/:servicio_id', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { usuario_id, servicio_id } = req.params;
+    
+    if (!isValidId(usuario_id) || !isValidId(servicio_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid operator or service ID');
+    }
     
     await pool.query(
       'DELETE FROM operador_servicios WHERE usuario_id = ? AND servicio_id = ?',
@@ -81,22 +92,20 @@ router.delete('/operadores/:usuario_id/servicios/:servicio_id', authenticateToke
       usuarioId: req.user.id,
       accion: 'DESASIGNAR SERVICIO DE OPERADOR',
       modulo: 'Operadores-Servicios',
-      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`,
-      req
+      detalles: `Operador ID: ${usuario_id}, Servicio ID: ${servicio_id}`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error desasignando servicio:', error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to unassign service from operator', error);
   }
-});
+}));
 
 /**
  * GET /api/operadores-servicios
  * Obtener todos los operadores con sus servicios asignados
  */
-router.get('/operadores-servicios', async (req, res) => {
+router.get('/operadores-servicios', asyncHandler(async (req, res) => {
   try {    
     const [operadores] = await pool.query(
       `SELECT DISTINCT
@@ -122,11 +131,10 @@ ORDER BY u.rol;`
       operador.servicios = servicios;
     }
     
-    res.json(operadores);
+    sendSuccess(res, operadores);
   } catch (error) {
-    console.error('Error obteniendo operadores con servicios:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch operators with services', error);
   }
-});
+}));
 
 module.exports = router;

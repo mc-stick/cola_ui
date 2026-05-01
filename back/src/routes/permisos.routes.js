@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,7 +11,7 @@ const router = express.Router();
  * GET /api/usuarios/permisos/todos
  * Obtener todos los administradores con sus permisos
  */
-router.get('/permisos/todos', async (req, res) => {
+router.get('/permisos/todos', asyncHandler(async (req, res) => {
   try {
     const [admins] = await pool.query(`
       SELECT DISTINCT
@@ -33,21 +35,24 @@ ORDER BY u.rol;
       admin.permisos = permisos;
     }
 
-    res.json(admins);
+    sendSuccess(res, admins);
 
   } catch (error) {
-    console.error('Error obteniendo admins con permisos:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch admins with permissions', error);
   }
-});
+}));
 
 /**
  * GET /api/usuarios/:id/permisos
  * Obtener permisos de un usuario específico
  */
-router.get('/:id/permisos', async (req, res) => {
+router.get('/:id/permisos', asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!isValidId(id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
+    }
 
     const [rows] = await pool.query(`
       SELECT p.id
@@ -56,21 +61,25 @@ router.get('/:id/permisos', async (req, res) => {
       WHERE up.usuario_id = ? AND up.activo = 1
     `, [id]);
 
-    res.json(rows.map(r => r.id));
+    sendSuccess(res, rows.map(r => r.id));
   } catch (error) {
-    console.error('Error obteniendo permisos:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch user permissions', error);
   }
-});
+}));
 
 /**
  * POST /api/usuarios/permisos
  * Asignar un permiso a un usuario
  */
-router.post('/permisos', authenticateToken, async (req, res) => {
-  try {
-    const { usuario_id, permiso_id } = req.body;
+router.post('/permisos', authenticateToken, asyncHandler(async (req, res) => {
+  const { usuario_id, permiso_id } = req.body;
 
+  const validation = validateRequired(req.body, ['usuario_id', 'permiso_id']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
+  try {
     const [result] = await pool.query(`
       INSERT INTO usuarios_permisos (usuario_id, permiso_id, activo)
       VALUES (?, ?, 1)
@@ -80,35 +89,36 @@ router.post('/permisos', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'ASIGNAR PERMISO',
       modulo: 'Permisos',
-      detalles: `Usuario ID: ${usuario_id}, Permiso ID: ${permiso_id}`,
-      req
+      detalles: `Usuario ID: ${usuario_id}, Permiso ID: ${permiso_id}`
     });
 
-    res.status(201).json({
+    sendSuccess(res, {
       id: result.insertId,
       usuario_id,
       permiso_id,
       activo: 1
-    });
+    }, 201);
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Permiso ya asignado al usuario' });
+      return sendError(res, 'DUPLICATE_ENTRY', 'Permission already assigned to user');
     }
-
-    console.error('Error asignando permiso:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to assign permission', error);
   }
-});
+}));
 
 /**
  * PUT /api/usuarios/:usuarioId/permisos/:permisoId
  * Actualizar el estado de un permiso de usuario
  */
-router.put('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res) => {
-  try {
-    const { usuarioId, permisoId } = req.params;
-    const { activo } = req.body;
+router.put('/:usuarioId/permisos/:permisoId', authenticateToken, asyncHandler(async (req, res) => {
+  const { usuarioId, permisoId } = req.params;
+  const { activo } = req.body;
 
+  if (!isValidId(usuarioId) || !isValidId(permisoId)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user or permission ID');
+  }
+
+  try {
     const [rows] = await pool.query(
       `SELECT 1 FROM usuarios_permisos
        WHERE usuario_id = ? AND permiso_id = ?`,
@@ -126,11 +136,10 @@ router.put('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res
         usuarioId: req.user.id,
         accion: 'CREAR Y ACTIVAR PERMISO',
         modulo: 'Permisos',
-        detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
-        req
+        detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`
       });
 
-      return res.json({ message: 'Permiso creado y activado' });
+      return sendSuccess(res, { message: 'Permission created and activated' }, 201);
     }
 
     await pool.query(
@@ -144,26 +153,28 @@ router.put('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res
       usuarioId: req.user.id,
       accion: activo ? 'ACTIVAR PERMISO' : 'DESACTIVAR PERMISO',
       modulo: 'Permisos',
-      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
-      req
+      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`
     });
 
-    res.json({ message: 'Permiso actualizado' });
+    sendSuccess(res, { message: 'Permission updated' });
 
   } catch (error) {
-    console.error('Error gestionando permiso:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to manage permission', error);
   }
-});
+}));
 
 /**
  * DELETE /api/usuarios/:usuarioId/permisos/:permisoId
  * Remover un permiso de un usuario
  */
-router.delete('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, res) => {
-  try {
-    const { usuarioId, permisoId } = req.params;
+router.delete('/:usuarioId/permisos/:permisoId', authenticateToken, asyncHandler(async (req, res) => {
+  const { usuarioId, permisoId } = req.params;
 
+  if (!isValidId(usuarioId) || !isValidId(permisoId)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user or permission ID');
+  }
+
+  try {
     const [result] = await pool.query(`
       UPDATE usuarios_permisos
       SET activo = 0
@@ -171,22 +182,20 @@ router.delete('/:usuarioId/permisos/:permisoId', authenticateToken, async (req, 
     `, [usuarioId, permisoId]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Permiso no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'Permission not found');
     }
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 3,
+      accion: 'REMOVER PERMISO',
       modulo: 'Permisos',
-      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`,
-      req
+      detalles: `Usuario ID: ${usuarioId}, Permiso ID: ${permisoId}`
     });
 
-    res.json({ message: 'Permiso removido del usuario' });
+    sendSuccess(res, { message: 'Permission removed from user' });
   } catch (error) {
-    console.error('Error removiendo permiso:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to remove permission', error);
   }
-});
+}));
 
 module.exports = router;

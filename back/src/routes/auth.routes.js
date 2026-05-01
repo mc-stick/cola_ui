@@ -5,6 +5,8 @@ const ldap = require("ldapjs");
 const { pool } = require("../config/database");
 const { registrarAuditoria } = require("../utils/auditoria");
 const { authenticateToken, JWT_SECRET } = require("../middleware/auth");
+const { sendError, sendSuccess, asyncHandler } = require("../utils/errorHandler");
+const { validateRequired } = require("../utils/validator");
 
 require("dotenv").config();
 
@@ -17,17 +19,13 @@ function autenticarLDAP(username, password) {
   
   return new Promise((resolve, reject) => {
     const client = ldap.createClient({
-      url: ldapUrl,
-      //     ,
-      // tlsOptions: {
-      //   rejectUnauthorized: false // solo para pruebas
-      // }
+      url: ldapUrl
     });
     const serviceUser = process.env.LDAP_BIND_USER;
     const servicePass = process.env.LDAP_BIND_PASSWORD;
 
     client.on("error", (err) => {
-      console.error("Error de conexión:", err);
+      console.error("LDAP connection error:", err);
     });
 
     client.bind(serviceUser, servicePass, (err) => {
@@ -35,7 +33,7 @@ function autenticarLDAP(username, password) {
         client.unbind();
         return reject({
           type: "LDAP_CONN",
-          message: "Error conectando a LDAP",
+          message: "Error connecting to LDAP",
         });
       }
 
@@ -52,14 +50,13 @@ function autenticarLDAP(username, password) {
           "employeeID",
         ],
       };
-console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,dc=com'))
 
-      client.search(baseDN || 'dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => { //modificar y agregar basedn en el string y eliminar string
+      client.search(baseDN || 'dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => {
         if (err) {
           client.unbind();
           return reject({
             type: "LDAP_SEARCH",
-            message: "Error buscando usuario LDAP",
+            message: "Error searching user in LDAP",
           });
         }
 
@@ -76,7 +73,6 @@ console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,
               });
 
               userData.memberOf = grupos;
-              console.log(grupos)
 
               if (grupos.includes("admin-cola")) {
                 userData.rol = "admin";
@@ -92,13 +88,11 @@ console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,
             userData[attr.type] =
               attr.values.length === 1 ? attr.values[0] : attr.values;
           });
-
-          console.log(userData, "user data ldap");
         });
 
         res.on("error", () => {
           client.unbind();
-          reject({ type: "LDAP_RESPONSE", message: "Error respuesta LDAP" });
+          reject({ type: "LDAP_RESPONSE", message: "Error in LDAP response" });
         });
 
         res.on("end", () => {
@@ -134,22 +128,22 @@ function ValidarLDAP(username) {
         client.unbind();
         return reject({
           type: "LDAP_CONN",
-          message: "Error",
+          message: "Error connecting to LDAP",
         });
       }
-      console.log("pass");
+
       const opts = {
         filter: `(employeeID=${username})`,
         scope: "sub",
         attributes: ["dn", "cn", "displayName", "employeeID"],
       };
 
-      client.search(basedn || "dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
+      client.search(baseDN || "dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
         if (err) {
           client.unbind();
           return reject({
             type: "LDAP_SEARCH",
-            message: "Error",
+            message: "Error searching user",
           });
         }
 
@@ -167,7 +161,7 @@ function ValidarLDAP(username) {
 
         res.on("error", () => {
           client.unbind();
-          reject({ type: "LDAP_RESPONSE", message: "Error" });
+          reject({ type: "LDAP_RESPONSE", message: "Error in LDAP response" });
         });
 
         res.on("end", () => {
@@ -177,7 +171,6 @@ function ValidarLDAP(username) {
             return reject({ type: "NOT_IN_LDAP" });
           }
 
-          // Ya no validamos contraseña
           resolve(userData);
         });
       });
@@ -185,27 +178,19 @@ function ValidarLDAP(username) {
   });
 }
 
-router.post("/verificar", async (req, res) => {
+router.post("/verificar", asyncHandler(async (req, res) => {
+  const { username } = req.body;
+
+  const validation = validateRequired(req.body, ['username']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
-    const { username } = req.body;
-
-    // Validación básica
-    if (!username) {
-      return res.status(400).json({
-        ok: false,
-        message: "El ID es requerido",
-      });
-    }
-
-    console.log("Validando: ", username);
-
     const usuario = await ValidarLDAP(username);
 
     if (!usuario) {
-      return res.status(404).json({
-        ok: false,
-        message: "Usuario no encontrado en LDAP",
-      });
+      return sendError(res, 'NOT_FOUND', 'User not found in LDAP');
     }
 
     await pool.query(
@@ -216,40 +201,32 @@ router.post("/verificar", async (req, res) => {
       [usuario.employeeID, usuario.cn || usuario.displayName],
     );
 
-    return res.status(200).json({
+    return sendSuccess(res, {
       ok: true,
-      message: "Usuario encontrado",
+      message: "User found",
       data: usuario,
-    });
+    }, 200);
     
   } catch (error) {
-    console.error("Error en /verificar:", error);
-
-    return res.status(500).json({
-      ok: false,
-      message: "Error interno del servidor",
-    });
+    sendError(res, 'LDAP_ERROR', 'Failed to verify user', error);
   }
-});
+}));
 
-router.post("/login", async (req, res) => {
+router.post("/login", asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    // 1️⃣ Autenticación SOLO con LDAP
-    // console.log("ldapuser")
-    const ldapUser = await autenticarLDAP(username, password);
-    console.log("ldapuser", ldapUser);
+  const validation = validateRequired(req.body, ['username', 'password']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
 
-    // let ldapUser = {
-    //   displayName: username,
-    // };
+  try {
+    const ldapUser = await autenticarLDAP(username, password);
 
     if (!ldapUser) {
-      return res.status(401).json({ error: "Credenciales inválidass" });
+      return sendError(res, 'AUTHENTICATION_FAILED', 'Invalid credentials');
     }
 
-    // Normalizamos datos LDAP
     const userData = {
       username,
       nombre: ldapUser.displayName || ldapUser.cn,
@@ -259,17 +236,6 @@ router.post("/login", async (req, res) => {
       user_active: true,
     };
 
-    console.log(username);
-
-    // const userData = {
-    //   username,
-    //   nombre: username==='wluciano'? "12345678":"87654321",
-    //   rol: username==='juan' || username==='maria' ? "operador" : "admin",
-    //   activo: true
-    // };
-    // console.log(userData,"data user -------------")
-
-    // 2️⃣ Verificar si existe en DB
     const [rows] = await pool.query(
       `SELECT * FROM usuarios WHERE username = ?`,
       [username],
@@ -277,19 +243,14 @@ router.post("/login", async (req, res) => {
 
     let userDB;
     let role = userData.rol == "admin" ? 1 : 2;
-    console.log("loginnnnn");
+    
     if (!rows.length) {
-      // 3️⃣ No existe → CREARLO
-
-      console.log("creando user:", userData);
       await pool.query(`INSERT INTO persona(id_persona, name) VALUES (?,?)`, [
         userData.employeeID,
         userData.nombre,
       ]);
-      console.log("logged");
 
       if (userData.rol) {
-        console.log("logged2");
         const [insertResult] = await pool.query(
           `INSERT INTO usuarios 
         (username, id_persona, rol,  activo)
@@ -303,40 +264,28 @@ router.post("/login", async (req, res) => {
         };
       }
     } else {
-      // 4️⃣ Existe → ACTUALIZAR si cambió algo (ej: rol)
       const existingUser = rows[0];
-      console.log(
-        "actualizando user3",
-        userData.nombre,
-        role,
-        existingUser.id,
-        userData.employeeID,
-      );
+      
       await pool.query(
         `UPDATE usuarios 
          SET id_persona = ?, rol = ?
          WHERE id = ?`,
         [userData.employeeID, role, existingUser.id],
       );
-      console.log("actualizando user pass");
 
       userDB = {
         ...existingUser,
         ...userData,
       };
 
-      if (existingUser.active) {
-        return res.status(401).json({
-          error: "Usuario inactivo c.",
-        });
+      if (!existingUser.activo) {
+        return sendError(res, 'USER_INACTIVE', 'User account is inactive');
       }
     }
 
     if (userDB.rol !== "admin") {
       if (userDB.puesto_id == null || userDB.puesto_id === "") {
-        return res.status(401).json({
-          error: "No tienes un puesto asignado.",
-        });
+        return sendError(res, 'NO_POSITION', 'User has no position assigned');
       }
     }
 
@@ -355,10 +304,9 @@ router.post("/login", async (req, res) => {
       accion: "INICIO DE SESIÓN",
       modulo: "Autenticación",
       detalles: `Usuario "${userDB.nombre}" inicia sesión`,
-      req,
     });
 
-    return res.json({
+    return sendSuccess(res, {
       success: true,
       user: userDB,
       token,
@@ -366,20 +314,17 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     await registrarAuditoria({
       usuarioId: username,
-      accion: `LOGIN FALLIDO CON: ${username}`,
-      detalles: "Error en autenticación",
-      req,
+      accion: `LOGIN FALLIDO`,
+      detalles: `Error en autenticación para usuario: ${username}`,
     });
 
     console.error("LDAP error:", error.message);
 
-    return res.status(401).json({
-      error: "Credenciales inválidas",
-    });
+    sendError(res, 'AUTHENTICATION_FAILED', 'Invalid credentials', error);
   }
-});
+}));
 
-router.get("/me", authenticateToken, async (req, res) => {
+router.get("/me", authenticateToken, asyncHandler(async (req, res) => {
   try {
     const [usuarios] = await pool.query(
       `SELECT u.id, u.username, u.rol, u.puesto_id,
@@ -387,28 +332,25 @@ router.get("/me", authenticateToken, async (req, res) => {
               per.name as nombre
        FROM usuarios u
        LEFT JOIN puestos p ON u.puesto_id = p.id
-       left JOIN persona per on u.id_persona = per.id_persona
-       WHERE u.id = ?  and u.activo =1`,
+       LEFT JOIN persona per ON u.id_persona = per.id_persona
+       WHERE u.id = ? AND u.activo = 1`,
       [req.user.id],
     );
 
-    console.log("userdb", usuarios[0]);
-
     if (usuarios.length === 0) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return sendError(res, 'NOT_FOUND', 'User not found');
     }
 
     if (usuarios[0].rol !== 1) {
       if (usuarios[0].puesto_id === null) {
-        return res.status(404).json({ error: "Puesto no asignado" });
+        return sendError(res, 'NO_POSITION', 'User has no position assigned');
       }
     }
 
-    res.json(usuarios[0]);
+    sendSuccess(res, usuarios[0]);
   } catch (error) {
-    console.error("Error obteniendo usuario:", error);
-    res.status(500).json({ error: "error del servidor" });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch user information', error);
   }
-});
+}));
 
 module.exports = router;

@@ -3,205 +3,242 @@ const bcrypt = require('bcrypt');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId, isValidLength } = require('../utils/validator');
 
 const router = express.Router();
 
+const SALT_ROUNDS = 10;
+
 /**
  * GET /api/usuarios
- * Obtener todos los usuarios activos
+ * Obtener todos los usuarios
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT
-    u.*, 
-    per.name AS nombre,
-    p.nombre AS puesto_nombre
-FROM usuarios u
-LEFT JOIN puestos p ON u.puesto_id = p.id
-LEFT JOIN persona per ON u.id_persona = per.id_persona
-WHERE 1=1
-ORDER BY u.rol`
+        u.id,
+        u.username,
+        u.rol,
+        u.activo,
+        u.tel,
+        u.puesto_id,
+        per.name AS nombre,
+        p.nombre AS puesto_nombre
+      FROM usuarios u
+      LEFT JOIN puestos p ON u.puesto_id = p.id
+      LEFT JOIN persona per ON u.id_persona = per.id_persona
+      ORDER BY u.rol`
     );
+
+    // Remove passwords
     rows.forEach(user => delete user.password);
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo usuarios:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch users', error);
   }
-});
+}));
 
 /**
  * GET /api/usuarios/:user
- * Obtener teléfono de un usuario específico
+ * Obtener información de un usuario por username
  */
-router.get('/:user', async (req, res) => {
+router.get('/:user', asyncHandler(async (req, res) => {
+  const { user } = req.params;
+
+  if (!user) {
+    return sendError(res, 'VALIDATION_ERROR', 'Username is required');
+  }
+
   try {
     const [rows] = await pool.query(
-      'SELECT tel FROM usuarios WHERE activo = TRUE AND username=?',
-      [req.params.user]
+      'SELECT id, username, tel, rol FROM usuarios WHERE activo = TRUE AND username = ?',
+      [user]
     );
 
-    const usuario = rows[0];
-    res.json(usuario);
+    if (rows.length === 0) {
+      return sendError(res, 'NOT_FOUND', 'User not found');
+    }
+
+    sendSuccess(res, rows[0]);
   } catch (error) {
-    console.error('Error', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch user', error);
   }
-});
+}));
 
 /**
  * POST /api/usuarios
  * Crear un nuevo usuario
  */
-router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const { nombre, username, password, rol, puesto_id, tel } = req.body;
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
+  const { username, password, rol, puesto_id, tel } = req.body;
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const validation = validateRequired(req.body, ['username', 'password', 'rol']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
+  if (!isValidLength(password, 6, 100)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Password must be between 6 and 100 characters');
+  }
+
+  if (!isValidLength(username, 3, 50)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Username must be between 3 and 50 characters');
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     const [result] = await pool.query(
-      'INSERT INTO usuarios (nombre, username, password, rol, puesto_id, tel) VALUES (?, ?, ?, ?, ?, ?)',
-      [nombre, username, hashedPassword, rol, puesto_id || null, tel]
+      'INSERT INTO usuarios (username, password, rol, puesto_id, tel, activo) VALUES (?, ?, ?, ?, ?, 1)',
+      [username, hashedPassword, rol, puesto_id || null, tel || null]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'CREAR USUARIO',
+      accion: 1,
       modulo: 'Usuarios',
-      detalles: `Usuario: ${username}, Rol: ${rol}, ID: ${result.insertId}`,
-      req
-    });
-    
-    res.json({ id: result.insertId, success: true });
-
-  } catch (error) {
-    console.error('Error creando usuario:', error);
-    res.status(500).json({ error: "error del servidor"});
-  }
-});
-
-/**
- * PUT /api/usuarios/:user/change
- * Cambiar contraseña de un usuario
- */
-router.put('/:user/change', authenticateToken, async (req, res) => {
-  try {
-    const { user } = req.params;
-    const { password } = req.body;
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
-    await pool.query(
-      'UPDATE usuarios SET password = ? WHERE username = ?',
-      [hashedPassword, user]
-    );
-
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: 'CAMBIAR CONTRASEÑA',
-      modulo: 'Usuarios',
-      detalles: `Usuario: ${user}`,
-      req
+      detalles: `Usuario creado: ${username} (Rol: ${rol})`,
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { id: result.insertId, success: true }, 201);
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: "error del servidor"});
+    if (error.code === 'ER_DUP_ENTRY') {
+      return sendError(res, 'CONFLICT', 'Username already exists');
+    }
+    sendError(res, 'DATABASE_ERROR', 'Failed to create user', error);
   }
-});
+}));
 
 /**
  * PUT /api/usuarios/:id
- * Actualizar un usuario completo
+ * Actualizar un usuario
  */
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { username, rol, puesto_id, activo } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
+  }
+
   try {
-    const { id } = req.params;
-    const {  username,  rol, puesto_id, activo } = req.body;
-    console.log(req.body,"actualizar user adm-op")
-
-     const userId = req.params.id;
-
     const [rows] = await pool.query(
       'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
-      [userId]
+      [id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'User not found');
     }
 
     const usuario = rows[0];
 
-    if (usuario.rol === 1 && usuario.activo) {
+    // Prevent disabling last active admin
+    if (usuario.rol === 1 && usuario.activo && !activo) {
       const [admins] = await pool.query(
         'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1'
       );
 
       if (admins[0].total <= 1) {
-        return res.status(400).json({
-          error: 'No se puede modificar el último administrador activo'
-        });
+        return sendError(res, 'CONFLICT', 'Cannot disable the last active administrator');
       }
     }
-    
 
-    
-    let query = 'UPDATE usuarios SET username = ?, rol = ?, puesto_id = ?, activo = ?';
-    let params = [ username, rol, (rol==2?puesto_id:null), activo];
-    
-    
-    query += ' WHERE id = ?';
-    params.push(id);
-    
-    await pool.query(query, params);
+    await pool.query(
+      'UPDATE usuarios SET username = ?, rol = ?, puesto_id = ?, activo = ? WHERE id = ?',
+      [username, rol, rol === 2 ? puesto_id : null, activo, id]
+    );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'ACTUALIZAR USUARIO',
+      accion: 2,
       modulo: 'Usuarios',
-      detalles: `ID: ${id}, Usuario: ${username}, Rol: ${rol}`,
-      req
+      detalles: `Usuario actualizado: ${username} (Rol: ${rol})`,
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error actualizando usuario:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update user', error);
   }
-});
+}));
+
+/**
+ * PUT /api/usuarios/:id/change
+ * Cambiar contraseña de un usuario
+ */
+router.put('/:id/change', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
+  }
+
+  if (!password) {
+    return sendError(res, 'VALIDATION_ERROR', 'Password is required');
+  }
+
+  if (!isValidLength(password, 6, 100)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Password must be between 6 and 100 characters');
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    await pool.query(
+      'UPDATE usuarios SET password = ? WHERE id = ?',
+      [hashedPassword, id]
+    );
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 3,
+      modulo: 'Usuarios',
+      detalles: `Contraseña cambiada para usuario ID: ${id}`,
+    });
+
+    sendSuccess(res, { success: true });
+  } catch (error) {
+    sendError(res, 'DATABASE_ERROR', 'Failed to change password', error);
+  }
+}));
 
 /**
  * PUT /api/usuarios/:id/operator
- * Actualizar datos específicos de operador (contraseña y teléfono)
+ * Actualizar datos específicos de operador
  */
-router.put('/:id/operator', authenticateToken, async (req, res) => {
+router.put('/:id/operator', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { pass, tel } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
+  }
+
+  const updates = [];
+  const params = [];
+
+  if (pass) {
+    if (!isValidLength(pass, 6, 100)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Password must be between 6 and 100 characters');
+    }
+    const hashedPassword = bcrypt.hashSync(pass, SALT_ROUNDS);
+    updates.push('password = ?');
+    params.push(hashedPassword);
+  }
+
+  if (tel) {
+    updates.push('tel = ?');
+    params.push(tel);
+  }
+
+  if (updates.length === 0) {
+    return sendError(res, 'VALIDATION_ERROR', 'No fields to update');
+  }
+
   try {
-    const { id } = req.params;
-    const { pass, tel } = req.body;
-    const updates = [];
-    const params = [];
-
-    if (pass) {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(pass, saltRounds);
-      updates.push('password = ?');
-      params.push(hashedPassword);
-    }
-
-    if (tel) {
-      updates.push('tel = ?');
-      params.push(tel);
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ error: 'No hay campos para actualizar' });
-    }
-
     const query = `UPDATE usuarios SET ${updates.join(', ')} WHERE id = ?`;
     params.push(id);
 
@@ -209,119 +246,114 @@ router.put('/:id/operator', authenticateToken, async (req, res) => {
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'ACTUALIZAR DATOS OPERADOR',
+      accion: 2,
       modulo: 'Usuarios',
-      detalles: `ID: ${id}, Campos: ${updates.join(', ')}`,
-      req
+      detalles: `Datos de operador actualizados: ID ${id}`,
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error actualizando usuario:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update operator', error);
   }
-});
+}));
 
 /**
  * DELETE /api/usuarios/:id
- * Desactivar un usuario (soft delete)
+ * Desactivar un usuario
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.params.id;
+router.delete('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    const [rows] = await pool.query(
-      'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
-      [userId]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    const usuario = rows[0];
-
-    if (usuario.rol === 1 && usuario.activo) {
-      const [admins] = await pool.query(
-        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1 '
-      );
-
-      if (admins[0].total <= 1) {
-        return res.status(400).json({
-          error: 'No se puede eliminar el último administrador activo'
-        });
-      }
-    }
-
-    await pool.query(
-      'UPDATE usuarios SET activo = 0 WHERE id = ?',
-      [userId]
-    );
-
-    await registrarAuditoria({
-      usuarioId: req.user.id,
-      accion: 'ELIMINAR USUARIO',
-      modulo: 'Usuarios',
-      detalles: `ID: ${userId}, Usuario: ${usuario.username}`,
-      req
-    });
-
-    res.json({ success: true });
-
-  } catch (error) {
-    console.error('Error eliminando usuario:', error);
-    res.status(500).json({ error: "error del servidor"});
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
   }
-});
 
-/**
- * DELETE /api/usuarios/:id/switch
- * Alternar el estado activo/inactivo de un usuario
- */
-router.delete('/:id/switch', authenticateToken, async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
-      [req.params.id]
+      [id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'usuario no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'User not found');
     }
 
     const usuario = rows[0];
-    const nuevoValor = !rows[0].activo;
 
+    // Prevent deactivating last active admin
     if (usuario.rol === 1 && usuario.activo) {
       const [admins] = await pool.query(
         'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1'
       );
 
-      if (admins[0].total <= 1 && nuevoValor === false) {
-        return res.status(400).json({
-          error: 'No se puede deshabilitar el último administrador activo'
-        });
+      if (admins[0].total <= 1) {
+        return sendError(res, 'CONFLICT', 'Cannot deactivate the last active administrator');
       }
     }
-    
-    await pool.query(
-      'UPDATE usuarios SET activo = ? WHERE id = ?',
-      [nuevoValor, req.params.id]
+
+    await pool.query('UPDATE usuarios SET activo = 0 WHERE id = ?', [id]);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: 5,
+      modulo: 'Usuarios',
+      detalles: `Usuario desactivado: ${usuario.username}`,
+    });
+
+    sendSuccess(res, { success: true });
+  } catch (error) {
+    sendError(res, 'DATABASE_ERROR', 'Failed to deactivate user', error);
+  }
+}));
+
+/**
+ * DELETE /api/usuarios/:id/switch
+ * Alternar el estado activo/inactivo de un usuario
+ */
+router.delete('/:id/switch', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid user ID');
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, rol, activo, username FROM usuarios WHERE id = ?',
+      [id]
     );
 
-    // await registrarAuditoria({
-    //   usuarioId: req.user.id,
-    //   accion: nuevoValor ? 'ACTIVAR USUARIO' : 'DESACTIVAR USUARIO',
-    //   modulo: 'Usuarios',
-    //   detalles: `ID: ${req.params.id}, Usuario: ${usuario.username}`,
-    //   req
-    // });
+    if (rows.length === 0) {
+      return sendError(res, 'NOT_FOUND', 'User not found');
+    }
 
-    res.json({ success: true, activo: nuevoValor });
+    const usuario = rows[0];
+    const nuevoValor = !usuario.activo;
+
+    // Prevent deactivating last active admin
+    if (usuario.rol === 1 && usuario.activo && !nuevoValor) {
+      const [admins] = await pool.query(
+        'SELECT COUNT(*) AS total FROM usuarios WHERE rol = 1 AND activo = 1'
+      );
+
+      if (admins[0].total <= 1) {
+        return sendError(res, 'CONFLICT', 'Cannot disable the last active administrator');
+      }
+    }
+
+    await pool.query('UPDATE usuarios SET activo = ? WHERE id = ?', [nuevoValor, id]);
+
+    await registrarAuditoria({
+      usuarioId: req.user.id,
+      accion: nuevoValor ? 4 : 5,
+      modulo: 'Usuarios',
+      detalles: `Usuario ${nuevoValor ? 'activado' : 'desactivado'}: ${usuario.username}`,
+    });
+
+    sendSuccess(res, { success: true, activo: nuevoValor });
   } catch (error) {
-    console.error('Error modificando usuario:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to toggle user status', error);
   }
-});
+}));
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const express = require('express');
 const { pool } = require('../config/database');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
  * GET /api/estadisticas
  * Estadísticas del día
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const { fecha } = req.query;
     const fechaConsulta = fecha || new Date().toISOString().split('T')[0];
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
       [fechaConsulta]
     );
 
-    res.json(stats[0] || {
+    sendSuccess(res, stats[0] || {
       fecha: fechaConsulta,
       total_tickets: 0,
       atendidos: 0,
@@ -26,16 +27,15 @@ router.get('/', async (req, res) => {
       tiempo_promedio: 0
     });
   } catch (error) {
-    console.error('Error obteniendo estadísticas:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch daily statistics', error);
   }
-});
+}));
 
 /**
  * GET /api/estadisticas/rango
  * Estadísticas por rango de fechas
  */
-router.get('/rango', async (req, res) => {
+router.get('/rango', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -47,7 +47,6 @@ router.get('/rango', async (req, res) => {
     SUM(CASE WHEN t.estado = 4 THEN 1 ELSE 0 END) AS atendidos,
     SUM(CASE WHEN t.estado = 5 THEN 1 ELSE 0 END) AS no_presentados,
     SUM(CASE WHEN t.estado = 1 THEN 1 ELSE 0 END) AS en_espera,
-    -- Subconsulta filtrada por el mismo rango de fechas
     (SELECT COUNT(DISTINCT sub.ticket_id) 
      FROM ticket_detail sub
      JOIN tickets t_sub ON sub.ticket_id = t_sub.id
@@ -64,19 +63,17 @@ FROM tickets t
 WHERE DATE(t.created_at) BETWEEN ? AND ?
       `;
     const [rows] = await pool.query(query, [inicio, fin,inicio, fin]);
-    console.log(rows,'renge')
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo estadísticas por rango:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch statistics by date range', error);
   }
-});
+}));
 
 /**
  * GET /api/estadisticas/servicios
  * Estadísticas por servicio
  */
-router.get('/servicios', async (req, res) => {
+router.get('/servicios', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -104,18 +101,17 @@ router.get('/servicios', async (req, res) => {
     `;
 
     const [rows] = await pool.query(query, [inicio, fin]);
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo estadísticas por servicio:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch statistics by service', error);
   }
-});
+}));
 
 /**
  * GET /api/estadisticas/operadores
  * Estadísticas por operador incluyendo evaluaciones
  */
-router.get('/operadores', async (req, res) => {
+router.get('/operadores', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -125,7 +121,7 @@ router.get('/operadores', async (req, res) => {
 SELECT 
     u.id, 
     u.username, 
-    per.name AS nombre, -- Campo agregado de la tabla persona
+    per.name AS nombre,
     p.numero AS puesto_numero,
     COUNT(t.id) AS total_tickets,
     SUM(CASE WHEN t.estado = 4 THEN 1 ELSE 0 END) AS atendidos,
@@ -139,7 +135,6 @@ SELECT
     COALESCE(ev.evaluados, 0) AS evaluados,
     COALESCE(ev.promedio_evaluacion, 0) AS promedio_evaluacion
 FROM usuarios u
--- Unimos la tabla persona usando id_persona
 INNER JOIN persona per ON u.id_persona = per.id_persona 
 LEFT JOIN puestos p ON u.puesto_id = p.id
 LEFT JOIN tickets t ON u.id = t.usuario_id 
@@ -159,7 +154,7 @@ WHERE u.rol = 2 AND u.activo = TRUE
 GROUP BY 
     u.id, 
     u.username, 
-    per.name, -- Agregado al GROUP BY
+    per.name,
     p.numero, 
     ev.evaluados, 
     ev.promedio_evaluacion
@@ -167,17 +162,16 @@ ORDER BY total_tickets DESC;
     `;
 
     const [rows] = await pool.query(query, [inicio, fin,inicio, fin]);
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo estadísticas por operador:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch statistics by operator', error);
   }
-});
+}));
 
 /**
  * GET /api/estadisticas/horas
  */
-router.get('/horas', async (req, res) => {
+router.get('/horas', asyncHandler(async (req, res) => {
   try {
     const { fecha } = req.query;
     const fechaConsulta = fecha || new Date().toISOString().split('T')[0];
@@ -195,17 +189,16 @@ router.get('/horas', async (req, res) => {
     `;
 
     const [rows] = await pool.query(query, [fechaConsulta]);
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo estadísticas por hora:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch hourly statistics', error);
   }
-});
+}));
 
 /**
  * GET /api/estadisticas/resumen
  */
-router.get('/resumen', async (req, res) => {
+router.get('/resumen', asyncHandler(async (req, res) => {
   try {
     const { fecha_inicio, fecha_fin } = req.query;
     const inicio = fecha_inicio || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -225,7 +218,7 @@ router.get('/resumen', async (req, res) => {
     `;
 
     const [rows] = await pool.query(query, [inicio, fin]);
-    res.json(rows[0] || {
+    sendSuccess(res, rows[0] || {
       total_tickets: 0,
       atendidos: 0,
       no_presentados: 0,
@@ -235,9 +228,8 @@ router.get('/resumen', async (req, res) => {
       transferidos: 0
     });
   } catch (error) {
-    console.error('Error obteniendo resumen general:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch summary statistics', error);
   }
-});
+}));
 
 module.exports = router;

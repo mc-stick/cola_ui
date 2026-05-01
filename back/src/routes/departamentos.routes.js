@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,26 +11,30 @@ const router = express.Router();
  * GET /api/departamento
  * Obtener todos los departamento activos
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM departamento'
     );
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo departamento:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch departments', error);
   }
-});
+}));
 
 /**
  * POST /api/departamento
- * Crear un nuevo servicio
+ * Crear un nuevo departamento
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
+  const { nombre } = req.body;
+
+  const validation = validateRequired(req.body, ['nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
-    const { nombre} = req.body;
-   
     const [result] = await pool.query(
       'INSERT INTO departamento (nombre) VALUES (?)',
       [nombre]
@@ -38,31 +44,42 @@ router.post('/', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'CREAR DEPARTAMENTO',
       modulo: 'Departamento',
-      detalles: `Nombre: ${nombre}`,
-      req
+      detalles: `Nombre: ${nombre}`
     });
     
-    res.json({ id: result.insertId, success: true });
+    sendSuccess(res, { id: result.insertId, success: true }, 201);
   } catch (error) {
-    console.error('Error creando dep:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to create department', error);
   }
-});
+}));
 
 /**
  * PUT /api/departamento/:id
- * Actualizar un servicio existente
+ * Actualizar un departamento existente
  */
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { nombre } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid department ID');
+  }
+
+  const validation = validateRequired(req.body, ['nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
- 
-    const { id } = req.params;
-    const { nombre } = req.body;
-   console.log("uptade departamento",id,nombre)
     const [rows] = await pool.query(
       'SELECT * FROM departamento WHERE id = ?',
       [id]
     );
+
+    if (rows.length === 0) {
+      return sendError(res, 'NOT_FOUND', 'Department not found');
+    }
+
     const anterior = rows[0].nombre;
     
     await pool.query(
@@ -72,83 +89,52 @@ router.put('/:id', authenticateToken, async (req, res) => {
     
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: `ACTUALIZAR Departamento ID: ${id}`,
+      accion: `ACTUALIZAR DEPARTAMENTO ID: ${id}`,
       modulo: 'departamento',
-      detalles: ` Cambió "${anterior}" por "${nombre}"`,
-      req
+      detalles: `Cambió "${anterior}" por "${nombre}"`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error actualizando departamento:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update department', error);
   }
-});
+}));
 
 /**
  * DELETE /api/departamento/:id
- * Desactivar un servicio (soft delete)
+ * Eliminar un departamento
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
-  try {
+router.delete('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-     const [rows] = await pool.query(
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid department ID');
+  }
+
+  try {
+    const [rows] = await pool.query(
       'SELECT * FROM departamento WHERE id = ?',
-      [req.params.id]
+      [id]
     );
+
+    if (rows.length === 0) {
+      return sendError(res, 'NOT_FOUND', 'Department not found');
+    }
+
     const anterior = rows[0].nombre;
-    await pool.query('Delete from departamento WHERE id = ?', Number([req.params.id]));
+    await pool.query('DELETE FROM departamento WHERE id = ?', [id]);
     
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'ELIMINAR Departamento',
+      accion: 'ELIMINAR DEPARTAMENTO',
       modulo: 'departamento',
-      detalles: `ID: ${req.params.id}, Nombre : ${anterior}`,
-      req
+      detalles: `ID: ${id}, Nombre: ${anterior}`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error eliminando Departamento:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to delete department', error);
   }
-});
-
-/**
- * DELETE /api/departamento/:id/switch
- * Alternar el estado activo/inactivo de un servicio
- */
-// router.delete('/:id/switch', authenticateToken, async (req, res) => {
-//   try {
-//     const [rows] = await pool.query(
-//       'SELECT service_active FROM departamento WHERE id = ?',
-//       [req.params.id]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(404).json({ error: 'Servicio no encontrado' });
-//     }
-
-//     const nuevoValor = !rows[0].service_active;
-
-//     await pool.query(
-//       'UPDATE departamento SET service_active = ? WHERE id = ?',
-//       [nuevoValor, req.params.id]
-//     );
-
-//     await registrarAuditoria({
-//       usuarioId: req.user.id,
-//       accion: nuevoValor ? 'ACTIVAR SERVICIO' : 'DESACTIVAR SERVICIO',
-//       modulo: 'departamento',
-//       detalles: `ID: ${req.params.id}`,
-//       req
-//     });
-
-//     res.json({ success: true, service_active: nuevoValor });
-//   } catch (error) {
-//     console.error('Error modificando servicio:', error);
-//     res.status(500).json({ error: "error del servidor"});
-//   }
-// });
+}));
 
 module.exports = router;

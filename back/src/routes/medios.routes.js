@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,7 +11,7 @@ const router = express.Router();
  * GET /api/medios
  * Obtener todos los medios activos
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT 
@@ -19,45 +21,41 @@ router.get('/', async (req, res) => {
        ORDER BY id, created_at`
     );
     
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo medios:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch media', error);
   }
-});
+}));
 
 /**
  * POST /api/medios
  * Crear un nuevo medio (imagen o video)
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
+  const { tipo, url, nombre, orden, es_local, tamano_kb } = req.body;
+  
+  const validation = validateRequired(req.body, ['tipo', 'url', 'nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
+  if (!['imagen', 'video'].includes(tipo)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid type. Must be: imagen or video');
+  }
+
+  const urlLength = url.length;
+  const isBase64 = url.startsWith('data:');
+
+  if (isBase64) {
+    if (tipo === 'imagen' && !url.startsWith('data:image/')) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid Base64 for image');
+    }
+    if (tipo === 'video' && !url.startsWith('data:video/')) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid Base64 for video');
+    }
+  }
+
   try {
-    const { tipo, url, nombre, orden, es_local, tamano_kb } = req.body;
-    
-    if (!tipo || !url || !nombre) {
-      return res.status(400).json({ 
-        error: 'Faltan campos requeridos: tipo, url, nombre' 
-      });
-    }
-
-    if (!['imagen', 'video'].includes(tipo)) {
-      return res.status(400).json({ 
-        error: 'Tipo inválido. Debe ser: imagen o video' 
-      });
-    }
-
-    const urlLength = url.length;
-    const isBase64 = url.startsWith('data:');
-
-    if (isBase64) {
-      if (tipo === 'imagen' && !url.startsWith('data:image/')) {
-        return res.status(400).json({ error: 'Base64 inválido para imagen' });
-      }
-      if (tipo === 'video' && !url.startsWith('data:video/')) {
-        return res.status(400).json({ error: 'Base64 inválido para video' });
-      }
-    }
-
     const connection = await pool.getConnection();
     
     await connection.query("SET GLOBAL max_allowed_packet=1073741824");
@@ -70,8 +68,6 @@ router.post('/', authenticateToken, async (req, res) => {
         tipo, 
         url, 
         nombre, 
-        orden || 0,
-        es_local || isBase64,
         tamano_kb || Math.round(urlLength / 1024)
       ]
     );
@@ -80,40 +76,41 @@ router.post('/', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'CREAR MEDIO',
       modulo: 'Medios',
-      detalles: `Tipo: ${tipo}, Nombre: ${nombre}, ID: ${result.insertId}`,
-      req
+      detalles: `Tipo: ${tipo}, Nombre: ${nombre}, ID: ${result.insertId}`
     });
     
-    res.json({ 
+    sendSuccess(res, { 
       id: result.insertId, 
       success: true,
       message: 'Medio guardado correctamente'
-    });
+    }, 201);
     
   } catch (error) {
-    console.error('Error guardando medio:', error);
-    
     if (error.code === 'ER_DATA_TOO_LONG') {
-      return res.status(400).json({ 
-        error: 'El archivo es demasiado grande para almacenar' 
-      });
+      return sendError(res, 'VALIDATION_ERROR', 'File is too large to store');
     }
-    
-    res.status(500).json({ 
-      error: 'Error al guardar medio: ' + error.message 
-    });
+    sendError(res, 'DATABASE_ERROR', 'Failed to save media', error);
   }
-});
+}));
 
 /**
  * PUT /api/medios/:id
  * Actualizar un medio existente
  */
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { tipo, url, nombre, orden, activo, es_local, tamano_kb } = req.body;
+  
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid media ID');
+  }
+
+  const validation = validateRequired(req.body, ['tipo', 'url', 'nombre']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
-    const { id } = req.params;
-    const { tipo, url, nombre, orden, activo, es_local, tamano_kb } = req.body;
-    
     await pool.query(
       `UPDATE medios 
        SET tipo = ?, url = ?, nombre = ?, activo = ?, tamano_kb = ?
@@ -125,25 +122,27 @@ router.put('/:id', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'ACTUALIZAR MEDIO',
       modulo: 'Medios',
-      detalles: `ID: ${id}, Nombre: ${nombre}`,
-      req
+      detalles: `ID: ${id}, Nombre: ${nombre}`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error actualizando medio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update media', error);
   }
-});
+}));
 
 /**
  * DELETE /api/medios/:id
  * Desactivar un medio (soft delete)
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid media ID');
+  }
+
   try {
-    const { id } = req.params;
-    
     await pool.query(
       'UPDATE medios SET activo = FALSE WHERE id = ?',
       [id]
@@ -153,30 +152,34 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       usuarioId: req.user.id,
       accion: 'ELIMINAR MEDIO',
       modulo: 'Medios',
-      detalles: `ID: ${id}`,
-      req
+      detalles: `ID: ${id}`
     });
     
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error eliminando medio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to delete media', error);
   }
-});
+}));
 
 /**
  * DELETE /api/medios/:id/switch
  * Alternar el estado activo/inactivo de un medio en pantalla
  */
-router.delete('/:id/switch', authenticateToken, async (req, res) => {
+router.delete('/:id/switch', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid media ID');
+  }
+
   try {
     const [rows] = await pool.query(
       'SELECT medio_active, tipo, nombre FROM medios WHERE id = ?',
-      [req.params.id]
+      [id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'medio no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'Media not found');
     }
 
     const nuevoValor = !rows[0].medio_active;
@@ -185,22 +188,20 @@ router.delete('/:id/switch', authenticateToken, async (req, res) => {
 
     await pool.query(
       'UPDATE medios SET medio_active = ? WHERE id = ?',
-      [nuevoValor, req.params.id]
+      [nuevoValor, id]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
       accion: nuevoValor ? `ACTIVAR MEDIO` : `DESACTIVAR MEDIO`,
       modulo: 'Medios',
-      detalles: nuevoValor ? `Activó ${tipo} ${nombre} en pantalla` : `Desactivó ${tipo} ${nombre} en pantalla`,
-      req
+      detalles: nuevoValor ? `Activó ${tipo} ${nombre} en pantalla` : `Desactivó ${tipo} ${nombre} en pantalla`
     });
 
-    res.json({ success: true, medio_active: nuevoValor });
+    sendSuccess(res, { success: true, medio_active: nuevoValor });
   } catch (error) {
-    console.error('Error modificando medio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update media status', error);
   }
-});
+}));
 
 module.exports = router;

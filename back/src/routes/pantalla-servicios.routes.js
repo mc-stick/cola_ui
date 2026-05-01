@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,9 +11,13 @@ const router = express.Router();
  * GET /api/pantallas-servicios/:pantalla_id/servicios
  * Obtener todos los servicios indicando cuáles están asignados a la pantalla
  */
-router.get('/:pantalla_id/servicios', async (req, res) => {
+router.get('/:pantalla_id/servicios', asyncHandler(async (req, res) => {
   try {
     const { pantalla_id } = req.params;
+
+    if (!isValidId(pantalla_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid screen ID');
+    }
 
     const [rows] = await pool.query(
       `SELECT s.*,
@@ -25,20 +31,23 @@ router.get('/:pantalla_id/servicios', async (req, res) => {
       [pantalla_id]
     );
 
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo servicios de pantalla:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch screen services', error);
   }
-});
+}));
 
 /**
  * GET /api/pantallas-servicios/token/:token/tickets
  * Obtener tickets llamados filtrados por token de pantalla
  */
-router.get('/token/:token/tickets', async (req, res) => {
+router.get('/token/:token/tickets', asyncHandler(async (req, res) => {
   try {
     const { token } = req.params;
+
+    if (!token || token.trim() === '') {
+      return sendError(res, 'VALIDATION_ERROR', 'Token is required');
+    }
 
     const [rows] = await pool.query(
       `SELECT t.*
@@ -52,25 +61,28 @@ router.get('/token/:token/tickets', async (req, res) => {
       [token]
     );
 
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo tickets por pantalla:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch tickets by screen', error);
   }
-});
+}));
 
 /**
  * POST /api/pantallas-servicios/:pantalla_id/servicios/:servicio_id
  * Asignar un servicio a una pantalla
  */
-router.post('/:pantalla_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
+router.post('/:pantalla_id/servicios/:servicio_id', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { pantalla_id, servicio_id } = req.params;
+
+    if (!isValidId(pantalla_id) || !isValidId(servicio_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid screen or service ID');
+    }
 
     await pool.query(
       `INSERT INTO servicio_pantallas (pantalla_id, servicio_id)
        VALUES (?, ?)
-       ON DUPLICATE KEY UPDATE pantalla_id = pantalla_id`, // no-op si ya existe
+       ON DUPLICATE KEY UPDATE pantalla_id = pantalla_id`,
       [pantalla_id, servicio_id]
     );
 
@@ -78,24 +90,26 @@ router.post('/:pantalla_id/servicios/:servicio_id', authenticateToken, async (re
       usuarioId: req.user.id,
       accion: 'ASIGNAR SERVICIO A PANTALLA',
       modulo: 'Pantallas-Servicios',
-      detalles: `Pantalla ID: ${pantalla_id}, Servicio ID: ${servicio_id}`,
-      req
+      detalles: `Pantalla ID: ${pantalla_id}, Servicio ID: ${servicio_id}`
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error asignando servicio a pantalla:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to assign service to screen', error);
   }
-});
+}));
 
 /**
  * DELETE /api/pantallas-servicios/:pantalla_id/servicios/:servicio_id
  * Desasignar un servicio de una pantalla
  */
-router.delete('/:pantalla_id/servicios/:servicio_id', authenticateToken, async (req, res) => {
+router.delete('/:pantalla_id/servicios/:servicio_id', authenticateToken, asyncHandler(async (req, res) => {
   try {
     const { pantalla_id, servicio_id } = req.params;
+
+    if (!isValidId(pantalla_id) || !isValidId(servicio_id)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Invalid screen or service ID');
+    }
 
     await pool.query(
       'DELETE FROM servicio_pantallas WHERE pantalla_id = ? AND servicio_id = ?',
@@ -106,22 +120,20 @@ router.delete('/:pantalla_id/servicios/:servicio_id', authenticateToken, async (
       usuarioId: req.user.id,
       accion: 'DESASIGNAR SERVICIO DE PANTALLA',
       modulo: 'Pantallas-Servicios',
-      detalles: `Pantalla ID: ${pantalla_id}, Servicio ID: ${servicio_id}`,
-      req
+      detalles: `Pantalla ID: ${pantalla_id}, Servicio ID: ${servicio_id}`
     });
 
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    console.error('Error desasignando servicio de pantalla:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to unassign service from screen', error);
   }
-});
+}));
 
 /**
  * GET /api/pantallas-servicios
  * Obtener todas las pantallas con sus servicios asignados
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [pantallas] = await pool.query('SELECT * FROM pantallas ORDER BY nombre');
 
@@ -137,11 +149,10 @@ router.get('/', async (req, res) => {
       pantalla.servicios = servicios;
     }
 
-    res.json(pantallas);
+    sendSuccess(res, pantallas);
   } catch (error) {
-    console.error('Error obteniendo pantallas con servicios:', error);
-    res.status(500).json({ error: 'error del servidor' });
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch screens with services', error);
   }
-});
+}));
 
 module.exports = router;

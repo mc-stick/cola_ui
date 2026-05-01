@@ -2,6 +2,8 @@ const express = require('express');
 const { pool } = require('../config/database');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { authenticateToken } = require('../middleware/auth');
+const { sendError, sendSuccess, asyncHandler } = require('../utils/errorHandler');
+const { validateRequired, isValidId } = require('../utils/validator');
 
 const router = express.Router();
 
@@ -9,139 +11,156 @@ const router = express.Router();
  * GET /api/servicios
  * Obtener todos los servicios activos
  */
-router.get('/', async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT * FROM servicios WHERE activo = TRUE ORDER BY nombre'
     );
-    res.json(rows);
+    sendSuccess(res, rows);
   } catch (error) {
-    console.error('Error obteniendo servicios:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to fetch services', error);
   }
-});
+}));
 
 /**
  * POST /api/servicios
  * Crear un nuevo servicio
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, asyncHandler(async (req, res) => {
+  const { nombre, descripcion, codigo, color, departamento_id, check } = req.body;
+
+  const validation = validateRequired(req.body, ['nombre', 'codigo']);
+  if (!validation.valid) {
+    return sendError(res, 'VALIDATION_ERROR', `Missing fields: ${validation.missingFields.join(', ')}`);
+  }
+
   try {
-    const { nombre, descripcion, codigo, color,departamento_id, check } = req.body;
-   console.log(req.body,"servicio")
     const [result] = await pool.query(
       'INSERT INTO servicios (nombre, descripcion, codigo, color, departamento, dar_prioridad) VALUES (?, ?, ?, ?, ?, ?)',
-      [nombre, descripcion, codigo, color,departamento_id, check ? 1:0]
+      [nombre, descripcion, codigo, color, departamento_id, check ? 1 : 0]
     );
-    
+
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: 'CREAR SERVICIO',
+      accion: 1,
       modulo: 'Servicios',
-      detalles: `Nombre: ${nombre}, Código: ${codigo}, ID: ${result.insertId}`,
-      req
+      detalles: `Servicio creado: ${nombre} (Código: ${codigo})`,
     });
-    
-    res.json({ id: result.insertId, success: true });
+
+    sendSuccess(res, { id: result.insertId, success: true }, 201);
   } catch (error) {
-    console.error('Error creando servicio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to create service', error);
   }
-});
+}));
 
 /**
  * PUT /api/servicios/:id
  * Actualizar un servicio existente
  */
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { nombre, descripcion, color, departamento_id, activo, check } = req.body;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid service ID');
+  }
+
   try {
-    const { id } = req.params;
-    const { nombre, descripcion, color, departamento_id, activo, check } = req.body;
-console.log( nombre, descripcion, color, departamento_id, activo )
     const [rows] = await pool.query(
-      'SELECT * FROM servicios WHERE id = ?',
+      'SELECT nombre FROM servicios WHERE id = ?',
       [id]
     );
+
+    if (rows.length === 0) {
+      return sendError(res, 'NOT_FOUND', 'Service not found');
+    }
+
     const anterior = rows[0].nombre;
-    
+
     await pool.query(
-      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, departamento = ?, activo = ?, dar_prioridad=? WHERE id = ?',
-      [nombre, descripcion, color, departamento_id, activo, check ? 1:0, id]
+      'UPDATE servicios SET nombre = ?, descripcion = ?, color = ?, departamento = ?, activo = ?, dar_prioridad = ? WHERE id = ?',
+      [nombre, descripcion, color, departamento_id, activo, check ? 1 : 0, id]
     );
-    
+
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: `ACTUALIZAR SERVICIO ID: ${id}`,
+      accion: 2,
       modulo: 'Servicios',
-      detalles: ` Cambió "${anterior}" por "${nombre}"`,
-      req
+      detalles: `Servicio actualizado: "${anterior}" → "${nombre}"`,
     });
-    
-    res.json({ success: true });
+
+    sendSuccess(res, { success: true });
   } catch (error) {
-    //console.error('Error actualizando servicio:', error);
-    //res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to update service', error);
   }
-});
+}));
 
 /**
  * DELETE /api/servicios/:id
  * Desactivar un servicio (soft delete)
  */
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid service ID');
+  }
+
   try {
-    await pool.query('UPDATE servicios SET activo = FALSE WHERE id = ?', [req.params.id]);
-    
+    await pool.query('UPDATE servicios SET activo = FALSE WHERE id = ?', [id]);
+
     await registrarAuditoria({
       usuarioId: req.user.id,
       accion: 5,
       modulo: 'Servicios',
-      detalles: `ID: ${req.params.id}`,
-      req
+      detalles: `Servicio desactivado: ID ${id}`,
     });
-    
-    res.json({ success: true });
+
+    sendSuccess(res, { success: true });
   } catch (error) {
-    //console.error('Error eliminando servicio: hay objetos que dependen del servicio, se recomienda deshabilitarlo.', error);
-    res.status(500).json({ error: "Error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to deactivate service', error);
   }
-});
+}));
 
 /**
  * DELETE /api/servicios/:id/switch
  * Alternar el estado activo/inactivo de un servicio
  */
-router.delete('/:id/switch', authenticateToken, async (req, res) => {
+router.delete('/:id/switch', authenticateToken, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return sendError(res, 'VALIDATION_ERROR', 'Invalid service ID');
+  }
+
   try {
     const [rows] = await pool.query(
       'SELECT service_active FROM servicios WHERE id = ?',
-      [req.params.id]
+      [id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Servicio no encontrado' });
+      return sendError(res, 'NOT_FOUND', 'Service not found');
     }
 
     const nuevoValor = !rows[0].service_active;
 
     await pool.query(
       'UPDATE servicios SET service_active = ? WHERE id = ?',
-      [nuevoValor, req.params.id]
+      [nuevoValor, id]
     );
 
     await registrarAuditoria({
       usuarioId: req.user.id,
-      accion: nuevoValor ? 'ACTIVAR SERVICIO' : 'DESACTIVAR SERVICIO',
+      accion: nuevoValor ? 4 : 5,
       modulo: 'Servicios',
-      detalles: `ID: ${req.params.id}`,
-      req
+      detalles: `Servicio ${nuevoValor ? 'activado' : 'desactivado'}: ID ${id}`,
     });
 
-    res.json({ success: true, service_active: nuevoValor });
+    sendSuccess(res, { success: true, service_active: nuevoValor });
   } catch (error) {
-    console.error('Error modificando servicio:', error);
-    res.status(500).json({ error: "error del servidor"});
+    sendError(res, 'DATABASE_ERROR', 'Failed to toggle service status', error);
   }
-});
+}));
 
 module.exports = router;
