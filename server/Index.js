@@ -21,42 +21,66 @@ function connectToExternalWs() {
   externalWs = new WebSocket(externalWsUrl);
 
   externalWs.on('open', () => {
-    //console.log('Conectado al WebSocket externo');
+    console.log('Conectado al WebSocket externo');
     reconnectAttempts = 0;
   });
 
    externalWs.on('message', (message) => {
-    ////console.log('Mensaje recibido del WebSocket externo:', message);
+    console.log('Mensaje recibido del WebSocket externo:', message);
     try {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage.event === 'print-ticket') {
         imprimirTexto({ logo: process.env.LOGO, description: process.env.DESCRIPTION, turno: parsedMessage.data.ticket, servicio: parsedMessage.data.servicio, footer: "pie de pagina" });
       }
     } catch (error) {
-      //console.error('Error al procesar el mensaje:', error);
+      console.error('Error al procesar el mensaje:', error);
     }
   });
 
   externalWs.on('close', () => {
-    ////console.log('Conexión con WebSocket externo cerrada');
+    console.log('Conexión con WebSocket externo cerrada');
     reconnect();
   });
 
   externalWs.on('error', (error) => {
-    //console.error('Error en WebSocket externo:', error);
+    console.error('Error en WebSocket externo:', error);
     reconnect();
   });
 
   function reconnect() {
     reconnectAttempts++;
     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Máximo 30 segundos de espera
-    ////console.log(`Reintentando conexión en ${delay / 1000} segundos...`);
+    console.log(`Reintentando conexión en ${delay / 1000} segundos...`);
     setTimeout(connectToExternalWs, delay);
   }
 }
 
 connectToExternalWs();
  
+
+app.post('/print', (req, res) => {
+  try {
+    const { ticket, servicio } = req.body;
+
+    if (!ticket || !servicio) {
+      return res.status(400).json({ error: 'Datos incompletos' });
+    }
+
+    imprimirTexto({
+      logo: process.env.LOGO,
+      description: process.env.DESCRIPTION,
+      turno: ticket,
+      servicio: servicio,
+      footer: "pie de pagina"
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al imprimir' });
+  }
+});
+
 // Ruta 404
 app.use((req, res) => {
   res.status(404).json({
@@ -69,11 +93,11 @@ app.use((req, res) => {
 
 // Iniciar el servidor
 app.listen(PORT, async () => {
- // //console.log(`Servidor corriendo en http://localhost:${PORT}`);
+ console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
 // Manejo de cierre del servidor
 process.on('SIGINT', () => {
-  ////console.log('\n Cerrando servidor...');
+  console.log('\n Cerrando servidor...');
   process.exit(0);
 });

@@ -36,6 +36,8 @@ export async function imprimirTexto({
   const url = process.env.URL_EVALUAR;
   let texto = `${url} ${turno.id}`;
 
+  console.log(url,texto)
+
   printer
     .font("a")
     .align("ct")
