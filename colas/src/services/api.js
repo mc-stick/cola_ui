@@ -663,6 +663,32 @@ class API {
     }
   }
 
+  async SyncLdap() {
+    try {
+      const response = await fetch(`${API_URL}/auth/syncldap`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!result.ok) {
+        console.warn(result.message);
+        return null;
+      }
+
+      toast.success("Usuarios sincronizados correctamente");
+
+      return result.data;
+    } catch (error) {
+      toast.error("Error al sincronizar usuarios");
+      console.error("Error al consumir la API:", error);
+      return null;
+    }
+  }
+
   async login(username, password) {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -1458,13 +1484,24 @@ class API {
     }
   }
 
-  async finalizarTicket({id, usuarioId, estado, comentario, nopresento=false}) {
-    console.log("nopresento",nopresento)
+  async finalizarTicket({
+    id,
+    usuarioId,
+    estado,
+    comentario,
+    nopresento = false,
+  }) {
+    console.log("nopresento", nopresento);
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/finalizar`, {
         method: "POST",
         headers: this.getAuthHeaders(),
-        body: JSON.stringify({ usuario_id: usuarioId, estado, comentario, nopresentado:nopresento }),
+        body: JSON.stringify({
+          usuario_id: usuarioId,
+          estado,
+          comentario,
+          nopresentado: nopresento,
+        }),
       });
 
       if (this.handleAuthError(response)) {
@@ -1738,7 +1775,6 @@ class API {
       throw error;
     }
   }
-
 
   async crearPantalla(nombre, token) {
     try {

@@ -14,7 +14,6 @@ const ldapUrl = process.env.LDAP_URL;
 const baseDN = process.env.LDAP_DN;
 
 function autenticarLDAP(username, password) {
-  
   return new Promise((resolve, reject) => {
     const client = ldap.createClient({
       url: ldapUrl,
@@ -52,72 +51,81 @@ function autenticarLDAP(username, password) {
           "employeeID",
         ],
       };
-console.log("firs2t",typeof(baseDN.toLowerCase()), typeof('dc=ldap,dc=pruebaitp,dc=com'))
+      console.log(
+        "firs2t",
+        typeof baseDN.toLowerCase(),
+        typeof "dc=ldap,dc=pruebaitp,dc=com",
+      );
 
-      client.search(baseDN || 'dc=ldap,dc=pruebaitp,dc=com', opts, (err, res) => { //modificar y agregar basedn en el string y eliminar string
-        if (err) {
-          client.unbind();
-          return reject({
-            type: "LDAP_SEARCH",
-            message: "Error buscando usuario LDAP",
-          });
-        }
-
-        let userDN = null;
-        let userData = [];
-
-        res.on("searchEntry", (entry) => {
-          userDN = entry.pojo.objectName;
-          entry.pojo.attributes.forEach((attr) => {
-            if (attr.type === "memberOf") {
-              const grupos = attr.values.map((g) => {
-                const match = g.match(/CN=([^,]+)/);
-                return match ? match[1].toLowerCase() : g.toLowerCase();
-              });
-
-              userData.memberOf = grupos;
-              console.log(grupos)
-
-              if (grupos.includes("admin-cola")) {
-                userData.rol = "admin";
-              } else if (grupos.includes("operador-cola")) {
-                userData.rol = "operador";
-              } else {
-                userData.rol = "usuario-ldap";
-              }
-
-              return;
-            }
-
-            userData[attr.type] =
-              attr.values.length === 1 ? attr.values[0] : attr.values;
-          });
-
-          console.log(userData, "user data ldap");
-        });
-
-        res.on("error", () => {
-          client.unbind();
-          reject({ type: "LDAP_RESPONSE", message: "Error respuesta LDAP" });
-        });
-
-        res.on("end", () => {
-          if (!userDN) {
+      client.search(
+        baseDN || "dc=ldap,dc=pruebaitp,dc=com",
+        opts,
+        (err, res) => {
+          //modificar y agregar basedn en el string y eliminar string
+          if (err) {
             client.unbind();
-            return reject({ type: "NOT_IN_LDAP" });
+            return reject({
+              type: "LDAP_SEARCH",
+              message: "Error buscando usuario LDAP",
+            });
           }
 
-          client.bind(userDN, password, (err) => {
-            client.unbind();
+          let userDN = null;
+          let userData = [];
 
-            if (err) {
-              return reject({ type: "BAD_PASSWORD" });
+          res.on("searchEntry", (entry) => {
+            userDN = entry.pojo.objectName;
+            entry.pojo.attributes.forEach((attr) => {
+              if (attr.type === "memberOf") {
+                const grupos = attr.values.map((g) => {
+                  const match = g.match(/CN=([^,]+)/);
+                  return match ? match[1].toLowerCase() : g.toLowerCase();
+                });
+
+                userData.memberOf = grupos;
+                console.log(grupos);
+
+                if (grupos.includes("admin-cola")) {
+                  userData.rol = "admin";
+                } else if (grupos.includes("operador-cola")) {
+                  userData.rol = "operador";
+                } else {
+                  userData.rol = "usuario-ldap";
+                }
+
+                return;
+              }
+
+              userData[attr.type] =
+                attr.values.length === 1 ? attr.values[0] : attr.values;
+            });
+
+            console.log(userData, "user data ldap");
+          });
+
+          res.on("error", () => {
+            client.unbind();
+            reject({ type: "LDAP_RESPONSE", message: "Error respuesta LDAP" });
+          });
+
+          res.on("end", () => {
+            if (!userDN) {
+              client.unbind();
+              return reject({ type: "NOT_IN_LDAP" });
             }
 
-            resolve(userData);
+            client.bind(userDN, password, (err) => {
+              client.unbind();
+
+              if (err) {
+                return reject({ type: "BAD_PASSWORD" });
+              }
+
+              resolve(userData);
+            });
           });
-        });
-      });
+        },
+      );
     });
   });
 }
@@ -144,43 +152,47 @@ function ValidarLDAP(username) {
         attributes: ["dn", "cn", "displayName", "employeeID"],
       };
 
-      client.search(basedn || "dc=ldap,dc=pruebaitp,dc=com", opts, (err, res) => {
-        if (err) {
-          client.unbind();
-          return reject({
-            type: "LDAP_SEARCH",
-            message: "Error",
-          });
-        }
-
-        let userDN = null;
-        let userData = {};
-
-        res.on("searchEntry", (entry) => {
-          userDN = entry.pojo.objectName;
-
-          entry.pojo.attributes.forEach((attr) => {
-            userData[attr.type] =
-              attr.values.length === 1 ? attr.values[0] : attr.values;
-          });
-        });
-
-        res.on("error", () => {
-          client.unbind();
-          reject({ type: "LDAP_RESPONSE", message: "Error" });
-        });
-
-        res.on("end", () => {
-          client.unbind();
-
-          if (!userDN) {
-            return reject({ type: "NOT_IN_LDAP" });
+      client.search(
+        basedn || "dc=ldap,dc=pruebaitp,dc=com",
+        opts,
+        (err, res) => {
+          if (err) {
+            client.unbind();
+            return reject({
+              type: "LDAP_SEARCH",
+              message: "Error",
+            });
           }
 
-          // Ya no validamos contraseña
-          resolve(userData);
-        });
-      });
+          let userDN = null;
+          let userData = {};
+
+          res.on("searchEntry", (entry) => {
+            userDN = entry.pojo.objectName;
+
+            entry.pojo.attributes.forEach((attr) => {
+              userData[attr.type] =
+                attr.values.length === 1 ? attr.values[0] : attr.values;
+            });
+          });
+
+          res.on("error", () => {
+            client.unbind();
+            reject({ type: "LDAP_RESPONSE", message: "Error" });
+          });
+
+          res.on("end", () => {
+            client.unbind();
+
+            if (!userDN) {
+              return reject({ type: "NOT_IN_LDAP" });
+            }
+
+            // Ya no validamos contraseña
+            resolve(userData);
+          });
+        },
+      );
     });
   });
 }
@@ -221,7 +233,6 @@ router.post("/verificar", async (req, res) => {
       message: "Usuario encontrado",
       data: usuario,
     });
-    
   } catch (error) {
     console.error("Error en /verificar:", error);
 
@@ -408,6 +419,357 @@ router.get("/me", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error obteniendo usuario:", error);
     res.status(500).json({ error: "error del servidor" });
+  }
+});
+
+//VALIDACIONES CON SYCHRONOUS
+
+function SyncLDAP() {
+  return new Promise((resolve, reject) => {
+    const client = ldap.createClient({ url: ldapUrl });
+
+    const serviceUser = process.env.LDAP_BIND_USER;
+    const servicePass = process.env.LDAP_BIND_PASSWORD;
+
+    client.bind(serviceUser, servicePass, (err) => {
+      if (err) {
+        client.unbind();
+        return reject({
+          type: "LDAP_CONN",
+          message: "Error",
+        });
+      }
+
+      const opts = {
+        filter: `(comment=cola)`,
+        scope: "sub",
+        attributes: [
+          "sAMAccountName",
+          "employeeType",
+          "cn",
+          "displayName",
+          "employeeID",
+        ],
+      };
+
+      client.search(
+        //basedn || "dc=ldap,dc=pruebaitp,dc=com",
+        "dc=ldap,dc=pruebaitp,dc=com",
+        opts,
+        (err, res) => {
+          if (err) {
+            client.unbind();
+            return reject({
+              type: "LDAP_SEARCH",
+              message: "Error",
+            });
+          }
+
+          const users = [];
+
+          res.on("searchEntry", (entry) => {
+            const userData = {};
+
+            userData.dn = entry.pojo.objectName;
+
+            entry.pojo.attributes.forEach((attr) => {
+              userData[attr.type] =
+                attr.values.length === 1 ? attr.values[0] : attr.values;
+            });
+
+            users.push(userData);
+          });
+
+          res.on("error", (err) => {
+            client.unbind();
+
+            reject({
+              type: "LDAP_RESPONSE",
+              message: err.message,
+            });
+          });
+
+          res.on("end", () => {
+            client.unbind();
+
+            resolve(users);
+          });
+        },
+      );
+    });
+  });
+}
+
+// router.post("/syncldap", async (req, res) => {
+//   try {
+//     //   const usuario = await SyncLDAP();
+//     //   console.log("LDAPS USERS:", usuario);
+//     //   if (!usuario) {
+//     //     return res.status(404).json({
+//     //       ok: false,
+//     //       message: "Usuario no encontrado en LDAP",
+//     //     });
+//     //   }
+
+//     // //   await pool.query(
+//     // //     `INSERT INTO persona (id_persona, name)
+//     // //  VALUES (?, ?)
+//     // //  ON DUPLICATE KEY UPDATE
+//     // //  name = VALUES(name)`,
+//     // //     [usuario.employeeID, usuario.cn || usuario.displayName],
+//     // //   );
+
+//     //   return res.status(200).json({
+//     //     ok: true,
+//     //     message: "Usuario encontrado",
+//     //     data: usuario,
+//     //   });
+//     const usuarios = await SyncLDAP();
+
+//     console.log("LDAPS USERS:", usuarios);
+
+//     if (!usuarios || usuarios.length === 0) {
+//       return res.status(404).json({
+//         ok: false,
+//         message: "No se encontraron usuarios en LDAP",
+//       });
+//     }
+
+//     for (const usuario of usuarios) {
+//       const emplid = usuario.employeeID;
+//       const nombreLDAP = usuario.cn || usuario.displayName;
+//       const emptype = usuario.employeeType;
+//       const username = usuario.sAMAccountName;
+
+//       if (!emplid) continue;
+
+//       /*
+//        * =========================================
+//        * VALIDAR / CREAR PERSONA
+//        * =========================================
+//        */
+
+//       const [personaRows] = await pool.query(
+//         `SELECT id_persona, name
+//      FROM persona
+//      WHERE id_persona = ?`,
+//         [emplid],
+//       );
+
+//       // No existe -> insertar
+//       if (personaRows.length === 0) {
+//         await pool.query(
+//           `INSERT INTO persona (id_persona, name)
+//        VALUES (?, ?)`,
+//           [emplid, nombreLDAP],
+//         );
+
+//         console.log(`Persona agregada: ${emplid} - ${nombreLDAP}`);
+//       } else {
+//         const personaDB = personaRows[0];
+
+//         // Existe pero nombre diferente -> actualizar
+//         if (personaDB.name !== nombreLDAP) {
+//           await pool.query(
+//             `UPDATE persona
+//          SET name = ?
+//          WHERE id_persona = ?`,
+//             [nombreLDAP, emplid],
+//           );
+
+//           console.log(
+//             `Persona actualizada: ${emplid} | DB: ${personaDB.name} -> LDAP: ${nombreLDAP}`,
+//           );
+//         }
+//       }
+
+//       /*
+//        * =========================================
+//        * VALIDAR / CREAR USUARIO
+//        * =========================================
+//        */
+
+//       const [usuarioRows] = await pool.query(
+//         `SELECT id
+//      FROM usuarios
+//      WHERE id_persona = ?`,
+//         [emplid],
+//       );
+
+//       // Si NO existe en usuarios -> insertar
+//       if (usuarioRows.length === 0) {
+//         await pool.query(
+//           `INSERT INTO usuarios
+//        (id_persona, username, rol, puesto_id, activo, created_at)
+//        VALUES (?, ?, ?, ?, ?, NOW())`,
+//           [
+//             emplid,
+//             username,
+//             1, // rol
+//             null, // puesto_id
+//             1, // activo
+//           ],
+//         );
+
+//         console.log(`Usuario agregado: ${emplid}`);
+//       } else {
+//         console.log(`Usuario ya existe: ${emplid}`);
+//       }
+//     }
+
+//     return res.json({
+//       ok: true,
+//       message: "Sincronización LDAP completada",
+//     });
+//   } catch (error) {
+//     console.error("Error en /syncldap:", error);
+
+//     return res.status(500).json({
+//       ok: false,
+//       message: "Error interno del servidor",
+//     });
+//   }
+// });
+
+router.post("/syncldap", async (req, res) => {
+  try {
+    const usuarios = await SyncLDAP();
+
+    console.log("LDAPS USERS:", usuarios);
+
+    if (!usuarios || usuarios.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No se encontraron usuarios en LDAP",
+      });
+    }
+
+    // CONTADORES
+    let personasCreadas = 0;
+    let personasActualizadas = 0;
+    let usuariosCreados = 0;
+
+    for (const usuario of usuarios) {
+      const emplid = usuario.employeeID;
+      const nombreLDAP = usuario.cn || usuario.displayName;
+      const emptype = usuario.employeeType;
+      const username = usuario.sAMAccountName;
+
+      if (!emplid || !username) continue;
+
+      /*
+       * =========================================
+       * VALIDAR / CREAR PERSONA
+       * =========================================
+       */
+
+      const [personaRows] = await pool.query(
+        `SELECT id_persona, name
+         FROM persona
+         WHERE id_persona = ?`,
+        [emplid],
+      );
+
+      // No existe -> insertar
+      if (personaRows.length === 0) {
+        await pool.query(
+          `INSERT INTO persona (id_persona, name)
+           VALUES (?, ?)`,
+          [emplid, nombreLDAP],
+        );
+
+        personasCreadas++;
+
+        console.log(`Persona agregada: ${emplid} - ${nombreLDAP}`);
+      } else {
+        const personaDB = personaRows[0];
+
+        // Existe pero nombre diferente -> actualizar
+        if (personaDB.name !== nombreLDAP) {
+          await pool.query(
+            `UPDATE persona
+             SET name = ?
+             WHERE id_persona = ?`,
+            [nombreLDAP, emplid],
+          );
+
+          personasActualizadas++;
+
+          console.log(
+            `Persona actualizada: ${emplid} | DB: ${personaDB.name} -> LDAP: ${nombreLDAP}`,
+          );
+        }
+      }
+
+      /*
+       * =========================================
+       * VALIDAR / CREAR USUARIO
+       * =========================================
+       */
+
+      const [usuarioRows] = await pool.query(
+        `SELECT id, username
+   FROM usuarios
+   WHERE id_persona = ?`,
+        [emplid],
+      );
+
+      // Si NO existe en usuarios -> insertar
+      if (usuarioRows.length === 0) {
+        await pool.query(
+          `INSERT INTO usuarios
+     (id_persona, username, rol, puesto_id, activo, created_at)
+     VALUES (?, ?, ?, ?, ?, NOW())`,
+          [
+            emplid,
+            username,
+            2, // rol
+            null, // puesto_id
+            1, // activo
+          ],
+        );
+
+        usuariosCreados++;
+
+        console.log(`Usuario agregado: ${emplid}`);
+      } else {
+        const usuarioDB = usuarioRows[0];
+
+        // Existe pero username diferente -> actualizar
+        if (usuarioDB.username !== username) {
+          await pool.query(
+            `UPDATE usuarios
+       SET username = ?
+       WHERE id_persona = ?`,
+            [username, emplid],
+          );
+
+          console.log(
+            `Username actualizado: ${emplid} | DB: ${usuarioDB.username} -> LDAP: ${username}`,
+          );
+        } else {
+          console.log(`Usuario ya existe y coincide: ${emplid}`);
+        }
+      }
+    }
+
+    return res.json({
+      ok: true,
+      message: "Sincronización LDAP completada",
+      data: {
+        totalLDAP: usuarios.length,
+        personasCreadas,
+        personasActualizadas,
+        usuariosCreados,
+      },
+    });
+  } catch (error) {
+    console.error("Error en /syncldap:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "Error interno del servidor",
+    });
   }
 });
 
