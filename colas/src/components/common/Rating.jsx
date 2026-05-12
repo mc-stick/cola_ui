@@ -418,34 +418,34 @@ return (
           {/* Línea decorativa superior: más delgada en móvil */}
           <div className="absolute top-0 left-0 w-full h-2 md:h-3" style={{ backgroundColor: colors.primaryBlue }}></div>
 
-          {/* Padding reducido en móvil (p-6) y amplio en desktop (p-10) */}
-          <div className="p-6 md:p-10">
+          {/* Padding reducido en móvil y desktop */}
+          <div className="p-4 md:p-6">
             
             {/* Header: Título que no se desborda */}
-            <div className="mb-6 md:mb-8 text-center md:text-left">
-              <h2 className="text-xl md:text-3xl lg:text-4xl font-black tracking-tighter leading-tight" style={{ color: colors.primaryBlue }}>
+            <div className="mb-4 md:mb-5 text-center md:text-left">
+              <h2 className="text-lg md:text-2xl lg:text-3xl font-black tracking-tighter leading-tight" style={{ color: colors.primaryBlue }}>
                 TU OPINIÓN NOS IMPORTA
               </h2>
-              <p className="text-[10px] md:text-sm font-bold opacity-40 uppercase tracking-[0.2em] mt-1">
+              <p className="text-[9px] md:text-xs font-bold opacity-40 uppercase tracking-[0.2em] mt-0.5">
                 ¿Cómo fue tu experiencia?
               </p>
             </div>
 
             {/* Lista de campos: Espaciado controlado */}
-            <div className="space-y-1 mb-6">
+            <div className="space-y-0.5 mb-4">
               {campos.map((data, index) => (
                 <div key={index}>
-                  <div className="flex justify-between items-center py-4 gap-2">
-                    <p className="text-gray-800 text-sm md:text-xl font-black uppercase tracking-tight truncate pr-2">
+                  <div className="flex justify-between items-center py-2 gap-2">
+                    <p className="text-gray-800 text-xs md:text-lg font-black uppercase tracking-tight truncate pr-2">
                       {data.nombre}
                     </p>
 
                     {/* Contenedor de estrellas que no se sale */}
-                    <div className="shrink-0 scale-90 md:scale-100 origin-right">
+                    <div className="shrink-0 scale-75 md:scale-90 origin-right">
                       <IconRatingButton
                         value={ratings[index] || 0}
                         onChange={(value) => handleRatingChange(index, value)}
-                        size={window.innerWidth < 640 ? 24 : 36} 
+                        size={window.innerWidth < 640 ? 20 : 28} 
                       />
                     </div>
                   </div>
@@ -458,18 +458,18 @@ return (
             </div>
 
             {/* Footer: Input y Botón */}
-            <div className="space-y-4">
+            <div className="space-y-2">
               <textarea
                 value={commentx}
                 onChange={(e) => setCommentx(e.target.value)}
                 placeholder=" (Opcional) Comentario adicional..."
-                className="w-full min-h-[80px] md:min-h-[120px] p-4 text-sm rounded-xl border border-gray-200 bg-gray-50 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition-all"
+                className="w-full min-h-[60px] md:min-h-[80px] p-3 text-xs rounded-lg border border-gray-200 bg-gray-50 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition-all"
               />
 
               <button
                 onClick={handleSubmit}
                 disabled={hasZero}
-                className={`w-full py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-xs md:text-base uppercase tracking-[0.15em] transition-all transform active:scale-95 shadow-lg
+                className={`w-full py-3 md:py-4 rounded-lg md:rounded-lg font-black text-xs md:text-sm uppercase tracking-[0.15em] transition-all transform active:scale-95 shadow-lg
                   ${
                     hasZero
                       ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"

@@ -261,93 +261,166 @@ function PantallaAdmin() {
   // UI COMPONENTS
   // ============================================
 
-  const MenuLateral = () => (
-    <div
-      className="flex flex-col flex-shrink-0 text-white w-64 p-4 sticky top-0 min-h-[calc(100vh-80px)] shadow-2xl"
-      style={{ backgroundColor: colors.primaryBlue }}
-    >
-      {/* <div className="flex items-center mb-8 px-2">
-        <div className="p-2 rounded-lg mr-3" style={{ backgroundColor: colors.primaryYellow }}>
-          <Settings2 className="w-6 h-6" style={{ color: colors.primaryBlue }} />
-        </div>
-        <span className="font-black text-lg tracking-tighter uppercase">Navegación</span>
-      </div> */}
+  // const MenuLateral = () => (
+  //   <div
+  //     className="flex flex-col flex-shrink-0 text-white w-64 p-4 sticky top-0 min-h-[calc(100vh-80px)] shadow-2xl"
+  //     style={{ backgroundColor: colors.primaryBlue }}
+  //   >
+  //     {/* <div className="flex items-center mb-8 px-2">
+  //       <div className="p-2 rounded-lg mr-3" style={{ backgroundColor: colors.primaryYellow }}>
+  //         <Settings2 className="w-6 h-6" style={{ color: colors.primaryBlue }} />
+  //       </div>
+  //       <span className="font-black text-lg tracking-tighter uppercase">Navegación</span>
+  //     </div> */}
 
-      <ul className="flex flex-col flex-1 space-y-2">
-        {menuFiltrado.map((item) => {
-          const Icon = item.icon;
-          const isActive = seccion === item.id;
-          return (
-            <li key={item.id}>
-              <button
-                onClick={() => setSeccion(item.id)}
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-bold transition-all duration-200 ${
-                  isActive ? "shadow-inner" : "hover:bg-white/10"
-                }`}
-                style={{
-                  backgroundColor: isActive ? colors.secondaryBlueDark : "transparent",
-                  color: isActive ? colors.monoWhite : colors.monoSilver,
-                }}
-              >
-                <Icon className="w-5 h-5" style={{ color: isActive ? colors.primaryYellow : "inherit" }} />
-                <span className="text-sm">{item.label}</span>
-              </button>
-            </li>
-          );
-        })}<div className="">
-          <button
-                onClick={handleLogout}
-                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-bold transition-all duration-200 `}
-                style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
-              >
-                <DoorOpenIcon className="w-5 h-5"  />
-                <span className="text-sm">CERRAR SESIÓN</span>
-              </button>
-        {/* <button
-          onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full py-2 rounded-2xl font-black transition-transform active:scale-95 shadow-lg"
-          style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
-        >
-          <DoorOpenIcon className="w-5 h-5" />
-          CERRAR SESIÓN
-        </button> */}
-      </div>
-      </ul>
+  //     <ul className="flex flex-col flex-1 space-y-2">
+  //       {menuFiltrado.map((item) => {
+  //         const Icon = item.icon;
+  //         const isActive = seccion === item.id;
+  //         return (
+  //           <li key={item.id}>
+  //             <button
+  //               onClick={() => setSeccion(item.id)}
+  //               className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-bold transition-all duration-200 ${
+  //                 isActive ? "shadow-inner" : "hover:bg-white/10"
+  //               }`}
+  //               style={{
+  //                 backgroundColor: isActive ? colors.secondaryBlueDark : "transparent",
+  //                 color: isActive ? colors.monoWhite : colors.monoSilver,
+  //               }}
+  //             >
+  //               <Icon className="w-5 h-5" style={{ color: isActive ? colors.primaryYellow : "inherit" }} />
+  //               <span className="text-sm">{item.label}</span>
+  //             </button>
+  //           </li>
+  //         );
+  //       })}<div className="">
+  //         <button
+  //               onClick={handleLogout}
+  //               className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl font-bold transition-all duration-200 `}
+  //               style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
+  //             >
+  //               <DoorOpenIcon className="w-5 h-5"  />
+  //               <span className="text-sm">CERRAR SESIÓN</span>
+  //             </button>
+  //       {/* <button
+  //         onClick={handleLogout}
+  //         className="flex items-center justify-center gap-2 w-full py-2 rounded-2xl font-black transition-transform active:scale-95 shadow-lg"
+  //         style={{ backgroundColor: colors.primaryRed, color: colors.monoWhite }}
+  //       >
+  //         <DoorOpenIcon className="w-5 h-5" />
+  //         CERRAR SESIÓN
+  //       </button> */}
+  //     </div>
+  //     </ul>
 
       
+  //   </div>
+  // );
+
+  const MenuLateral = () => (
+  <div
+    className="flex flex-col flex-shrink-0 text-white w-56 p-3 sticky top-0 h-[calc(100vh-80px)] shadow-2xl relative overflow-hidden"
+    style={{ backgroundColor: "#1e2a4f" }}
+  >
+    {/* Decoración de fondo inspirada en el diseño */}
+    <div className="absolute top-0 right-0 w-20 h-full bg-[#cc132c]/10 skew-x-[-20deg] translate-x-10 pointer-events-none"></div>
+
+    {/* Contenedor de lista con Scroll */}
+    <ul className="relative z-10 flex flex-col flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
+      {menuFiltrado.map((item) => {
+        const Icon = item.icon;
+        const isActive = seccion === item.id;
+        return (
+          <li key={item.id} className="shrink-0">
+            <button
+              onClick={() => setSeccion(item.id)}
+              className={`group relative flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl font-bold transition-all duration-300 overflow-hidden border text-xs ${
+                isActive 
+                ? "border-[#daab00] shadow-lg translate-x-0.5" 
+                : "border-transparent hover:bg-white/5 hover:border-white/10"
+              }`}
+              style={{
+                backgroundColor: isActive ? "rgba(218, 171, 0, 0.1)" : "transparent",
+              }}
+            >
+              {/* Indicador activo lateral */}
+              {isActive && (
+                <div className="absolute left-0 top-0 w-0.5 h-full bg-[#daab00]"></div>
+              )}
+
+              <Icon 
+                className={`w-4 h-4 transition-transform duration-300 group-hover:rotate-12 shrink-0 ${isActive ? "scale-110" : ""}`}
+                style={{ color: isActive ? "#daab00" : "#94a3b8" }} 
+              />
+              
+              <span className={`text-xs camel-case transition-colors truncate ${
+                isActive ? "text-white" : "text-slate-400 group-hover:text-white"
+              }`}>
+                {item.label}
+              </span>
+
+              {isActive && (
+                <div className="ml-auto">
+                   <div className="w-1.5 h-1.5 rounded-full bg-[#499c35] border border-[#1e2a4f] shadow-[0_0_8px_#499c35]"></div>
+                </div>
+              )}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+
+    {/* Sección de Salida */}
+    <div className="relative z-10 pt-4 mt-4 border-t border-white/10 shrink-0">
+      <button
+        onClick={handleLogout}
+        className="group flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl font-black transition-all active:scale-95 shadow-lg overflow-hidden relative text-xs"
+        style={{ 
+          backgroundColor: "#cc132c",
+          color: "#ffffff" 
+        }}
+      >
+        {/* Efecto de brillo al hover */}
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
+        <DoorOpenIcon className="w-4 h-4 relative z-10 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-xs uppercase tracking-widest relative z-10">Cerrar Sesión</span>
+      </button>
     </div>
-  );
+  </div>
+);
 
   if (!usuario) {
     return <LoginComponent onLoginSuccess={(u) => { setUsuario(u); restaurarSesion(); }} tipoUsuario="admin" />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f0f2f5" }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f0f2f5" }} >
       {/* Header Corporativo */}
       <header
-        className="px-8 py-5 shadow-lg z-30 flex justify-between items-center"
+        className="px-4 py-3 shadow-lg z-30 flex justify-between items-center text-xs"
         style={{
           background: `linear-gradient(90deg, ${colors.primaryBlue} 0%, ${colors.secondaryBlueDark} 100%)`,
         }}
       >
-        <h1 className="text-2xl font-black text-white flex items-center gap-3 italic tracking-tighter">
+        <h1 className="text-base font-black text-white flex items-center gap-2 italic tracking-tighter">
           <div className="relative">
             {state?.config?.logo_url && (
               <img
                 src={state?.config.logo_url}
                 alt="Logo UCNE"
-                className="w-12 h-12 object-contain rounded-xl p-2 shadow-xl"
+                className="w-8 h-8 object-contain rounded-lg p-1 shadow-xl"
               />
             )}
             {/* Punto de estado online */}
             
           </div>
-          PANEL  <span style={{ color: colors.primaryYellow }}>ADMINISTRATIVO</span>
+          PANEL DE<span style={{ color: colors.primaryYellow }}>ADMINISTRACIÓN</span>
         </h1>
-        <div className="flex items-center gap-4 bg-black/20 px-4 py-2 rounded-full border border-white/10">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: colors.primaryGreen }}></div>
-          <span className="text-xs font-bold text-white uppercase tracking-widest">
+        <div className="flex items-center gap-3 bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: colors.primaryGreen }}></div>
+          <span className="text-[9px] font-bold text-white uppercase tracking-widest">
              {usuario.nombre}
           </span>
         </div>
@@ -357,42 +430,42 @@ function PantallaAdmin() {
       <div className="flex flex-1 overflow-hidden">
         {menuFiltrado.length > 0 && <MenuLateral />}
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 relative">
           {LoadingSpin && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
               <TabSpinner color={colors.primaryBlue} />
             </div>
           )}
 
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             {seccion === "indx" && (
-              <div className="bg-white rounded-3xl shadow-sm border p-12 relative overflow-hidden" style={{ borderColor: colors.monoSilver }}>
-                <div className="absolute top-0 left-0 w-full h-3" style={{ backgroundColor: colors.primaryBlue }}></div>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+              <div className="bg-white rounded-2xl shadow-sm border p-6 relative overflow-hidden" style={{ borderColor: colors.monoSilver }}>
+                <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: colors.primaryBlue }}></div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
                   <div>
-                    <h2 className="text-5xl font-black tracking-tighter mb-2" style={{ color: colors.primaryBlue }}>
+                    <h2 className="text-2xl font-black tracking-tighter mb-1" style={{ color: colors.primaryBlue }}>
                       BIENVENIDO {usuario.usuario} | {usuario.nombre}
                     </h2>
-                    <p className="text-lg font-medium opacity-50 uppercase tracking-widest">Gestión de colas v1.2.2</p>
+                    <p className="text-xs font-medium opacity-50 uppercase tracking-widest">Gestión de colas v1.2.2</p>
                   </div>
-                  <Settings2 className="w-20 h-20 opacity-10 rotate-12" style={{ color: colors.primaryBlue }} />
+                  <Settings2 className="w-12 h-12 opacity-10 rotate-12" style={{ color: colors.primaryBlue }} />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-10">
-                  <div className="space-y-6">
-                    <div className="h-2 w-24 rounded-full" style={{ backgroundColor: colors.primaryYellow }}></div>
-                    <p className="text-xl leading-relaxed text-gray-700">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="h-1.5 w-20 rounded-full" style={{ backgroundColor: colors.primaryYellow }}></div>
+                    <p className="text-sm leading-relaxed text-gray-700">
                       Utilice el panel de navegación para gestionar los servicios, monitorear puestos de atención y revisar las métricas de rendimiento.
                     </p>
-                    <div className="flex items-center p-6 rounded-2xl border-l-8" style={{ backgroundColor: `${colors.secondaryBlueLight}15`, borderColor: colors.secondaryBlueLight }}>
-                      <AlertCircleIcon className="mr-4" style={{ color: colors.secondaryBlueDark }} />
-                      <span className="font-bold text-sm" style={{ color: colors.secondaryBlueDark }}>
+                    <div className="flex items-center p-4 rounded-lg border-l-4" style={{ backgroundColor: `${colors.secondaryBlueLight}15`, borderColor: colors.secondaryBlueLight }}>
+                      <AlertCircleIcon className="mr-3 w-4 h-4" style={{ color: colors.secondaryBlueDark }} />
+                      <span className="font-bold text-xs" style={{ color: colors.secondaryBlueDark }}>
                         Recuerde que los cambios en la configuración afectan a todos los terminales activos.
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-3xl p-10 flex flex-col justify-center items-center border border-dashed text-center">
+                  <div className="bg-gray-50 rounded-2xl p-6 flex flex-col justify-center items-center border border-dashed text-center">
                     {menuFiltrado.length === 0 ? (
                       <>
                         <ShieldAlertIcon className="w-16 h-16 mb-4" style={{ color: colors.primaryRed }} />

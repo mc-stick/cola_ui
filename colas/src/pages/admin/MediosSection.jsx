@@ -9,6 +9,7 @@ import {
   ImageOffIcon,
   UploadCloud,
   Eye,
+  Monitor,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { TabSpinner, Spinner } from "../../components/loading";
@@ -82,21 +83,24 @@ function MediosSection({
       className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col"
       style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}>
       <div
-        className="absolute top-0 left-0 w-full h-3 z-10"
-        style={{ backgroundColor: colors.primaryBlue }}></div>
+        ></div>
 
       {/* HEADER */}
       <div className="p-8 shrink-0 flex justify-between items-center border-b">
-        <div>
-          <h2
-            className="text-3xl font-black tracking-tighter uppercase"
-            style={{ color: colors.primaryBlue }}>
-            Galería de{" "}
-            <span style={{ color: colors.secondaryBlueDark }}>Contenido</span>
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Gestiona lo que el público ve en pantalla
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white shadow-md border border-slate-100 p-2 flex items-center justify-center shrink-0">
+            <ImageIcon className="w-full h-full text-[#1e2a4f]" />
+          </div>
+
+          <div>
+            <h2 className="text-lg font-black tracking-tight text-slate-800 uppercase italic leading-none">
+              Gestión de <span className="text-[#1e2a4f]">Medios</span>
+            </h2>
+
+            <p className="text-[9px] mt-1 font-bold uppercase tracking-widest text-[#4ec2eb]">
+              Panel de administración de medios
+            </p>
+          </div>
         </div>
         <button
           onClick={handleCrearMedio}

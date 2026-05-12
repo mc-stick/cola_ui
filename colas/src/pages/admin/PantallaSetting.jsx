@@ -66,167 +66,224 @@ function PantallasSection() {
     }
   };
 
-  return (
-    <div
-      className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col"
-      style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}
-    >
-      {/* Barra superior de acento */}
-      <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }} />
+ return (
+  <div
+    className="bg-white rounded-[2rem] shadow-sm border relative overflow-hidden flex flex-col"
+    style={{ borderColor: "#e2e8f0", height: "calc(100vh - 140px)" }}
+  >
+    {/* Decoración de fondo Skew */}
+    <div className="absolute top-0 right-0 w-32 h-full bg-[#1e2a4f]/5 skew-x-[-20deg] translate-x-16 pointer-events-none"></div>
 
-      {/* HEADER FIJO */}
-      <div className="p-8 md:p-6 pb-6 shrink-0">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    {/* HEADER */}
+    <div className="p-5 md:px-6 md:py-5 shrink-0 relative z-10 border-b border-slate-50">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white shadow-md border border-slate-100 p-2 flex items-center justify-center shrink-0">
+            <Monitor className="w-full h-full text-[#1e2a4f]" />
+          </div>
+
           <div>
-          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
-            Gestión de <span style={{ color: colors.secondaryBlueDark }}>pantallas</span>
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestiona las pantallas del sistema</p>
+            <h2 className="text-lg font-black tracking-tight text-slate-800 uppercase italic leading-none">
+              Gestión de <span className="text-[#1e2a4f]">Pantallas</span>
+            </h2>
+
+            <p className="text-[9px] mt-1 font-bold uppercase tracking-widest text-[#4ec2eb]">
+              Panel de administración de dispositivos
+            </p>
+          </div>
         </div>
+
         <button
-            onClick={() => { setEditando("nuevo"); setForm({ nombre: "", token: "" }); }}
-            className="flex items-center gap-3 hover:scale-105 active:scale-95 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl uppercase text-xs tracking-widest"
-            style={{ backgroundColor: colors.primaryBlue }}
-          >
-            <Plus className="w-5 h-5" />
-            Nueva Pantalla
-          </button>
+          onClick={() => {
+            setEditando("nuevo");
+            setForm({ nombre: "", token: "" });
+          }}
+          className="group flex items-center gap-2 bg-[#1e2a4f] hover:bg-[#2a3b6e] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-[9px] uppercase tracking-widest border-b-2 border-black/20"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Nueva Pantalla
+        </button>
+      </div>
+    </div>
+
+    {/* CUERPO */}
+    <div className="flex-1 overflow-hidden px-6 md:px-8 py-4 relative z-10">
+      {loading ? (
+        <div className="h-full flex justify-center items-center flex-col gap-2">
+          <div className="w-6 h-6 border-2 border-slate-100 border-t-[#daab00] rounded-full animate-spin"></div>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+            Sincronizando...
+          </p>
         </div>
-        
-      </div>
-
-      {/* ÁREA CON SCROLL */}
-      <div className="flex-1 overflow-y-auto px-8 md:px-12 custom-scrollbar">
-        {loading ? (
-          <div className="py-20 flex justify-center opacity-20">
-            <Monitor className="w-16 h-16 animate-pulse" />
-          </div>
-        ) : pantallas.length === 0 ? (
-          <div className="bg-gray-50 rounded-3xl p-16 flex flex-col justify-center items-center border border-dashed text-center">
-            <Monitor className="w-16 h-16 mb-4 opacity-10" />
-            <p className="font-bold opacity-30 uppercase tracking-widest">Sin pantallas registradas</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
-            {pantallas.map((p) => (
-              <div
-                key={p.id}
-                className="group relative bg-slate-50 rounded-3xl p-6 shadow-md border border-gray-100 hover:shadow-xl transition-all flex flex-col justify-between"
-              >
-                {/* Línea lateral de acento */}
-                <div className="absolute left-0 top-6 bottom-6 w-1.5 rounded-r-full" style={{ backgroundColor: colors.secondaryBlueDark }}></div>
-
-                <div className="pl-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Shield className="w-3 h-3 text-blue-400" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Dispositivo Activo</span>
-                  </div>
-                  <h3 className="text-xl font-black text-gray-800 uppercase italic leading-tight truncate">
-                    {p.nombre}
-                  </h3>
-                  <div className="mt-2 inline-block px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-mono font-bold text-blue-600">
-                    ID: {p.token}
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 mt-8 pt-4 border-t border-gray-100">
-                  <button
-                    onClick={() => { setEditando(p.id); setForm({ nombre: p.nombre, token: p.token }); }}
-                    className="p-3 bg-white text-gray-400 hover:bg-[var(--color-secondary-blue-light)] hover:text-white rounded-xl shadow-sm transition-all"
-                    style={{ '--color-secondary-blue-light': colors.secondaryBlueLight }}
-                  >
-                    <Pencil className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(p.id)}
-                    className="p-3 bg-white text-gray-400 hover:bg-[var(--color-primary-red)] hover:text-white rounded-xl shadow-sm transition-all"
-                    style={{ '--color-primary-red': colors.primaryRed }}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* FOOTER INFORMATIVO */}
-      <div className="px-12 py-4 bg-gray-50 border-t flex items-center shrink-0">
-        <AlertCircleIcon className="w-4 h-4 mr-3 opacity-30" />
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Total de pantallas: {pantallas.length} | El token identifica de forma única el hardware en la red.
-        </span>
-      </div>
-
-      {/* MODAL DE EDICIÓN (REPLICADO DE DEPARTAMENTOS) */}
-      {editando && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[100] p-4">
-          <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-lg border-t-[12px] relative" style={{ borderTopColor: colors.primaryYellow }}>
-            <button
-              onClick={() => setEditando(null)}
-              className="absolute top-6 right-6 text-gray-300 hover:text-gray-600 transition-colors"
+      ) : pantallas.length === 0 ? (
+        <div className="h-full flex flex-col justify-center items-center opacity-20 text-center italic">
+          <Monitor className="w-12 h-12 mb-3" />
+          <p className="text-[10px] font-black uppercase tracking-widest">
+            No hay pantallas registradas
+          </p>
+        </div>
+      ) : (
+        <div className="h-full overflow-y-auto pr-2 custom-scrollbar space-y-3">
+          {pantallas.map((p) => (
+            <div
+              key={p.id}
+              className="group rounded-2xl p-4 border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border-slate-100 hover:border-[#4ec2eb] hover:shadow-lg"
             >
-              <X className="w-6 h-6" />
-            </button>
+              {/* INFO */}
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner shrink-0 border-b-2 border-black/10 bg-[#1e2a4f]/10 text-[#1e2a4f]"
+                >
+                  <Monitor className="w-5 h-5" />
+                </div>
 
-            <h3 className="text-3xl font-black mb-2 italic uppercase tracking-tighter" style={{ color: colors.primaryBlue }}>
-              {editando === "nuevo" ? "Nueva Pantalla" : "Editar Dispositivo"}
-            </h3>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">Hardware y Visualización</p>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="font-black uppercase italic text-sm leading-none text-slate-800">
+                      {p.nombre}
+                    </h3>
 
-            <div className="space-y-6 mb-10">
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest ml-1">Nombre Descriptivo</label>
-                <input
-                  type="text"
-                  autoFocus
-                  value={form.nombre}
-                  onChange={(e) => setForm({ ...form, nombre: e.target.value.toUpperCase() })}
-                  className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:outline-none focus:border-blue-400 font-black text-lg uppercase transition-all"
-                  placeholder="EJ: PANTALLA RECEPCIÓN"
-                />
+                    <span className="bg-green-100 text-green-700 text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase">
+                      Activa
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[8px] uppercase tracking-widest">
+                    <Shield className="w-2.5 h-2.5" />
+                    Token: {p.token}
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest ml-1">Token (Identificador de Red)</label>
-                <input
-                  type="text"
-                  value={form.token}
-                  onChange={(e) => setForm({ ...form, token: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
-                  className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:outline-none focus:border-blue-400 font-bold text-lg text-blue-600 transition-all"
-                  placeholder="ej: pantalla-1"
-                />
+
+              {/* ACCIONES */}
+              <div className="flex items-center gap-2 self-end md:self-center">
+                <button
+                  onClick={() => {
+                    setEditando(p.id);
+                    setForm({
+                      nombre: p.nombre,
+                      token: p.token,
+                    });
+                  }}
+                  className="p-2 bg-slate-50 text-slate-400 hover:bg-[#daab00] hover:text-white rounded-lg transition-all shadow-sm"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={() => setConfirmDelete(p.id)}
+                  className="p-2 bg-slate-50 text-slate-400 hover:bg-[#cc132c] hover:text-white rounded-lg transition-all shadow-sm"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleGuardar}
-                className="flex-1 flex items-center justify-center gap-2 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg hover:brightness-110 transition-all"
-                style={{ backgroundColor: colors.primaryGreen }}
-              >
-                <Save className="w-5 h-5" /> Guardar Pantalla
-              </button>
-              <button
-                onClick={() => setEditando(null)}
-                className="px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest bg-gray-100 text-gray-400 hover:bg-gray-200 transition"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
       )}
-
-      <ConfirmModal
-        open={confirmDelete !== null}
-        title="¿ELIMINAR PANTALLA?"
-        message="Se perderá el enlace con el dispositivo físico y dejará de mostrar contenido."
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={() => handleEliminar(confirmDelete)}
-      />
     </div>
-  );
+
+    {/* FOOTER */}
+    <div className="px-8 py-3 bg-slate-50 border-t flex items-center shrink-0 relative z-10">
+      <AlertCircleIcon className="w-3.5 h-3.5 mr-2 text-[#daab00]" />
+
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+        Total de pantallas: {pantallas.length} | Cada token identifica un
+        grupo de dispositivos dentro de la red.
+      </span>
+    </div>
+
+    {/* MODAL */}
+    {editando && (
+      <div className="fixed inset-0 bg-[#1e2a4f]/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div
+          className="bg-white rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl relative overflow-hidden border-t-[6px]"
+          style={{ borderTopColor: "#daab00" }}
+        >
+          {/* Decoración */}
+          <div className="absolute top-0 right-0 w-24 h-full bg-slate-50 skew-x-[-20deg] translate-x-12 pointer-events-none"></div>
+
+          <h3 className="text-xl font-black uppercase italic mb-6 relative z-10 text-slate-800">
+            {editando === "nuevo"
+              ? "Vincular Pantalla"
+              : "Editar Dispositivo"}
+          </h3>
+
+          <div className="space-y-4 mb-6 relative z-10">
+            {/* Nombre */}
+            <div className="space-y-1">
+              <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                Nombre
+              </label>
+
+              <input
+                type="text"
+                autoFocus
+                value={form.nombre}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nombre: e.target.value.toUpperCase(),
+                  })
+                }
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 focus:border-[#4ec2eb] rounded-xl outline-none transition-all font-bold text-[11px] uppercase"
+                placeholder="Pantalla Recepción"
+              />
+            </div>
+
+            {/* Token */}
+            <div className="space-y-1">
+              <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                Token
+              </label>
+
+              <input
+                type="text"
+                value={form.token}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    token: e.target.value
+                      .toLowerCase()
+                      .replace(/\s+/g, "-"),
+                  })
+                }
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 focus:border-[#4ec2eb] rounded-xl outline-none transition-all font-bold text-[11px] text-[#1e2a4f]"
+                placeholder="pantalla-1"
+              />
+            </div>
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex gap-3 relative z-10">
+            <button
+              onClick={handleGuardar}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#499c35] text-white py-3 rounded-xl font-bold uppercase text-[9px] tracking-widest hover:brightness-110 transition-all shadow-md border-b-2 border-black/20"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Guardar Cambios
+            </button>
+
+            <button
+              onClick={() => setEditando(null)}
+              className="px-6 bg-slate-100 text-slate-400 py-3 rounded-xl font-bold uppercase text-[9px] tracking-widest hover:bg-slate-200 transition-all"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <ConfirmModal
+      open={confirmDelete !== null}
+      title="¿Eliminar Pantalla?"
+      message="Esta acción desvinculará permanentemente el dispositivo del sistema."
+      onCancel={() => setConfirmDelete(null)}
+      onConfirm={() => handleEliminar(confirmDelete)}
+    />
+  </div>
+);
 }
 
 export default PantallasSection;

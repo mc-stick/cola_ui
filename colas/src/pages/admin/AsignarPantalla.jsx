@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Monitor, Check, X, AlertCircleIcon, ChevronRight } from "lucide-react";
+import { Monitor, Check, X, AlertCircleIcon, ChevronRight, Layers } from "lucide-react";
 import { toast } from "react-toastify";
 import API from "../../services/api";
 
@@ -63,162 +63,234 @@ function AsignarServiciosPantallaSection() {
   };
 
   return (
-    <div
-      className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col"
-      style={{ borderColor: colors.monoSilver, height: "calc(100vh - 140px)" }}
-    >
-      <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }} />
+  <div
+    className="bg-white rounded-[2rem] shadow-sm border relative overflow-hidden flex flex-col"
+    style={{ borderColor: "#e2e8f0", height: "calc(100vh - 140px)" }}
+  >
+    {/* Decoración fondo */}
+    <div className="absolute top-0 right-0 w-32 h-full bg-[#1e2a4f]/5 skew-x-[-20deg] translate-x-16 pointer-events-none"></div>
 
-      {/* HEADER */}
-      <div className="p-8 shrink-0 flex justify-between items-center border-b">
-        <div>
-          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
-            Servicios por <span style={{ color: colors.secondaryBlueDark }}>Pantalla</span>
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Define qué servicios se muestran en cada pantalla
-          </p>
+    {/* HEADER */}
+    <div className="p-5 md:px-6 md:py-5 shrink-0 relative z-10 border-b border-slate-50">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white shadow-md border border-slate-100 p-2 flex items-center justify-center shrink-0">
+            <Monitor className="w-full h-full text-[#1e2a4f]" />
+          </div>
+
+          <div>
+            <h2 className="text-lg font-black tracking-tight text-slate-800 uppercase italic leading-none">
+              Servicios por <span className="text-[#1e2a4f]">Pantalla</span>
+            </h2>
+
+            <p className="text-[9px] mt-1 font-bold uppercase tracking-widest text-[#4ec2eb]">
+              Configuración de visualización por dispositivo
+            </p>
+          </div>
         </div>
-        <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300">
-          <Monitor className="w-6 h-6" />
+
+        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+          <Layers className="w-4 h-4" />
         </div>
       </div>
+    </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* COLUMNA IZQUIERDA: PANTALLAS */}
-        <div className="w-1/3 border-r bg-slate-50/50 flex flex-col">
-          <div className="p-4 bg-white/50 border-b">
-            <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-              Seleccionar Pantalla
-            </span>
-          </div>
+    {/* CONTENIDO */}
+    <div className="flex-1 flex overflow-hidden relative z-10">
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-            {loadingPantallas ? (
-              <div className="flex items-center justify-center h-full opacity-20">
-                <Monitor className="w-10 h-10 animate-pulse" />
-              </div>
-            ) : (
-              pantallas.map((pantalla) => (
-                <div
-                  key={pantalla.id}
-                  onClick={() => handleSeleccionarPantalla(pantalla)}
-                  className={`group p-4 rounded-2xl cursor-pointer transition-all border-2 flex items-center justify-between ${
-                    pantallaSeleccionada?.id === pantalla.id
-                      ? "bg-white border-blue-600 shadow-md scale-[1.02]"
-                      : "bg-transparent border-transparent hover:bg-white hover:border-gray-200"
-                  }`}
-                >
-                  <div className="truncate">
-                    <h4 className="font-black uppercase italic text-sm truncate text-slate-700">
-                      {pantalla.nombre}
-                    </h4>
-                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">
-                      {pantalla.token}
-                    </span>
-                  </div>
+      {/* SIDEBAR PANTALLAS */}
+      <div className="w-[340px] border-r border-slate-100 bg-slate-50/40 flex flex-col">
 
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${
-                      pantallaSeleccionada?.id === pantalla.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-200 text-slate-500"
-                    }`}>
-                      {pantalla.servicios?.length || 0}
-                    </span>
-                    <ChevronRight className={`w-4 h-4 transition-transform ${
-                      pantallaSeleccionada?.id === pantalla.id
-                        ? "translate-x-1 text-blue-600"
-                        : "text-slate-300"
-                    }`} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+        {/* HEADER SIDEBAR */}
+        <div className="px-5 py-4 border-b border-slate-100 bg-white">
+          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
+            Seleccionar Pantalla
+          </span>
         </div>
 
-        {/* COLUMNA DERECHA: SERVICIOS */}
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
-          {!pantallaSeleccionada ? (
-            <div className="flex-1 flex flex-col items-center justify-center opacity-20 italic">
-              <Monitor className="w-20 h-20 mb-4" />
-              <p className="font-black uppercase tracking-widest">Selecciona una pantalla a la izquierda</p>
-            </div>
-          ) : loadingServicios ? (
-            <div className="flex-1 flex items-center justify-center opacity-20">
-              <Monitor className="w-12 h-12 animate-pulse" />
+        {/* LISTADO */}
+        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar space-y-2">
+          {loadingPantallas ? (
+            <div className="h-full flex justify-center items-center flex-col gap-2">
+              <div className="w-6 h-6 border-2 border-slate-100 border-t-[#daab00] rounded-full animate-spin"></div>
+
+              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                Cargando...
+              </p>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="p-6 border-b flex justify-between items-end">
-                <div>
-                  <span className="text-[10px] font-black uppercase text-blue-600 tracking-widest">
-                    Configurando servicios para:
-                  </span>
-                  <h3 className="text-2xl font-black uppercase italic text-slate-800">
-                    {pantallaSeleccionada.nombre}
-                  </h3>
+            pantallas.map((pantalla) => (
+              <div
+                key={pantalla.id}
+                onClick={() => handleSeleccionarPantalla(pantalla)}
+                className={`group p-4 rounded-2xl cursor-pointer transition-all border flex items-center justify-between ${
+                  pantallaSeleccionada?.id === pantalla.id
+                    ? "bg-white border-[#4ec2eb] shadow-md"
+                    : "bg-transparent border-transparent hover:bg-white hover:border-slate-200"
+                }`}
+              >
+                <div className="min-w-0">
+                  <h4 className="font-black uppercase italic text-sm truncate leading-none text-slate-800">
+                    {pantalla.nombre}
+                  </h4>
+
+                  <p className="text-[8px] mt-1 font-bold text-[#4ec2eb] uppercase tracking-widest truncate">
+                    {pantalla.token}
+                  </p>
                 </div>
-                <div className="text-right">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase leading-none">Token</span>
-                  <span className="text-sm font-black text-blue-500 uppercase italic">
-                    {pantallaSeleccionada.token}
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`text-[8px] font-black px-2 py-1 rounded-lg ${
+                      pantallaSeleccionada?.id === pantalla.id
+                        ? "bg-[#1e2a4f] text-white"
+                        : "bg-slate-200 text-slate-500"
+                    }`}
+                  >
+                    {pantalla.servicios?.length || 0}
                   </span>
+
+                  <ChevronRight
+                    className={`w-4 h-4 transition-all ${
+                      pantallaSeleccionada?.id === pantalla.id
+                        ? "translate-x-1 text-[#1e2a4f]"
+                        : "text-slate-300"
+                    }`}
+                  />
                 </div>
               </div>
-
-              <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {servicios.map((servicio) => (
-                    <div
-                      key={servicio.id}
-                      onClick={() => handleToggleServicio(servicio)}
-                      className={`relative group p-5 rounded-[2rem] border-2 cursor-pointer transition-all flex items-center gap-4 ${
-                        servicio.asignado
-                          ? "bg-white border-green-500 shadow-sm"
-                          : "bg-slate-50 border-transparent hover:border-slate-200"
-                      } ${!servicio.activo && "opacity-40 grayscale pointer-events-none"}`}
-                    >
-                      <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white font-black text-xl italic shadow-lg"
-                        style={{ backgroundColor: servicio.activo ? servicio.color : "#cbd5e1" }}
-                      >
-                        {servicio.codigo}
-                      </div>
-
-                      <div className="flex-1 truncate">
-                        <h4 className="font-black uppercase text-sm text-slate-700 truncate leading-tight">
-                          {servicio.nombre}
-                        </h4>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
-                          {servicio.activo ? "Servicio Activo" : "Fuera de servicio"}
-                        </p>
-                      </div>
-
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        servicio.asignado ? "bg-green-500 text-white" : "bg-slate-200 text-slate-400"
-                      }`}>
-                        {servicio.asignado ? <Check className="w-5 h-5" /> : <X className="w-4 h-4" />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            ))
           )}
         </div>
       </div>
 
-      {/* FOOTER */}
-      <div className="px-12 py-4 bg-slate-50 border-t flex items-center shrink-0">
-        <AlertCircleIcon className="w-4 h-4 mr-3 opacity-30" />
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Solo los servicios asignados aparecerán en la pantalla correspondiente.
-        </span>
+      {/* PANEL DERECHO */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-white">
+        {!pantallaSeleccionada ? (
+          <div className="flex-1 flex flex-col justify-center items-center opacity-20 italic text-center">
+            <Monitor className="w-14 h-14 mb-4" />
+
+            <p className="text-[10px] font-black uppercase tracking-widest">
+              Selecciona una pantalla
+            </p>
+          </div>
+        ) : loadingServicios ? (
+          <div className="flex-1 flex justify-center items-center flex-col gap-2">
+            <div className="w-6 h-6 border-2 border-slate-100 border-t-[#daab00] rounded-full animate-spin"></div>
+
+            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+              Cargando servicios...
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* HEADER CONFIG */}
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#4ec2eb]">
+                  Configurando servicios para
+                </span>
+
+                <h3 className="text-lg font-black uppercase italic text-slate-800 leading-none mt-1">
+                  {pantallaSeleccionada.nombre}
+                </h3>
+              </div>
+
+              <div className="text-right">
+                <span className="block text-[7px] font-black uppercase tracking-widest text-slate-400">
+                  Token
+                </span>
+
+                <span className="text-[10px] font-black uppercase italic text-slate-700">
+                  {pantallaSeleccionada.token}
+                </span>
+              </div>
+            </div>
+
+            {/* SERVICIOS */}
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {servicios.map((servicio) => (
+                  <div
+                    key={servicio.id}
+                    onClick={() => handleToggleServicio(servicio)}
+                    className={`group rounded-2xl p-4 border transition-all cursor-pointer flex items-center gap-4 ${
+                      servicio.asignado
+                        ? "bg-white border-green-400 shadow-sm"
+                        : "bg-slate-50 border-transparent hover:border-slate-200"
+                    } ${
+                      !servicio.activo &&
+                      "opacity-40 grayscale pointer-events-none"
+                    }`}
+                  >
+                    {/* ICONO */}
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm shadow-inner shrink-0 border-b-2 border-black/10 text-white"
+                      style={{
+                        backgroundColor: servicio.activo
+                          ? servicio.color
+                          : "#cbd5e1",
+                      }}
+                    >
+                      {servicio.codigo}
+                    </div>
+
+                    {/* INFO */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h4 className="font-black uppercase italic text-sm leading-none text-slate-800 truncate">
+                          {servicio.nombre}
+                        </h4>
+
+                        {servicio.asignado && (
+                          <span className="bg-green-100 text-green-700 text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase">
+                            Visible
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[8px] uppercase tracking-widest">
+                        <Layers className="w-2.5 h-2.5" />
+
+                        {servicio.activo
+                          ? "Servicio activo"
+                          : "Fuera de servicio"}
+                      </div>
+                    </div>
+
+                    {/* STATUS */}
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 ${
+                        servicio.asignado
+                          ? "bg-green-500 text-white"
+                          : "bg-slate-200 text-slate-400"
+                      }`}
+                    >
+                      {servicio.asignado ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <X className="w-3.5 h-3.5" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
-  );
+
+    {/* FOOTER */}
+    <div className="px-8 py-3 bg-slate-50 border-t flex items-center shrink-0 relative z-10">
+      <AlertCircleIcon className="w-3.5 h-3.5 mr-2 text-[#daab00]" />
+
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+        Solo los servicios asignados aparecerán en la pantalla correspondiente.
+      </span>
+    </div>
+  </div>
+);
 }
 
 export default AsignarServiciosPantallaSection;

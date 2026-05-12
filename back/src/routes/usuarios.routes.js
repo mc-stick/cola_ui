@@ -152,7 +152,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     
     let query = 'UPDATE usuarios SET username = ?, rol = ?, puesto_id = ?, activo = ?';
-    let params = [ username, rol, (rol==2?puesto_id:null), activo];
+    let params = [ username, rol, (rol==2?puesto_id || null : null), activo];
     
     
     query += ' WHERE id = ?';

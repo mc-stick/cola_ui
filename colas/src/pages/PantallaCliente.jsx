@@ -1,4 +1,4 @@
-import { ArrowLeftCircleIcon, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import PasoConfirmacion from "../components/cliente/Confirmacion";
 import PasoIngresoId from "../components/cliente/pasoDos";
 import PasoSeleccionServicio from "../components/cliente/SeleccionServicio";
@@ -6,93 +6,268 @@ import PasoTipoIdentificacion from "../components/cliente/TipoIdentificacion";
 import { usePantallaCliente } from "../hooks/UsePantallaCliente";
 import PasoSeleccionDep from "../components/cliente/SeleccionDep";
 import { useFecha, useHora } from "../components/common/clok";
-
-// Header optimizado: Menos alto, más refinado
 export const HeaderIndex = ({ config }) => {
   const hora = useHora();
   const fecha = useFecha();
-  return (
-    <header className="bg-[#1e2a4f] border-b-4 border-[#daab00] px-6 py-4 shadow-lg mb-8 relative overflow-hidden">
-      {/* Decoración sutil de fondo (opcional) */}
-      <div className="absolute top-0 right-0 w-32 h-full bg-[#cc132c]/10 skew-x-[-20deg] translate-x-16" />
 
-      <div className="max-w-5xl mx-auto flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-5">
-          {/* Contenedor del Logo */}
-          <div className="relative">
+  return (
+    <div
+      className="
+        rounded-2xl
+        border
+        relative
+        overflow-hidden
+        px-3
+        py-3
+      "
+      style={{
+        backgroundColor: "#1e2a4f",
+        borderColor: "#daab00",
+      }}
+    >
+      {/* Decoración */}
+      <div className="absolute top-0 right-0 w-24 md:w-32 h-full bg-[#cc132c]/10 skew-x-[-20deg] translate-x-12" />
+
+      <div
+        className="
+          relative
+          z-10
+          flex
+          flex-col
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+          gap-2
+        "
+      >
+        {/* Left */}
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Logo */}
+          <div className="relative flex-shrink-0">
             {config?.logo_url ? (
               <img
                 src={config.logo_url}
-                alt="Logo UCNE"
-                className="w-14 h-14 md:w-20 md:h-20 object-contain rounded-2xl p-2 bg-white shadow-xl"
+                alt="Logo"
+                className="
+                  w-10 h-10
+                  sm:w-12 sm:h-12
+                  md:w-14 md:h-14
+                  object-contain
+                  rounded-xl
+                  bg-white
+                  p-1.5
+                  shadow-xl
+                "
               />
             ) : (
-              <div className="w-14 h-14 bg-[#fad824] rounded-2xl flex items-center justify-center text-[#1e2a4f] font-black text-2xl shadow-xl">
+              <div
+                className="
+                  w-10 h-10
+                  sm:w-12 sm:h-12
+                  rounded-xl
+                  flex
+                  items-center
+                  justify-center
+                  text-lg
+                  font-black
+                  shadow-xl
+                "
+                style={{
+                  backgroundColor: "#fad824",
+                  color: "#1e2a4f",
+                }}
+              >
                 .
               </div>
             )}
-            {/* Punto de estado online */}
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#499c35] border-4 border-[#1e2a4f] rounded-full"></div>
+
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#499c35] border-2 border-[#1e2a4f]" />
           </div>
 
-          {/* Textos del Header */}
-          <div>
-            <h1 className="text-xl md:text-3xl font-black text-white leading-none tracking-tight">
+          {/* Text */}
+          <div className="min-w-0">
+            <h1
+              className="
+                text-base
+                font-black
+                text-white
+                leading-tight
+                truncate
+              "
+            >
               Solicitar Ticket
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="h-1 w-6 bg-[#fad824] rounded-full"></span>
-              <p className="text-[10px] md:text-xs font-bold text-[#4ec2eb] uppercase tracking-[0.2em] opacity-90">
-                 Atención al Cliente - Autoservicio
-              </p>
-            </div>
+
+            <p
+              className="
+                mt-0.5
+                text-[8px]
+                sm:text-[9px]
+                md:text-xs
+                font-semibold
+                uppercase
+                tracking-wider
+                text-[#4ec2eb]
+                line-clamp-2
+              "
+            >
+              Atención al Cliente - Autoservicio
+            </p>
           </div>
         </div>
 
-        <div className="hidden md:flex flex-col items-end">
-          <span className="text-[#daab00] text-lg font-black tracking-wide">
+        {/* Right */}
+        <div
+          className="
+            flex
+            flex-row
+            lg:flex-col
+            items-start
+            lg:items-end
+            gap-0.5
+            lg:gap-0
+            flex-shrink-0
+          "
+        >
+          <span className="text-[#daab00] text-base sm:text-lg md:text-xl font-black">
             {hora}
           </span>
 
-          <span className="text-white/90 font-bold text-base">
+          <span className="text-[9px] sm:text-xs text-white/90 font-semibold">
             {fecha}
           </span>
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 
-// Botón de volver refinado: Sin márgenes que rompan el diseño
+// ─────────────────────────────────────────────
+// Botón volver estilo tarjetas dashboard
+// ─────────────────────────────────────────────
 export const BackBtnCli = ({ step }) => {
   return (
-    <div className="max-w-5xl mx-auto px-6 mb-6">
-      <button
-        id="btn-regresar"
-        onClick={step}
-        className="group flex items-center gap-2 text-slate-400 hover:text-blue-600 font-bold transition-all duration-300">
-        <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
-          <ChevronLeft className="w-6 h-6" />
-        </div>
-        <span className="text-sm uppercase tracking-wider">Regresar</span>
-      </button>
-    </div>
+    <button
+      onClick={step}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg border transition-all hover:scale-[1.01]"
+      style={{
+        backgroundColor: "#ffffff",
+        borderColor: "#e2e8f0",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#4ec2eb";
+        e.currentTarget.style.backgroundColor = "#f8fafc";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "#e2e8f0";
+        e.currentTarget.style.backgroundColor = "#ffffff";
+      }}
+    >
+      <div
+        className="w-7 h-7 rounded-lg flex items-center justify-center"
+        style={{
+          backgroundColor: "#eff6ff",
+        }}
+      >
+        <ChevronLeft className="w-4 h-4" style={{ color: "#1e40af" }} />
+      </div>
+
+      <span
+        className="text-xs font-semibold uppercase tracking-wider"
+        style={{ color: "#475569" }}
+      >
+        Regresar
+      </span>
+    </button>
   );
 };
 
 export default function PantallaCliente() {
   const state = usePantallaCliente();
-
-  // Envoltura principal para evitar desbordamientos y asegurar fondo consistente
   const LayoutCliente = ({ children, showBack = true }) => (
-    <div className="min-h-screen bg-slate-50 flex flex-col overflow-x-hidden">
-      {!showBack && <HeaderIndex config={state.config} />}
-      {/* {showBack && <BackBtnCli step={() => state.setPaso(state.paso - 1)} />} */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 p-6">
-        <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/60 p-6 md:p-12 border border-white">
-          {children}
+    <div
+      className="
+      h-screen
+      overflow-hidden
+      flex
+      flex-col
+    "
+      style={{
+        backgroundColor: "#f8fafc",
+      }}
+    >
+      {/* Wrapper */}
+      <div
+        className="
+        flex-1
+        w-full
+        max-w-6xl
+        mx-auto
+        p-2
+        sm:p-2.5
+        md:p-3
+        lg:p-4
+        flex
+        flex-col
+        gap-2.5
+        overflow-hidden
+      "
+      >
+        {/* Header */}
+        {!showBack && (
+          <div className="flex-shrink-0">
+            <HeaderIndex config={state.config} />
+          </div>
+        )}
+
+        {/* Back */}
+        {showBack && (
+          <div className="flex items-center justify-between gap-3 flex-shrink-0">
+            <BackBtnCli step={() =>{ state.setPaso(state.paso - 1);state.setIdentificacion(""); }} />
+
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-[#daab00] text-base font-black">
+                {useHora()}
+              </span>
+
+              <span className="text-slate-500 text-xs font-medium">
+                {useFecha()}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Card principal */}
+        <div
+          className="
+          flex-1
+          min-h-0
+          border
+          rounded-2xl
+          overflow-hidden
+          flex
+          flex-col
+        "
+          style={{
+            backgroundColor: "#ffffff",
+            borderColor: "#e2e8f0",
+          }}
+        >
+          {/* Contenido */}
+          <div
+            className="
+            flex-1
+            min-h-0
+            p-3
+            sm:p-4
+            md:p-5
+            lg:p-6
+          "
+          >
+            {children}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 

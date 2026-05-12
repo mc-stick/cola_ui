@@ -193,7 +193,7 @@ function PantallaAnuncios() {
         if (nextIndex === 0) cargarDatos();
         return nextIndex;
       });
-    }, config?.tiempo_rotacion || 5000);
+    }, config?.tiempo_rotacion*1000 || 5000);
 
     return () => clearTimeout(timeout);
   }, [medios, mediaIndex, config]);

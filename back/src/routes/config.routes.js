@@ -30,7 +30,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     console.log('Split:', req.body)
     await pool.query(
       'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ?, Split=?, blur=? WHERE id = ?',
-      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion*1000, Split, blur, id]
+      [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split, blur, id]
     );
     
     await registrarAuditoria({

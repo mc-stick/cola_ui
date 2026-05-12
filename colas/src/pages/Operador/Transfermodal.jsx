@@ -15,41 +15,41 @@ export const TransferModal = ({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
       <div
         id="modal-transferir"
-        className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full p-8 animate-fade-in border border-white/20"
+        className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 animate-fade-in border border-white/20"
       >
         {/* Cabecera del Modal */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4">
           <div className="relative">
-            <div className="bg-cyan-100 w-20 h-20 rounded-2xl rotate-3 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-100/50 transition-transform hover:rotate-0">
-              <ArrowRightLeftIcon className="w-10 h-10 text-cyan-600 -rotate-3" />
+            <div className="bg-cyan-100 w-16 h-16 rounded-lg rotate-3 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-cyan-100/50 transition-transform hover:rotate-0">
+              <ArrowRightLeftIcon className="w-8 h-8 text-cyan-600 -rotate-3" />
             </div>
           </div>
-          <h3 className="text-3xl font-black text-gray-800 tracking-tighter mb-2">
-            Transferir Ticket
+          <h3 className="text-xl font-black text-gray-800 tracking-tighter mb-1">
+            Transferir
           </h3>
-          <p className="text-gray-500 font-medium">
-            Vas a reasignar el ticket:{" "}
-            <span className="inline-block px-3 py-1 bg-cyan-600 text-white rounded-lg font-black ml-1 shadow-sm">
+          <p className="text-gray-500 font-medium text-xs">
+            Ticket:{" "}
+            <span className="inline-block px-2.5 py-0.5 bg-cyan-600 text-white rounded-lg font-black ml-1 shadow-sm text-xs">
               {ticketActual?.numero}
             </span>
           </p>
         </div>
 
         {/* Lista de Servicios */}
-        <div className="mb-8">
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">
-            Seleccionar Servicio de Destino
+        <div className="mb-4">
+          <label className="block text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+            Servicio de Destino
           </label>
           <div
             id="modal-transferir-items"
-            className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar"
+            className="space-y-2 max-h-60 overflow-y-auto pr-1.5 custom-scrollbar"
           >
             {todosServicios
               .filter((t) => t.service_active === 1)
               .map((servicio) => (
                 <label
                   key={servicio.id}
-                  className={`group flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all active:scale-[0.98] ${
+                  className={`group flex items-center p-2.5 rounded-lg border-2 cursor-pointer transition-all active:scale-[0.98] ${
                     servicioSeleccionado === servicio.id
                       ? "border-cyan-500 bg-cyan-50 shadow-md shadow-cyan-100"
                       : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
@@ -64,16 +64,16 @@ export const TransferModal = ({
                       onChange={() => setServicioSeleccionado(servicio.id)}
                       className="peer hidden"
                     />
-                    <div className="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:border-cyan-600 peer-checked:bg-cyan-600 transition-all flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 peer-checked:border-cyan-600 peer-checked:bg-cyan-600 transition-all flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100"></div>
                     </div>
                   </div>
 
-                  <div className="ml-4 flex items-center gap-3 flex-1">
+                  <div className="ml-2 flex items-center gap-2 flex-1">
                    
                     <div className="flex flex-col">
                       <span
-                        className={`font-bold transition-colors ${
+                        className={`font-bold text-xs transition-colors ${
                           servicioSeleccionado === servicio.id
                             ? "text-cyan-900"
                             : "text-gray-700"
@@ -83,7 +83,7 @@ export const TransferModal = ({
                       </span>
                     </div>
                     <span
-                      className="ml-auto text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm uppercase"
+                      className="ml-auto text-[8px] font-black px-2 py-0.5 rounded-lg shadow-sm uppercase"
                       style={{
                         backgroundColor: servicio.color,
                         color: "white",
@@ -98,10 +98,10 @@ export const TransferModal = ({
         </div>
 
         {/* Acciones */}
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <button
             onClick={onCerrar}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-500 py-4 px-6 rounded-2xl font-bold transition-all active:scale-95"
+            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-500 py-2.5 px-4 rounded-lg font-bold transition-all active:scale-95 text-sm"
           >
             Cancelar
           </button>
@@ -109,9 +109,9 @@ export const TransferModal = ({
             id="modal-transferir-confirm"
             onClick={onConfirmar}
             disabled={!servicioSeleccionado}
-            className="flex-[1.5] bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-2xl font-black shadow-lg shadow-cyan-200 transition-all active:scale-95"
+            className="flex-[1.5] bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white py-2.5 px-4 rounded-lg font-black shadow-lg shadow-cyan-200 transition-all active:scale-95 text-sm"
           >
-            Confirmar Envío
+            Confirmar
           </button>
         </div>
       </div>

@@ -67,47 +67,52 @@ export default function PasoIngresoId({
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto">
+    <div className="flex flex-col w-full max-w-xl mx-auto">
       {/* Encabezado del Paso */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mb-4">
+      <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center w-12 h-12 m-2 bg-blue-50 text-blue-600 rounded-2xl">
           {tipoId === "telefono" ? (
-            <Smartphone size={32} />
+            <Smartphone size={28} />
           ) : (
-            <Fingerprint size={32} />
+            <Fingerprint size={28} />
           )}
         </div>
-        <h2 className="text-3xl font-black text-slate-800 mb-2">
+
+        <h2 className="text-2xl font-black text-slate-800">
           Ingresa tu {tipoId === "telefono" ? "Teléfono" : "ID CAMPUS"}
         </h2>
       </div>
 
       {/* Visualizador Estilo Input Gigante */}
       <div id="visualizador-id">
-      <div className="mb-6">
-        <div className="relative bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-center shadow-inner">
-          <div className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight min-h-[40px] flex items-center justify-center">
+        <div className="flex flex-col items-center w-fit mx-auto">
+          {/* Número */}
+          <div className="text-2xl md:text-2xl font-black text-slate-800 tracking-tight min-h-[40px] flex items-center justify-center">
             {identificacion ? (
               renderIdentificacion()
             ) : (
-              <span className="text-slate-300 opacity-50 text-xl md:text-2xl uppercase tracking-widest font-bold">
+              <span className="text-slate-300 opacity-50 text-xl uppercase tracking-widest font-bold">
                 {tipoId === "telefono" ? "000-000-0000" : "00000000"}
               </span>
             )}
           </div>
 
-          {/* Indicador */}
-          <div
-            className="absolute bottom-0 left-0 h-1 bg-blue-600 rounded-full transition-all duration-500"
-            style={{
-              width: `${
-                (identificacion.length / (tipoId === "telefono" ? 10 : 8)) * 100
-              }%`,
-            }}
-          />
+          {/* Line clamp / progreso */}
+          <div className="mb-2 h-1 bg-slate-200 rounded-full overflow-hidden w-full">
+            <div
+              className="h-full bg-blue-600 rounded-full transition-all duration-500"
+              style={{
+                width: `${
+                  (identificacion.length / (tipoId === "telefono" ? 10 : 8)) *
+                  100
+                }%`,
+              }}
+            />
+          </div>
         </div>
-      </div>
-       
+
+        {/* Indicador */}
+
         <div className="w-full max-w-sm mx-auto mb-12 bg-slate-50 p-4 rounded-[2.5rem] shadow-sm ">
           <NumericKeypad
             value={identificacion}
@@ -116,8 +121,9 @@ export default function PasoIngresoId({
             onConfirm={onConfirm}
             confirmDisabled={disabled}
           />
-        </div></div>
-       
+        </div>
+      </div>
+      {/*        
       <div className="max-w-5xl mx-auto px-6 mb-6">
         <button
           id="btn-regresar"
@@ -131,7 +137,7 @@ export default function PasoIngresoId({
           </div>
           <span className="text-sm uppercase tracking-wider">Regresar</span>
         </button>
-      </div>
+      </div> */}
 
       {/* Botón de Confirmación Principal (Solo si el teclado no lo tiene integrado) */}
       {/* {!disabled && (

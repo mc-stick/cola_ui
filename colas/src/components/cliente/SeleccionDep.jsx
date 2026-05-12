@@ -69,40 +69,40 @@ export default function PasoSeleccionDep({
       {show ? (
         <div id="table-dep" className="flex flex-col items-center">
           {/* Header de Bienvenida */}
-          <div className="text-center mb-10">
-            <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest mb-4">
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest mb-3">
               Acceso Autorizado
             </span>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-2">
+            <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">
               {obtenerSaludo()}, 
               {user && <span className="text-blue-600">{" " + user}</span>}
             </h1>
-            <p className="text-slate-500 text-lg">¿A qué departamento te diriges hoy?</p>
+            <p className="text-slate-500 text-sm">¿A qué departamento te diriges hoy?</p>
           </div>
 
           {/* Grid de Departamentos */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full">
             {departamentosConServicios.map((s) => (
               <button
                 key={s.id}
                 onClick={() => onSelect(s)}
-                className="group relative bg-white border border-slate-100 p-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
+                className="group relative bg-white border border-slate-100 p-4 rounded-xl shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
               >
                 {/* Indicador visual de color */}
-                <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 opacity-80 group-hover:w-3 transition-all" />
+                <div className="absolute top-0 left-0 w-1 h-full bg-blue-600 opacity-80 group-hover:w-1.5 transition-all" />
                 
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
-                    <Building2 size={28} />
+                <div className="flex items-start justify-between mb-2">
+                  <div className="p-2 bg-slate-50 rounded-lg text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+                    <Building2 size={20} />
                   </div>
-                  <ChevronRight className="text-slate-200 group-hover:text-blue-400 transition-colors" />
+                  <ChevronRight className="text-slate-200 group-hover:text-blue-400 transition-colors" size={18} />
                 </div>
 
-                <h3 className="text-xl font-black text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">
+                <h3 className="text-base font-black text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">
                   {s.nombre}
                 </h3>
                 
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   Seleccionar Departamento
                 </p>
               </button>
@@ -111,22 +111,22 @@ export default function PasoSeleccionDep({
         </div>
       ) : (
         /* Estado de Error: Usuario no encontrado */
-        <div className="max-w-md mx-auto py-12 px-8 bg-red-50 border border-red-100 rounded-[2.5rem] flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mb-6 animate-bounce">
-            <AlertTriangle size={40} />
+        <div className="max-w-md mx-auto py-8 px-6 bg-red-50 border border-red-100 rounded-2xl flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4 animate-bounce">
+            <AlertTriangle size={32} />
           </div>
 
-          <h2 className="text-2xl font-black text-red-800 mb-2">
+          <h2 className="text-lg font-black text-red-800 mb-1">
             ID no reconocido
           </h2>
 
-          <p className="text-red-600/70 font-medium mb-8">
+          <p className="text-red-600/70 font-medium mb-6 text-sm">
             Lo sentimos, no pudimos encontrar un usuario vinculado al ID <b>{identificacion}</b>. Por favor, verifica los datos e intenta de nuevo.
           </p>
 
           <button
             onClick={handleBack}
-            className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95"
+            className="w-full py-3 bg-red-600 text-white rounded-lg font-black text-xs uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-700 transition-all active:scale-95"
           >
             Volver a intentar
           </button>

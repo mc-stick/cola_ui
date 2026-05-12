@@ -76,82 +76,387 @@ export default function PasoTipoIdentificacion({ onSelect, setPaso }) {
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Título de Paso */}
-      <div  className="text-center mb-10">
-        <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
-          ¿Cómo deseas identificarte?
-        </h2>
-        <p className="text-slate-500 font-medium">Selecciona una opción para comenzar tu atención</p>
-      </div>
+    <div
+      className="
+      h-full
+      flex
+      flex-col
+      overflow-hidden
+    "
+    >
+      {/* CONTENIDO CENTRAL */}
+      <div
+        className="
+        flex-1
+        min-h-0
 
-      {/* Grid de Opciones Estilo Dashboard */}
-      <div id="titulo-paso" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {opciones.map((s,ind) => (
-          <button
-            key={s.id}
-            onClick={s.action}
-            id={`grid-opcion${ind+1}`}
-            className="group relative bg-slate-100 border-slate-400-200 border p-8 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 flex flex-col items-center text-center overflow-hidden"
+        flex
+        flex-col
+        justify-center
+      "
+      >
+        <div
+          className="
+          w-full
+          max-w-6xl
+          mx-auto
+
+          flex
+          flex-col
+
+          h-full
+        "
+        >
+          {/* ───────────────────────── */}
+          {/* HEADER */}
+          {/* ───────────────────────── */}
+          <div
+            className="
+            text-center
+
+            mb-4
+            sm:mb-5
+            md:mb-6
+
+            flex-shrink-0
+          "
           >
-            {/* Decoración de fondo al hacer hover */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-5 group-hover:scale-150 transition-transform duration-500 ${s.color}`}></div>
-            
-            <div className={`${s.color} w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-inner group-hover:rotate-6 transition-transform`}>
-              {s.icon}
-            </div>
-            
-            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">
-              {s.title}
-            </h3>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              {s.desc}
+            <h2
+              className="
+              text-2xl
+              sm:text-3xl
+              md:text-4xl
+
+              font-black
+              text-slate-800
+
+              mb-2
+              leading-tight
+            "
+            >
+              ¿Cómo deseas identificarte?
+            </h2>
+
+            <p
+              className="
+              text-sm
+              sm:text-base
+
+              text-slate-500
+              font-medium
+
+              max-w-2xl
+              mx-auto
+            "
+            >
+              Selecciona una opción para comenzar tu atención
             </p>
-            
-            <div className="mt-auto flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-              Seleccionar <ChevronRight className="w-4 h-4" />
-            </div>
-          </button>
-        ))}
+          </div>
+
+          {/* ───────────────────────── */}
+          {/* GRID */}
+          {/* ───────────────────────── */}
+          <div
+            id="titulo-paso"
+            className="
+            grid
+            grid-cols-1
+            md:grid-cols-3
+
+            gap-4
+            md:gap-5
+
+            flex-1
+            min-h-0
+          "
+          >
+            {opciones.map((s, ind) => (
+              <button
+                key={s.id}
+                id={`grid-opcion${ind + 1}`}
+                onClick={s.action}
+                className="
+                group
+                relative
+                overflow-hidden
+
+                border
+                border-slate-200
+
+                rounded-3xl
+
+                bg-slate-100
+
+                transition-all
+                duration-300
+
+                hover:shadow-xl
+                hover:border-blue-300
+
+                flex
+                flex-col
+                items-center
+                justify-center
+
+                text-center
+
+                p-5
+                sm:p-6
+                md:p-7
+
+                min-h-[220px]
+                md:min-h-[260px]
+              "
+              >
+                {/* EFECTO */}
+                <div
+                  className={`
+                  absolute
+                  -top-5
+                  -right-5
+
+                  w-24
+                  h-24
+
+                  rounded-full
+                  opacity-5
+
+                  group-hover:scale-150
+
+                  transition-transform
+                  duration-500
+
+                  ${s.color}
+                `}
+                />
+
+                {/* ICON */}
+                <div
+                  className={`
+                  ${s.color}
+
+                  w-16
+                  h-16
+                  md:w-20
+                  md:h-20
+
+                  rounded-2xl
+
+                  flex
+                  items-center
+                  justify-center
+
+                  mb-4
+
+                  shadow-lg
+
+                  group-hover:rotate-6
+                  transition-transform
+                `}
+                >
+                  {s.icon}
+                </div>
+
+                {/* TITLE */}
+                <h3
+                  className="
+                  text-lg
+                  md:text-xl
+
+                  font-bold
+                  text-slate-800
+
+                  mb-2
+
+                  group-hover:text-blue-600
+
+                  transition-colors
+                "
+                >
+                  {s.title}
+                </h3>
+
+                {/* DESC */}
+                <p
+                  className="
+                  text-slate-400
+
+                  text-sm
+
+                  leading-relaxed
+
+                  max-w-[240px]
+                "
+                >
+                  {s.desc}
+                </p>
+
+                {/* CTA */}
+                <div
+                  className="
+                  absolute
+                  bottom-5
+
+                  flex
+                  items-center
+                  gap-2
+
+                  text-blue-600
+
+                  font-bold
+                  text-xs
+
+                  uppercase
+                  tracking-widest
+
+                  opacity-0
+
+                  group-hover:opacity-100
+
+                  transition-opacity
+                "
+                >
+                  Seleccionar
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* ───────────────────────── */}
+          {/* FOOTER */}
+          {/* ───────────────────────── */}
+          <div
+            className="
+            flex
+            flex-col
+            sm:flex-row
+
+            items-center
+            justify-center
+
+            gap-3
+
+            pt-4
+            md:pt-5
+
+            mt-4
+
+            border-t
+            border-slate-100
+
+            flex-shrink-0
+          "
+          >
+            <button
+              id="btn-tk"
+              onClick={() => setIsModalTKOpen(true)}
+              className="
+              group
+
+              flex
+              items-center
+              justify-center
+
+              gap-3
+
+              px-6
+              py-3.5
+
+              rounded-2xl
+
+              bg-slate-100
+              hover:bg-amber-100
+
+              text-slate-600
+              hover:text-amber-700
+
+              transition-all
+
+              font-bold
+              text-xs
+              sm:text-sm
+
+              uppercase
+              tracking-wide
+
+              w-full
+              sm:w-auto
+            "
+            >
+              <TicketIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              ¿Ya tienes un ticket?
+            </button>
+
+            <button
+              id="btn-ayuda"
+              onClick={() => setIsModalOpen(true)}
+              className="
+              flex
+              items-center
+              justify-center
+
+              gap-3
+
+              px-6
+              py-3.5
+
+              rounded-2xl
+
+              bg-white
+
+              border
+              border-slate-200
+
+              hover:border-blue-300
+
+              text-slate-500
+              hover:text-blue-600
+
+              transition-all
+
+              font-bold
+              text-xs
+              sm:text-sm
+
+              uppercase
+              tracking-wide
+
+              w-full
+              sm:w-auto
+            "
+            >
+              <HelpCircleIcon className="w-5 h-5" />
+              Centro de Ayuda
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Footer de Acciones Secundarias */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8 border-t border-slate-100">
-        <button
-          id="btn-tk"
-          onClick={() => setIsModalTKOpen(true)}
-          className="flex items-center gap-3 px-8 py-4 bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-700 rounded-2xl transition-all font-bold text-sm uppercase tracking-wide group"
-        >
-          <TicketIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          ¿Ya tienes un ticket?
-        </button>
+      {/* MODALES */}
+      <TutorialModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        tutorials={tutorialConfig}
+      />
 
-        <button
-          id="btn-ayuda"
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-200 hover:border-blue-300 text-slate-500 hover:text-blue-600 rounded-2xl transition-all font-bold text-sm uppercase tracking-wide"
-        >
-          <HelpCircleIcon className="w-5 h-5" />
-          Centro de Ayuda
-        </button>
-      </div>
+      <SelectorGuia
+        activar={runTour}
+        setActivar={setRunTour}
+        guia={Guia_paso}
+      />
 
-      {/* Modales */}
-      <TutorialModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} tutorials={tutorialConfig} />
-      <SelectorGuia activar={runTour} setActivar={setRunTour} guia={Guia_paso} />
-      <LlamarTicketModal open={isModalTkOpen} onClose={() => setIsModalTKOpen(false)} onConfirm={setIsModalTKOpenConfirmTk} />
-      <ModalCallTK open={isModalTkOpenConfirmTk} onClose={setIsModalTKOpenConfirmTk} onConfirm={isModalTkOpenConfirmTk} />
+      <LlamarTicketModal
+        open={isModalTkOpen}
+        onClose={() => setIsModalTKOpen(false)}
+        onConfirm={setIsModalTKOpenConfirmTk}
+      />
 
-      {/* Input oculto para scanners */}
-      {/* <input
-        ref={inputRef}
-        type="text"
-        autoFocus
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="absolute opacity-0 pointer-events-none"
-      /> */}
+      <ModalCallTK
+        open={isModalTkOpenConfirmTk}
+        onClose={setIsModalTKOpenConfirmTk}
+        onConfirm={isModalTkOpenConfirmTk}
+      />
     </div>
   );
 }

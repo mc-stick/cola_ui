@@ -709,7 +709,7 @@ class API {
       }
 
       toast.success("Iniciando sesión");
-      return data;
+      return { success: true, ...data };
     } catch (error) {
       console.error("Error en login:", error);
       toast.error("Error de conexión");
@@ -730,6 +730,43 @@ class API {
       if (!error.message.includes("toast")) {
         toast.error("Error al cargar usuarios");
       }
+      throw error;
+    }
+  }
+
+  async searchLdapUsers(username) {
+    try {
+      const response = await fetch(`${API_URL}/auth/ldap/search?username=${encodeURIComponent(username)}`, {
+        headers: this.getAuthHeaders()
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Error en búsqueda LDAP");
+      }
+      return data.data || [];
+    } catch (error) {
+      console.error("Error en searchLdapUsers:", error);
+      toast.error(error.message || "Error buscando usuarios");
+      throw error;
+    }
+  }
+
+  async addLdapUser(userData) {
+    try {
+      const response = await fetch(`${API_URL}/auth/ldap/users/add`, {
+        method: "POST",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(userData)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Error al agregar usuario");
+      }
+      toast.success("Usuario agregado exitosamente");
+      return data;
+    } catch (error) {
+      console.error("Error en addLdapUser:", error);
+      toast.error(error.message || "Error al agregar usuario");
       throw error;
     }
   }

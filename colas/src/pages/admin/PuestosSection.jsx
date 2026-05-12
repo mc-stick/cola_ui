@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Plus, Save, X, Edit, Check, AlertCircleIcon } from "lucide-react";
+import { MapPin, Plus, Save, X, Edit, Check, AlertCircleIcon, Layers } from "lucide-react";
 import { TabSpinner } from "../../components/loading";
 
 function PuestosSection({
@@ -33,159 +33,205 @@ function PuestosSection({
     setFormulario({});
   };
 
-  return (
-    <div 
-      className="bg-white rounded-3xl shadow-sm border relative overflow-hidden flex flex-col" 
-      style={{ borderColor: colors.monoSilver, height: 'calc(100vh - 140px)' }}
-    >
-      {/* Barra superior de acento */}
-      <div className="absolute top-0 left-0 w-full h-3 z-10" style={{ backgroundColor: colors.primaryBlue }}></div>
+ return (
+  <div
+    className="bg-white rounded-[2rem] shadow-sm border relative overflow-hidden flex flex-col"
+    style={{ borderColor: "#e2e8f0", height: "calc(100vh - 140px)" }}
+  >
+    {/* Decoración de fondo Skew */}
+    <div className="absolute top-0 right-0 w-32 h-full bg-[#1e2a4f]/5 skew-x-[-20deg] translate-x-16 pointer-events-none"></div>
 
-      {/* HEADER */}
-        <div className="p-8 md:p-6 pb-6 shrink-0">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    {/* HEADER */}
+    <div className="p-5 md:px-6 md:py-5 shrink-0 relative z-10 border-b border-slate-50">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white shadow-md border border-slate-100 p-2 flex items-center justify-center shrink-0">
+            <MapPin className="w-full h-full text-[#1e2a4f]" />
+          </div>
+
           <div>
-          <h2 className="text-3xl font-black tracking-tighter uppercase" style={{ color: colors.primaryBlue }}>
-            Gestión de <span style={{ color: colors.secondaryBlueDark }}>puestos</span>
-          </h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Gestiona los puestos del sistema</p>
+            <h2 className="text-lg font-black tracking-tight text-slate-800 uppercase italic leading-none">
+              Gestión de <span className="text-[#1e2a4f]">Puestos</span>
+            </h2>
+
+            <p className="text-[9px] mt-1 font-bold uppercase tracking-widest text-[#4ec2eb]">
+              Panel de administración de estaciones
+            </p>
+          </div>
         </div>
+
         <button
           onClick={handleCrearPuesto}
           disabled={LoadingSpin}
-          className="flex items-center gap-2 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg disabled:opacity-50"
-          style={{ backgroundColor: colors.primaryBlue }}
+          className="group flex items-center gap-2 bg-[#1e2a4f] hover:bg-[#2a3b6e] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 text-[9px] uppercase tracking-widest border-b-2 border-black/20"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           Nuevo Puesto
         </button>
       </div>
-      </div>
+    </div>
 
-      {/* CUERPO - GRID CON SCROLL */}
-      <div className="flex-1 overflow-hidden px-8 md:px-12 pb-8">
-        {LoadingSpin ? (
-          <div className="h-full flex justify-center items-center">{/* <TabSpinner /> */}</div>
-        ) : puestos.length === 0 ? (
-          <div className="h-full flex flex-col justify-center items-center opacity-20 text-center italic">
-            <MapPin className="w-20 h-20 mb-4" />
-            <p className="font-black uppercase tracking-widest">No hay puestos configurados</p>
-          </div>
-        ) : (
-          <div className="h-full overflow-y-auto pr-4 custom-scrollbar">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4">
-              {puestos.map((puesto) => (
-                <div
-                  key={puesto.id}
-                  className={`group relative rounded-[2rem] p-6 border-2 transition-all flex flex-col justify-between h-48 shadow-sm ${
-                    puesto.puesto_active ? "bg-white border-gray-100 hover:border-gray-200" : "bg-gray-50 border-transparent opacity-60"
-                  }`}
-                >
-                  {/* Indicador Lateral de Color */}
-                  <div 
-                    className="absolute left-0 top-1/4 w-1.5 h-1/2 rounded-r-full"
-                    style={{ backgroundColor: colors.primaryBlue }}
-                  ></div>
+    {/* CUERPO */}
+    <div className="flex-1 overflow-hidden px-6 md:px-8 py-4 relative z-10">
+      {LoadingSpin ? (
+        <div className="h-full flex justify-center items-center flex-col gap-2">
+          <div className="w-6 h-6 border-2 border-slate-100 border-t-[#daab00] rounded-full animate-spin"></div>
 
-                  <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 mb-4 text-slate-400 group-hover:text-blue-600 transition-colors">
-                      <MapPin className="w-6 h-6" />
-                    </div>
-                    <div 
-                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${
-                        puesto.puesto_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {puesto.puesto_active ? "En Línea" : "Inactivo"}
-                    </div>
-                  </div>
+          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+            Sincronizando...
+          </p>
+        </div>
+      ) : puestos.length === 0 ? (
+        <div className="h-full flex flex-col justify-center items-center opacity-20 text-center italic">
+          <MapPin className="w-12 h-12 mb-3" />
 
-                  <div>
-                    <h3 className="font-black uppercase italic text-xl leading-none truncate" style={{ color: colors.primaryBlue }}>
+          <p className="text-[10px] font-black uppercase tracking-widest">
+            No hay puestos configurados
+          </p>
+        </div>
+      ) : (
+        <div className="h-full overflow-y-auto pr-2 custom-scrollbar space-y-3">
+          {puestos.map((puesto) => (
+            <div
+              key={puesto.id}
+              className={`group rounded-2xl p-4 border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                puesto.puesto_active
+                  ? "bg-white border-slate-100 hover:border-[#4ec2eb] hover:shadow-lg"
+                  : "bg-slate-50 border-transparent opacity-60"
+              }`}
+            >
+              {/* INFO */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-inner shrink-0 border-b-2 border-black/10 bg-[#1e2a4f]/10 text-[#1e2a4f]">
+                  <MapPin className="w-5 h-5" />
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="font-black uppercase italic text-sm leading-none text-slate-800">
                       {puesto.nombre}
                     </h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">ID: {puesto.id.toString().padStart(3, '0')}</p>
-                  </div>
 
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={() => onSwitchPuesto(puesto.id)}
-                      className={`flex-1 py-2 rounded-xl flex justify-center transition-all ${
-                        puesto.puesto_active ? "bg-green-50 text-green-600 hover:bg-green-600 hover:text-white" : "bg-red-50 text-red-600 hover:bg-red-600 hover:text-white"
+                    <span
+                      className={`text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase ${
+                        puesto.puesto_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {puesto.puesto_active ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditando(puesto.id);
-                        setFormulario(puesto);
-                      }}
-                      className="flex-1 py-2 rounded-xl bg-gray-50 text-gray-400 hover:bg-blue-600 hover:text-white flex justify-center transition-all"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
+                      {puesto.puesto_active ? "Activo" : "Inactivo"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[8px] uppercase tracking-widest">
+                    <Layers className="w-2.5 h-2.5" />
+                    ID: {puesto.id.toString().padStart(3, "0")}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FOOTER */}
-      <div className="px-12 py-4 bg-gray-50 border-t flex items-center shrink-0">
-        <AlertCircleIcon className="w-4 h-4 mr-3 opacity-30" />
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-          Configuración Física: Estos nombres aparecerán en la pantalla de llamados y tickets.
-        </span>
-      </div>
-
-      {/* MODAL DE EDICIÓN / CREACIÓN */}
-      {editando && (
-        <div className="fixed inset-0 bg-[#1e2a4f]/40 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: colors.primaryYellow }}></div>
-            
-            <button 
-              onClick={() => { setEditando(null); setFormulario({}); }}
-              className="absolute top-6 right-6 p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-
-            <h3 className="text-3xl font-black uppercase italic mb-8 text-center" style={{ color: colors.primaryBlue }}>
-              {editando === "nuevo" ? "Crear Puesto" : "Editar Puesto"}
-            </h3>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Identificador del Puesto</label>
-                <input
-                  type="text"
-                  autoFocus
-                  value={formulario.nombre || ""}
-                  onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
-                  className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 rounded-2xl outline-none transition-all font-black text-lg uppercase italic shadow-inner"
-                  placeholder="Ej: Puesto 01 / Caja A"
-                />
               </div>
 
-              <div className="flex gap-4 pt-4">
+              {/* ACCIONES */}
+              <div className="flex items-center gap-2 self-end md:self-center">
                 <button
-                  onClick={handleGuardar}
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-green-700 transition-all shadow-lg active:scale-95"
+                  onClick={() => onSwitchPuesto(puesto.id)}
+                  className={`px-3 py-1.5 rounded-lg font-black text-[8px] uppercase tracking-tighter transition-all border-b-2 border-black/10 ${
+                    puesto.puesto_active
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
                 >
-                  <Save className="w-4 h-4" />
-                  Guardar Cambios
+                  {puesto.puesto_active ? "Activo" : "Inactivo"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEditando(puesto.id);
+                    setFormulario(puesto);
+                  }}
+                  className="p-2 bg-slate-50 text-slate-400 hover:bg-[#daab00] hover:text-white rounded-lg transition-all shadow-sm"
+                >
+                  <Edit className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       )}
     </div>
-  );
+
+    {/* FOOTER */}
+    <div className="px-8 py-3 bg-slate-50 border-t flex items-center shrink-0 relative z-10">
+      <AlertCircleIcon className="w-3.5 h-3.5 mr-2 text-[#daab00]" />
+
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+        Configuración física: Estos nombres aparecerán en las pantallas y
+        tickets del sistema.
+      </span>
+    </div>
+
+    {/* MODAL */}
+    {editando && (
+      <div className="fixed inset-0 bg-[#1e2a4f]/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div
+          className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden border-t-[6px]"
+          style={{ borderTopColor: "#daab00" }}
+        >
+          {/* Decoración */}
+          <div className="absolute top-0 right-0 w-24 h-full bg-slate-50 skew-x-[-20deg] translate-x-12 pointer-events-none"></div>
+
+          <h3 className="text-xl font-black uppercase italic mb-6 relative z-10 text-slate-800">
+            {editando === "nuevo"
+              ? "Vincular Puesto"
+              : "Editar Registro"}
+          </h3>
+
+          <div className="space-y-4 mb-6 relative z-10">
+            <div className="space-y-1">
+              <label className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-1">
+                Nombre del Puesto
+              </label>
+
+              <input
+                type="text"
+                autoFocus
+                value={formulario.nombre || ""}
+                onChange={(e) =>
+                  setFormulario({
+                    ...formulario,
+                    nombre: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 focus:border-[#4ec2eb] rounded-xl outline-none transition-all font-bold text-[11px] uppercase"
+                placeholder="Caja A / Puesto 01"
+              />
+            </div>
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex gap-3 relative z-10">
+            <button
+              onClick={handleGuardar}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#499c35] text-white py-3 rounded-xl font-bold uppercase text-[9px] tracking-widest hover:brightness-110 transition-all shadow-md border-b-2 border-black/20"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Guardar Cambios
+            </button>
+
+            <button
+              onClick={() => {
+                setEditando(null);
+                setFormulario({});
+              }}
+              className="px-6 bg-slate-100 text-slate-400 py-3 rounded-xl font-bold uppercase text-[9px] tracking-widest hover:bg-slate-200 transition-all"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
 
 export default PuestosSection;

@@ -45,7 +45,7 @@ const HomeRedirect = () => {
   if (role === "operador") return <Navigate to="/operador" replace />;
   if (role === "user") return <Navigate to="/cliente" replace />;
 
-  return <MenuInicial />;
+  return <Navigate to="/admin" replace />;
 };
 
 function App() {
@@ -137,19 +137,26 @@ function App() {
       />
 
       <Routes>
-        <Route path="/" element={<HomeRedirect />} />
+        <Route path="/" element={<LoginComponent />} />
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/anuncios" element={<PantallaAnuncios />} />
         <Route path="/evaluar/:id" element={<EvaluacionTicket />} />
-        <Route path="/cliente" element={<PantallaCliente />} />
+        <Route
+          path="/cliente"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <PantallaCliente />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/404" element={<NotFound />} />
 
         <Route
           path="/admin"
           element={
-            // <ProtectedRoute allowedRoles={["admin", "S_admin"]}>
+            <ProtectedRoute allowedRoles={["admin", "S_admin"]}>
               <PantallaAdmin />
-            // </ProtectedRoute>
+            </ProtectedRoute>
           }
         />
 
