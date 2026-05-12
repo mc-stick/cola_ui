@@ -62,6 +62,16 @@ function ConfiguracionSection({
               </p>
             </div>
           </div>
+          <div className="">
+            <button
+              onClick={onGuardar}
+              className="group flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase text-[9px] text-white shadow-md hover:brightness-110 transition-all"
+              style={{ backgroundColor: "#daab00" }}
+            >
+              <Save className="w-3.5 h-3.5" />
+              Actualizar Configuración
+            </button>
+          </div>
         </div>
       </div>
 
@@ -240,16 +250,6 @@ function ConfiguracionSection({
       </div>
 
       {/* FOOTER */}
-      <div className="px-4 md:px-6 py-3 bg-slate-50 border-t flex justify-end shrink-0 relative z-10">
-        <button
-          onClick={onGuardar}
-          className="group flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase text-[9px] text-white shadow-md hover:brightness-110 transition-all"
-          style={{ backgroundColor: "#daab00" }}
-        >
-          <Save className="w-3.5 h-3.5" />
-          Actualizar Configuración
-        </button>
-      </div>
     </div>
   );
 }
