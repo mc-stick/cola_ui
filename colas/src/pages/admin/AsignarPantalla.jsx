@@ -21,7 +21,7 @@ function AsignarServiciosPantallaSection() {
       const data = await API.getPantallasConServicios();
       setPantallas(data);
     } catch {
-      toast.error("Error al cargar pantallas");
+     // toast.error("Error al cargar pantallas");
     } finally {
       setLoadingPantallas(false);
     }
@@ -36,7 +36,7 @@ function AsignarServiciosPantallaSection() {
       const data = await API.getPantallaServicios(pantalla.id);
       setServicios(data);
     } catch {
-      toast.error("Error al cargar servicios");
+     // toast.error("Error al cargar servicios");
     } finally {
       setTimeout(() => setLoadingServicios(false), 600);
     }
@@ -58,7 +58,7 @@ function AsignarServiciosPantallaSection() {
       ]);
       setServicios(serviciosActualizados);
     } catch {
-      toast.error("Error al actualizar asignación");
+     // toast.error("Error al actualizar asignación");
     }
   };
 

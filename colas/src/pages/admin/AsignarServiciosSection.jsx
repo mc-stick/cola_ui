@@ -22,7 +22,7 @@ function AsignarServiciosSection({
 
   const handleSeleccionarOperador = async (operador) => {
     if (!operador.activo) {
-      toast.error("Usuario inactivo.");
+      //toast.error("Usuario inactivo.");
       return;
     }
     setOperadorSeleccionado(operador);
@@ -31,7 +31,7 @@ function AsignarServiciosSection({
       const servicios = await API.getOperadorServicios(operador.id);
       setServiciosOperador(servicios);
     } catch (error) {
-      toast.error("Error al cargar servicios");
+      //toast.error("Error al cargar servicios");
     } finally {
       setTimeout(() => setLoaditems(false), 800);
     }
@@ -51,7 +51,7 @@ function AsignarServiciosSection({
       setServiciosOperador(serviciosActualizados);
       if (onToggleServicio) await onToggleServicio();
     } catch (error) {
-      toast.error("Error al actualizar");
+      //toast.error("Error al actualizar");
     }
   };
 

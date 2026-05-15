@@ -80,7 +80,7 @@ function PermisosSection({
 
   const handleSeleccionaradmin = async (admin) => {
     if (!admin.activo) {
-      toast.error("Usuario inactivo.");
+      //toast.error("Usuario inactivo.");
       return;
     }
 
@@ -90,7 +90,7 @@ function PermisosSection({
       const permisos = await API.getPermisosUsuario(admin.id);
       setPermisosActuales(permisos.map(Number));
     } catch {
-      toast.error("Error al cargar permisos del usuario");
+      //toast.error("Error al cargar permisos del usuario");
     }
   };
 
@@ -103,7 +103,7 @@ function PermisosSection({
     }
 
     if (!permisosUsuarioActual.includes(id)) {
-      toast.error("No tienes acceso a este módulo.");
+      //toast.error("No tienes acceso a este módulo.");
       return;
     }
 
@@ -125,7 +125,7 @@ function PermisosSection({
 
       if (onTogglePermiso) await onTogglePermiso();
     } catch {
-      toast.error("Error al actualizar permiso");
+      //toast.error("Error al actualizar permiso");
     }
   };
 

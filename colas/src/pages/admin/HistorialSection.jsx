@@ -109,13 +109,13 @@ function HistorialSection({
     try {
       await onCargarHistorial(filtrosHistorial);
     } catch {
-      toast.error("Error de conexión");
+      //toast.error("Error de conexión");
     } finally {
       setTimeout(() => setLoadingSpin(false), 500);
     }
   };
 
-  console.log(historial);
+  
 
   return (
     <div className="max-w-7xl mx-auto">

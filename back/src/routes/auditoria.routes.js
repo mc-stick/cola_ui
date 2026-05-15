@@ -31,7 +31,7 @@ router.get('/auditoria', async (req, res) => {
       query += ' AND id_user = ? ';
       params.push(usuario_id);
     }
-    console.log("first, ",fecha_fin, fecha_inicio)
+    
 
     query += ' ORDER BY id DESC';
 
@@ -67,7 +67,7 @@ router.get('/historial', async (req, res) => {
     if (fecha_fin && estado!="1") {
       query += ' AND finalizado_at <= ?';
       params.push(fecha_fin+"T23:59:56.000Z");
-      console.log('fecha fin history',fecha_fin)
+      
     }
     
     if (servicio_id) {
@@ -87,7 +87,7 @@ router.get('/historial', async (req, res) => {
     
     query += ' ORDER BY id DESC LIMIT 100';
     const [rows] = await pool.query(query, params);
-    console.log('params', params)
+    
     
     res.json(rows);
   } catch (error) {

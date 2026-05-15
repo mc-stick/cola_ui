@@ -51,7 +51,7 @@ function AuditoriaSection({
     try {
       await onCargarAuditoria(filtros);
     } catch {
-      toast.error("Error al cargar auditoría");
+      //toast.error("Error al cargar auditoría");
     } finally {
       setTimeout(() => setLoadingSpin(false), 800);
     }

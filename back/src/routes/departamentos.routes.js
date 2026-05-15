@@ -58,7 +58,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
  
     const { id } = req.params;
     const { nombre } = req.body;
-   console.log("uptade departamento",id,nombre)
+   
     const [rows] = await pool.query(
       'SELECT * FROM departamento WHERE id = ?',
       [id]

@@ -34,7 +34,6 @@ function validarConexionLDAP() {
     client.bind(serviceUser, servicePass, (err) => {
       if (err) {
         client.unbind();
-        console.log("ldap reject")
         return reject({
           ok: false,
           type: "LDAP_CONN",
@@ -42,9 +41,8 @@ function validarConexionLDAP() {
           error: err.message,
         });
        
-      }console.log("ldap reject pas err")
+      }
 
-      // 👇 conexión exitosa
       client.unbind();
       console.log("ldap connect")
       resolve({

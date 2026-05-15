@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import API from "../services/api";
 import { SendTwilioSms } from "../twilio/TwMsg";
 import api from "../services/api";
+const SMS = import.meta.env.SMS;
 
 export function usePantallaCliente() {
   const [paso, setPaso] = useState(1);
@@ -26,7 +27,7 @@ export function usePantallaCliente() {
   }, []);
 
   // const cargarServicios = async () => {
-  //   //console.log("cargar serv")
+  //  
   //   const data = await API.getServicios();
   //   setServicios(data.filter((s) => s.service_active === 1));
   // };
@@ -46,9 +47,9 @@ export function usePantallaCliente() {
     setPaso(5);
 
     if (tipoId === "telefono") {
-      SendTwilioSms(`Kiosco de autoservicio UCNE,\nNúmero de ticket asignado:\n\n ${ticket.numero}.\n\nPor favor, espere por su turno. `, identificacion);
+      SendTwilioSms(`${SMS} ${ticket.numero}.\n\nPor favor, espere por su turno. `, identificacion);
     } else {
-      //console.log("PRINTING", ticket.numero, servicio.nombre);
+     
       await API.PrintTicket(ticket, servicio.nombre);
     }
   };

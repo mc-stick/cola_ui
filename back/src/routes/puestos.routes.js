@@ -79,14 +79,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { numero, nombre, activo } = req.body;
 
-    console.log(numero, nombre, activo, "puestos -----------------")
+   
 
     const [existentes] = await pool.query(
       'SELECT * FROM puestos WHERE (nombre = ?) AND id != ?',
       [nombre, id]
     );
 
-    console.log(existentes,"existente")
+  
 
     if (existentes.length > 0) {
       return res.status(400).json({

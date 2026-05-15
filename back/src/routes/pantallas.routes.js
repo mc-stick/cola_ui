@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { nombre, token } = req.body;
-    console.log("nombre.tokn",nombre,token)
+   
 
     const [result] = await pool.query(
       'INSERT INTO pantallas (nombre, token) VALUES (?, ?)',

@@ -26,7 +26,7 @@ function PantallasSection() {
       const data = await API.getPantallas();
       setPantallas(data || []);
     } catch {
-      toast.error("Error al cargar pantallas");
+      //toast.error("Error al cargar pantallas");
     } finally {
       setLoading(false);
     }
@@ -36,7 +36,7 @@ function PantallasSection() {
 
   const handleGuardar = async () => {
     if (!form.nombre.trim() || !form.token.trim()) {
-      toast.error("Nombre y token son obligatorios");
+      //toast.error("Nombre y token son obligatorios");
       return;
     }
     try {
@@ -51,7 +51,7 @@ function PantallasSection() {
       setForm({ nombre: "", token: "" });
       await cargarPantallas();
     } catch {
-      toast.error("Error al guardar pantalla");
+      //toast.error("Error al guardar pantalla");
     }
   };
 
@@ -62,7 +62,7 @@ function PantallasSection() {
       setConfirmDelete(null);
       await cargarPantallas();
     } catch {
-      toast.error("Error al eliminar pantalla");
+      //toast.error("Error al eliminar pantalla");
     }
   };
 

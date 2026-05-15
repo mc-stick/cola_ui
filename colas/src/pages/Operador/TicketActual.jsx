@@ -34,7 +34,7 @@ export const TicketActualCard = ({
 
   useEffect(() => {
     if (!ticketActual) return;
-    console.log(ticketActual.id,"tid")
+    
     localStorage.setItem("idnumt", ticketActual?.id);
     setbtns(true);
     const timer = setTimeout(() => setbtns(false), 5000);

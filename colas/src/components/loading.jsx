@@ -128,7 +128,7 @@ export function InfoModal({ ticket = {}, modal = () => {} }) {
     if (ticket?.id) fetchData();
   }, [ticket.id]);
 
-  console.log(data, "data");
+ 
 
   const calf = data?.map((dat) => dat.Estrellas);
 

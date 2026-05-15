@@ -27,7 +27,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split,blur } = req.body;
-    console.log('Split:', req.body)
+    
     await pool.query(
       'UPDATE configuracion SET nombre_empresa = ?, logo_url = ?, mostrar_imagenes = ?, mostrar_videos = ?, tiempo_rotacion = ?, Split=?, blur=? WHERE id = ?',
       [nombre_empresa, logo_url, mostrar_imagenes, mostrar_videos, tiempo_rotacion, Split, blur, id]

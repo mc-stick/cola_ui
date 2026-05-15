@@ -102,7 +102,7 @@ function PantallaAdmin() {
 
   const validarConfiguracion = (config) => {
     if (!config.nombre_empresa || config.nombre_empresa.trim() === "") {
-      toast.error("El nombre de la empresa es obligatorio");
+      //toast.error("El nombre de la empresa es obligatorio");
       return false;
     }
     return true;
@@ -110,7 +110,7 @@ function PantallaAdmin() {
 
   const validarServicio = (form) => {
     if (!form.nombre || !form.codigo) {
-      toast.error("Nombre y código son obligatorios");
+      //toast.error("Nombre y código son obligatorios");
       return false;
     }
     return true;
@@ -118,7 +118,7 @@ function PantallaAdmin() {
 
   const validarDepartamento = (form) => {
     if (!form.nombre) {
-      toast.error("El nombre es obligatorio");
+      //toast.error("El nombre es obligatorio");
       return false;
     }
     return true;
@@ -126,7 +126,7 @@ function PantallaAdmin() {
 
   const validarPuesto = (form) => {
     if (!form.nombre) {
-      toast.error("El nombre del puesto es obligatorio");
+      //toast.error("El nombre del puesto es obligatorio");
       return false;
     }
     return true;
@@ -134,7 +134,7 @@ function PantallaAdmin() {
 
   const validarUsuario = (form) => {
     if (!form.rol) {
-      toast.error("Debes seleccionar un rol");
+      //toast.error("Debes seleccionar un rol");
       return false;
     }
     return true;
@@ -142,7 +142,7 @@ function PantallaAdmin() {
 
   const validarMedio = (form) => {
     if (!form.nombre || !form.url) {
-      toast.error("Nombre y archivo son obligatorios");
+      //toast.error("Nombre y archivo son obligatorios");
       return false;
     }
     return true;
@@ -150,7 +150,7 @@ function PantallaAdmin() {
 
   const validarFiltrosHistorial = (filtros) => {
     if (new Date(filtros.fecha_inicio) > new Date(filtros.fecha_fin)) {
-      toast.error("Rango de fechas inválido");
+      //toast.error("Rango de fechas inválido");
       return false;
     }
     return true;

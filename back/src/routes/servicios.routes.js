@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { nombre, descripcion, codigo, color,departamento_id, check } = req.body;
-   console.log(req.body,"servicio")
+   
     const [result] = await pool.query(
       'INSERT INTO servicios (nombre, descripcion, codigo, color, departamento, dar_prioridad) VALUES (?, ?, ?, ?, ?, ?)',
       [nombre, descripcion, codigo, color,departamento_id, check ? 1:0]
@@ -57,7 +57,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, color, departamento_id, activo, check } = req.body;
-console.log( nombre, descripcion, color, departamento_id, activo )
+
     const [rows] = await pool.query(
       'SELECT * FROM servicios WHERE id = ?',
       [id]

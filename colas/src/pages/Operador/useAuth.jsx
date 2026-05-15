@@ -11,10 +11,10 @@ export const useAuth = () => {
     if (token) {
       try {
         const result = await API.getCurrentUser();
-          //console.log(result.success, result.user.rol)
+          
         if (result.success && result.user.rol === 2) {
           setUsuario(result.user);
-          //console.log(result.user,"result await")
+          
 
           const servicios = await API.getOperadorServicios(result.user.id);
           const asignados = servicios.filter((s) => s.asignado);

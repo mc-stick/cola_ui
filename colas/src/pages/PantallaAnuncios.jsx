@@ -66,10 +66,10 @@ function PantallaAnuncios() {
     if (token) {
       // Si el token existe en la URL, lo guardamos
       localStorage.setItem("app_token", token);
-      console.log("Token guardado correctamente");
+      
     } else {
       localStorage.removeItem("app_token");
-      console.log("Acceso sin token en URL");
+      
     }
   }, [searchParams]);
 

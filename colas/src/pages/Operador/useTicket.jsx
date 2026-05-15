@@ -14,12 +14,12 @@ export const useTickets = (usuario, serviciosAsignados) => {
         return serviciosAsignados.some(
           (servicio) => servicio.id === ticket.servicio,
         );
-      }); //console.log(ticketsFiltrados, "espera filter")
+      });  
 
       setTicketsEspera(ticketsFiltrados);
 
       const miTicket = await API.getTicketsByOperador(usuario.id);
-      console.log(miTicket, "mi ticket");
+      
       const ticketEnAtencion = miTicket.find(
         (t) => t.estado === 2 || t.estado === 3,
       );
@@ -30,13 +30,13 @@ export const useTickets = (usuario, serviciosAsignados) => {
         if (prevTicket?.id === ticketEnAtencion?.id) {
           return ticketEnAtencion || null;
         }
-        //console.log(ticketEnAtencion,"tk atencion comment")
+         
         // Si cambió de ticket, cargar las notas del nuevo ticket
         // if (ticketEnAtencion) {
         //   setComentario(ticketEnAtencion.ultimo_comentario || "");
         // }
 
-        //console.log(ticketEnAtencion,"tk atencion")
+       
 
         return ticketEnAtencion || null;
       });
@@ -63,10 +63,10 @@ export const useTickets = (usuario, serviciosAsignados) => {
     ...ticketsEspera.filter((t) => t.priority !== 1),
   ].filter((t) => {
     // Verificamos si el ID del ticket coincide con el almacenado
-    console.log(t.id,idGuardado,"saved")
+   
     // Usamos String() para asegurar que la comparación sea correcta independientemente del tipo
     if (idGuardado && String(t.id) === String(idGuardado)) {
-      console.log(`🚀 Ticket ignorado (ya procesado): ID ${t.id} - Número ${t.numero}`);
+      
       return false; // No incluir en la lista
     }
     return true; // Incluir en la lista
@@ -124,7 +124,7 @@ export const useTickets = (usuario, serviciosAsignados) => {
   const handleReLlamar = async () => {
     if (!ticketActual) return;
     try {
-      //console.log(ticketActual,"tk actual")
+      
 
       await API.rellamarTicket(
         ticketActual.id,

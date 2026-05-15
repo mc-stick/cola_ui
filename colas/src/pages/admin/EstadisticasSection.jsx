@@ -62,7 +62,7 @@ function EstadisticasSection({
     }));
     const dataop = await api.getEstadisticasOperadores(fechaInicio, fechaFin);
     const dataser = await api.getEstadisticasServicios(fechaInicio, fechaFin);
-    console.log(dataop, "data estadistiopca");
+    
     if (datos) {
       setEstadisticasRango(dataLimpia || []);
       setEstadisticasServicios(dataser || []);
@@ -116,7 +116,7 @@ function EstadisticasSection({
     </div>
   );
 
-  console.log(resumenGeneral, "estadisticas");
+  
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

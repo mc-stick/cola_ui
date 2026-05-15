@@ -51,9 +51,7 @@ function MediosSection({
     const maxSize =
       formulario.tipo === "imagen" ? 5 * 1024 * 1024 : 20 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error(
-        `Tamaño excedido. Máximo: ${formulario.tipo === "imagen" ? "5MB" : "20MB"}`,
-      );
+      //toast.error(`Tamaño excedido. Máximo: ${formulario.tipo === "imagen" ? "5MB" : "20MB"}`,);
       e.target.value = "";
       return;
     }

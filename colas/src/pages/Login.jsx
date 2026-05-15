@@ -19,7 +19,7 @@ function LoginComponent({ onLoginSuccess, tipoUsuario = "operador" }) {
   const [viewpass, setViewPass] = useState(false);
 
   const navigate = useNavigate();
-  const UCNE_URL = import.meta.env.VITE_UCNE_URL;
+  const UCNE_URL = import.meta.env.URL_REDIRECT;
 
   // Definición de colores de la paleta para uso rápido
   const colors = {

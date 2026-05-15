@@ -37,7 +37,7 @@ export const useTransferencia = (
 
     setShowTransferModal(true);
 
-    //console.log(ticketActual, "ticket actual");
+    
     setServicioSeleccionado("");
   };
 
@@ -56,7 +56,7 @@ export const useTransferencia = (
       const serv_nm = todosServicios.filter(
         (servicio) => servicio.id === servicioSeleccionado,
       );
-      //console.log(ticketActual);
+       
       await API.transferirTicket(
         ticketActual,
         servicioSeleccionado,

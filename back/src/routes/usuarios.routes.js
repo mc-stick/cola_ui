@@ -122,7 +122,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const {  username,  rol, puesto_id, activo } = req.body;
-    console.log(req.body,"actualizar user adm-op")
+     
 
      const userId = req.params.id;
 

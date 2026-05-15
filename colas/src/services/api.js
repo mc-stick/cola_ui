@@ -636,7 +636,7 @@ class API {
 
   async verificarUsuario(username) {
     try {
-      ////console.log("USERNAME API: ",username)
+      
       const response = await fetch(`${API_URL}/auth/verificar`, {
         method: "POST",
         headers: {
@@ -655,7 +655,7 @@ class API {
       // Validar si la data viene vacía o null
       const data = result.data ? result.data : "vacio";
 
-      ////console.log("Usuario LDAP:", data);
+      
       return data;
     } catch (error) {
       ////console.error("Error al consumir la API:", error);
@@ -1399,7 +1399,7 @@ class API {
   }
 
   async llamarVolver(id) {
-    //console.log(id)
+    
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/volver`, {
         method: "POST",
@@ -1474,8 +1474,7 @@ class API {
       );
       const data = await response.json();
 
-      //console.log(data.data,"dataticket")
-
+      
       return {
         expirado: data.expirado || false,
         yaEvaluado: data.yaEvaluado || false,
@@ -1528,7 +1527,7 @@ class API {
     comentario,
     nopresento = false,
   }) {
-    console.log("nopresento", nopresento);
+   
     try {
       const response = await fetch(`${API_URL}/tickets/${id}/finalizar`, {
         method: "POST",
@@ -1568,7 +1567,7 @@ class API {
 
   async transferirTicket(ticketactual, servicio_id, comentario, servicio_nm) {
     try {
-      //console.log("actual",ticketactual, "service",servicio_id, 'Comment:',comentario, "service transfer",servicio_nm," ->transferir")
+      
       const response = await fetch(
         `${API_URL}/tickets/${ticketactual.id}/transferir`,
         {
@@ -1632,7 +1631,7 @@ class API {
 
   async getHistorialDetail(id) {
     try {
-      //console.log(id," api get hus")
+       
       const response = await fetch(`${API_URL}/historial/${id}`);
       if (!response.ok) {
         toast.error("Error al obtener historial");
@@ -2069,7 +2068,7 @@ class API {
         },
       });
       const data = await response.json();
-      //console.log("first auth me api sucess data:", data)
+       
       if (response.ok) {
         return { success: true, user: data };
       } else {

@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
     // const id_persona = identificacion ?? "1";
     const id_persona =
       identificacion && identificacion.length === 8 ? identificacion : "1";
-    console.log(servicio_id);
+   
     const [result] = await pool.query(
       "CALL generar_numero_ticket(?, @numero)",
       [servicio_id.id],
@@ -140,7 +140,7 @@ router.get("/operador/:usuario_id", async (req, res) => {
        ORDER BY created_at DESC`,
       [usuario_id],
     );
-    console.log(rows, "rows");
+    
     res.json(rows);
   } catch (error) {
     console.error("Error obteniendo tickets del operador:", error);
@@ -250,7 +250,7 @@ router.post("/:id/volver", async (req, res) => {
       [id],
     );
 
-    console.log(rows, "rows volver");
+    
 
     if (rows.length === 0 || rows[0].estado !== 1) {
       return res.status(404).json({ error: "Ticket no encontrado" });
@@ -329,11 +329,7 @@ router.post("/:id/transferir", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { servicio_nvo, usuario, servicio_act, comentario } = req.body;
-
-    console.log(
-      " ------------------------ Transferir ---------------------------",
-      req.body,
-    );
+ 
 
     await pool.query("CALL transferir(?,?,?,?)", [
       id,
@@ -374,7 +370,7 @@ router.get("/:id/estado-evaluacion", async (req, res) => {
       [id],
     );
     const ticket = rows[0];
-    console.log("ya evaluado");
+ 
     if (!ticket) {
       return res.json({
         success: true,
@@ -414,7 +410,7 @@ WHERE td.ticket_id=? `,
         [id],
       );
 
-      console.log(evaltk);
+  
 
       return res.json({
         data: evaltk,
@@ -441,14 +437,14 @@ router.post("/:id/evaluar", async (req, res) => {
     const { id } = req.params;
     const { evaluation, comment } = req.body;
 
-    console.log(evaluation, "evaluacion");
+  
 
     const [rows] = await pool.query(
       "SELECT finalizado_at, expirado FROM tickets WHERE id=? ",
       [id],
     );
     const ticket = rows[0];
-    console.log(ticket);
+ 
 
     if (!ticket) {
       return res

@@ -51,11 +51,6 @@ function autenticarLDAP(username, password) {
           "employeeID",
         ],
       };
-      console.log(
-        "firs2t",
-        typeof baseDN.toLowerCase(),
-        typeof "dc=ldap,dc=pruebaitp,dc=com",
-      );
 
       client.search(
         baseDN || "dc=ldap,dc=pruebaitp,dc=com",
@@ -83,7 +78,7 @@ function autenticarLDAP(username, password) {
               //   });
 
               //   userData.memberOf = grupos;
-              //   console.log(grupos);
+              //   
 
               //   if (grupos.includes("admin-cola")) {
               //     userData.rol = "admin";
@@ -100,7 +95,7 @@ function autenticarLDAP(username, password) {
                 attr.values.length === 1 ? attr.values[0] : attr.values;
             });
 
-            console.log(userData, "user data ldap");
+            
           });
 
           res.on("error", () => {
@@ -207,7 +202,7 @@ router.post("/verificar", async (req, res) => {
       });
     }
 
-    console.log("Validando: ", username);
+    
 
     const usuario = await ValidarLDAP(username);
 
@@ -249,14 +244,16 @@ router.post("/login", async (req, res) => {
     const ldapUser = await autenticarLDAP(username, password);
 
     if (!ldapUser) {
-      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ error: "Usuario o contraseña incorrectos" });
     }
 
     // 2️⃣ Normalizamos datos LDAP
     const userData = {
       username,
       nombre: ldapUser.displayName || ldapUser.cn,
-      employeeID: ldapUser.employeeID
+      employeeID: ldapUser.employeeID,
     };
 
     // 3️⃣ Verificar si existe en DB (acceso permitido)
@@ -267,7 +264,9 @@ router.post("/login", async (req, res) => {
 
     if (!rows.length) {
       // No tiene acceso → login fallido
-      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+      return res
+        .status(401)
+        .json({ error: "Usuario o contraseña incorrectos" });
     }
 
     const userDB = rows[0];
@@ -306,7 +305,6 @@ router.post("/login", async (req, res) => {
       user: userDB,
       token,
     });
-
   } catch (error) {
     await registrarAuditoria({
       usuarioId: username,
@@ -323,8 +321,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
 router.get("/me", authenticateToken, async (req, res) => {
   try {
     const [usuarios] = await pool.query(
@@ -338,7 +334,7 @@ router.get("/me", authenticateToken, async (req, res) => {
       [req.user.id],
     );
 
-    console.log("userdb", usuarios[0]);
+     
 
     if (usuarios.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado" });
@@ -435,12 +431,11 @@ function SyncLDAP() {
   });
 }
 
-
 router.post("/syncldap", async (req, res) => {
   try {
     const usuarios = await SyncLDAP();
 
-    console.log("LDAPS USERS:", usuarios);
+   
 
     if (!usuarios || usuarios.length === 0) {
       return res.status(404).json({
@@ -485,7 +480,7 @@ router.post("/syncldap", async (req, res) => {
 
         personasCreadas++;
 
-        console.log(`Persona agregada: ${emplid} - ${nombreLDAP}`);
+       
       } else {
         const personaDB = personaRows[0];
 
@@ -500,9 +495,7 @@ router.post("/syncldap", async (req, res) => {
 
           personasActualizadas++;
 
-          console.log(
-            `Persona actualizada: ${emplid} | DB: ${personaDB.name} -> LDAP: ${nombreLDAP}`,
-          );
+          
         }
       }
 
@@ -536,7 +529,7 @@ router.post("/syncldap", async (req, res) => {
 
         usuariosCreados++;
 
-        console.log(`Usuario agregado: ${emplid}`);
+        
       } else {
         const usuarioDB = usuarioRows[0];
 
@@ -549,11 +542,9 @@ router.post("/syncldap", async (req, res) => {
             [username, emplid],
           );
 
-          console.log(
-            `Username actualizado: ${emplid} | DB: ${usuarioDB.username} -> LDAP: ${username}`,
-          );
+          
         } else {
-          console.log(`Usuario ya existe y coincide: ${emplid}`);
+           
         }
       }
     }
@@ -582,11 +573,11 @@ router.post("/syncldap", async (req, res) => {
 router.get("/ldap/search", async (req, res) => {
   try {
     const { username } = req.query;
-    
+
     if (!username || username.length < 2) {
       return res.status(400).json({
         ok: false,
-        message: "Ingresa al menos 2 caracteres"
+        message: "Ingresa al menos 2 caracteres",
       });
     }
 
@@ -598,60 +589,79 @@ router.get("/ldap/search", async (req, res) => {
       client.bind(serviceUser, servicePass, (err) => {
         if (err) {
           client.unbind();
-          return resolve(res.status(500).json({
-            ok: false,
-            message: "Error conectando a LDAP"
-          }));
+          return resolve(
+            res.status(500).json({
+              ok: false,
+              message: "Error conectando a LDAP",
+            }),
+          );
         }
 
         const opts = {
           filter: `(sAMAccountName=*${username}*)`,
           scope: "sub",
-          attributes: ["sAMAccountName", "cn", "displayName", "mail", "employeeID"]
+          attributes: [
+            "sAMAccountName",
+            "cn",
+            "displayName",
+            "mail",
+            "employeeID",
+          ],
         };
 
         const users = [];
-        
-        client.search(baseDN || "dc=ldap,dc=pruebaitp,dc=com", opts, (err, res2) => {
-          if (err) {
-            client.unbind();
-            return resolve(res.status(500).json({
-              ok: false,
-              message: "Error buscando en LDAP"
-            }));
-          }
 
-          res2.on("searchEntry", (entry) => {
-            const userData = {};
-            entry.pojo.attributes.forEach((attr) => {
-              userData[attr.type] = attr.values.length === 1 ? attr.values[0] : attr.values;
+        client.search(
+          baseDN || "dc=ldap,dc=pruebaitp,dc=com",
+          opts,
+          (err, res2) => {
+            if (err) {
+              client.unbind();
+              return resolve(
+                res.status(500).json({
+                  ok: false,
+                  message: "Error buscando en LDAP",
+                }),
+              );
+            }
+
+            res2.on("searchEntry", (entry) => {
+              const userData = {};
+              entry.pojo.attributes.forEach((attr) => {
+                userData[attr.type] =
+                  attr.values.length === 1 ? attr.values[0] : attr.values;
+              });
+              users.push(userData);
             });
-            users.push(userData);
-          });
 
-          res2.on("end", () => {
-            client.unbind();
-            resolve(res.json({
-              ok: true,
-              data: users
-            }));
-          });
+            res2.on("end", () => {
+              client.unbind();
+              resolve(
+                res.json({
+                  ok: true,
+                  data: users,
+                }),
+              );
+            });
 
-          res2.on("error", (e) => {
-            client.unbind();
-            resolve(res.status(500).json({
-              ok: false,
-              message: e.message
-            }));
-          });
-        });
+            res2.on("error", (e) => {
+              client.unbind();
+              resolve(
+                res.status(500).json({
+                  ok: false,
+                  message: e.message,
+                }),
+              );
+            });
+          },
+        );
       });
     });
   } catch (error) {
     console.error("Error en /ldap/search:", error);
     res.status(500).json({
       ok: false,
-      message: "Error interno"
+      message: "Error interno",
     });
   }
 });
@@ -664,20 +674,20 @@ router.post("/ldap/users/add", authenticateToken, async (req, res) => {
     if (!sAMAccountName || !employeeID) {
       return res.status(400).json({
         ok: false,
-        message: "Datos incompletos"
+        message: "Datos incompletos",
       });
     }
 
     // Verificar si ya existe
     const [existing] = await pool.query(
       `SELECT id FROM usuarios WHERE id_persona = ? OR username = ?`,
-      [employeeID, sAMAccountName]
+      [employeeID, sAMAccountName],
     );
 
     if (existing.length > 0) {
       return res.status(400).json({
         ok: false,
-        message: "El usuario ya existe"
+        message: "El usuario ya existe",
       });
     }
 
@@ -685,14 +695,14 @@ router.post("/ldap/users/add", authenticateToken, async (req, res) => {
     await pool.query(
       `INSERT INTO persona (id_persona, name) VALUES (?, ?)
        ON DUPLICATE KEY UPDATE name = VALUES(name)`,
-      [employeeID, displayName || sAMAccountName]
+      [employeeID, displayName || sAMAccountName],
     );
 
     // Agregar a tabla usuarios
     await pool.query(
       `INSERT INTO usuarios (id_persona, username, rol, activo, created_at)
        VALUES (?, ?, ?, 1, NOW())`,
-      [employeeID, sAMAccountName, 2]
+      [employeeID, sAMAccountName, 2],
     );
 
     await registrarAuditoria({
@@ -700,18 +710,18 @@ router.post("/ldap/users/add", authenticateToken, async (req, res) => {
       accion: "USUARIO LDAP AGREGADO",
       modulo: "Usuarios",
       detalles: `Usuario "${sAMAccountName}" agregado desde búsqueda LDAP`,
-      req
+      req,
     });
 
     res.json({
       ok: true,
-      message: "Usuario agregado exitosamente"
+      message: "Usuario agregado exitosamente",
     });
   } catch (error) {
     console.error("Error en /ldap/users/add:", error);
     res.status(500).json({
       ok: false,
-      message: "Error interno"
+      message: "Error interno",
     });
   }
 });

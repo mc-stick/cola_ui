@@ -332,6 +332,8 @@ function Mensaje({ titulo, mensaje }) {
 }
 
 export function EvaluacionTicket() {
+
+  const URL = import.meta.env.URL_REDIRECT;
   //const [rating, setRating] = useState(0);
   const [enviado, setEnviado] = useState(false);
   const [campos, setCampos] = useState([]);
@@ -411,7 +413,7 @@ export function EvaluacionTicket() {
 
   if (estado === 1) {
     setTimeout(() => {
-      window.location.href = "https://www.ucne.edu.do/";
+      window.location.href = `${URL}`;
     }, 10000);
     return (
       <Mensaje
@@ -423,7 +425,7 @@ export function EvaluacionTicket() {
 
   if (estado === 2) {
     setTimeout(() => {
-      window.location.href = "https://www.ucne.edu.do/";
+      window.location.href = `${URL}`;
     }, 10000);
     return (
       <Mensaje

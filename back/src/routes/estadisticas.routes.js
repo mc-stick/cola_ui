@@ -64,7 +64,7 @@ FROM tickets t
 WHERE DATE(t.created_at) BETWEEN ? AND ?
       `;
     const [rows] = await pool.query(query, [inicio, fin,inicio, fin]);
-    console.log(rows,'renge')
+   
     res.json(rows);
   } catch (error) {
     console.error('Error obteniendo estadísticas por rango:', error);
