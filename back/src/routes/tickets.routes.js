@@ -28,6 +28,13 @@ router.post("/", async (req, res) => {
       [numero, servicio_id.id, id_persona, servicio_id.dar_prioridad],
     );
 
+    const [[{ created_at }]] = await pool.query(
+  "SELECT created_at FROM tickets WHERE id = ?",
+  [insertResult.insertId]
+);
+
+
+
     // await pool.query(
     //   'INSERT INTO historial (ticket_id, accion) VALUES (?, ?)',
     //   [insertResult.insertId, 'creado']
@@ -36,6 +43,7 @@ router.post("/", async (req, res) => {
     res.json({
       id: insertResult.insertId,
       numero,
+      created_at,
       success: true,
     });
   } catch (error) {
@@ -436,7 +444,7 @@ router.post("/:id/evaluar", async (req, res) => {
     console.log(evaluation, "evaluacion");
 
     const [rows] = await pool.query(
-      "SELECT finalizado_at, expirado FROM tickets WHERE id=?",
+      "SELECT finalizado_at, expirado FROM tickets WHERE id=? ",
       [id],
     );
     const ticket = rows[0];
@@ -445,7 +453,7 @@ router.post("/:id/evaluar", async (req, res) => {
     if (!ticket) {
       return res
         .status(404)
-        .json({ success: false, message: "Ticket no encontrado" });
+        //.json({ success: false, message: "Ticket no encontrado" });
     }
 
     const ahora = new Date();
@@ -460,13 +468,13 @@ router.post("/:id/evaluar", async (req, res) => {
       }
       return res
         .status(400)
-        .json({ success: false, message: "Ticket expirado" });
+        // .json({ success: false, message: "Ticket expirado" });
     }
 
     if (ticket.evaluation > 0) {
       return res
         .status(400)
-        .json({ success: false, message: "Ticket ya evaluado" });
+       // .json({ success: false, message: "Ticket ya evaluado" });
     }
 
     await pool.query(
@@ -505,7 +513,7 @@ router.post("/:id/evaluar", async (req, res) => {
     console.error(error);
     res
       .status(500)
-      .json({ success: false, message: "Error interno del servidor" });
+      //.json({ success: false, message: "Error interno del servidor" });
   }
 });
 

@@ -221,7 +221,7 @@ function PantallaAdmin() {
     if (!validarConfiguracion(configuracion)) return;
     try {
       await API.updateConfiguracion(configuracion.id, configuracion);
-      toast.success("Configuración guardada");
+      
       cargarDatos();
     } catch (e) {}
   };

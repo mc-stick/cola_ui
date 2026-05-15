@@ -227,7 +227,7 @@ class API {
   async SwitchMedio(id) {
     try {
       const response = await fetch(`${API_URL}/medios/${id}/switch`, {
-        method: "DELETE",
+        method: "PUT",
         headers: this.getAuthHeaders(),
       });
 

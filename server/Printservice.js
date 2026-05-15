@@ -34,7 +34,7 @@ export async function imprimirTexto({
   });
 
   const url = process.env.URL_EVALUAR;
-  let texto = `${url} ${turno.id}`;
+  let texto = `${url} ${turno.id}-${turno.created_at}`;
 
   console.log(url,texto)
 

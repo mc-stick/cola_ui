@@ -43,7 +43,7 @@ const HomeRedirect = () => {
   if (role === "admin" || role === "S_admin")
     return <Navigate to="/admin" replace />;
   if (role === "operador") return <Navigate to="/operador" replace />;
-  if (role === "user") return <Navigate to="/cliente" replace />;
+  //if (role === "user") return <Navigate to="/cliente" replace />;
 
   return <Navigate to="/admin" replace />;
 };
@@ -52,7 +52,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [runTour, setRunTour] = useState(false);
   const [paso, setPaso] = useState(1);
-  
+
   // 📍 Guardamos la última ruta válida antes del error
   const lastValidPath = useRef(window.location.pathname);
   const navigate = useNavigate();
@@ -67,17 +67,16 @@ function App() {
         const data = await res.json();
 
         if (data.ok) {
-         
           if (location.pathname === "/404") {
-            const destination = lastValidPath.current === "/404" ? "/" : lastValidPath.current;
+            const destination =
+              lastValidPath.current === "/404" ? "/" : lastValidPath.current;
             navigate(destination, { replace: true });
           } else {
-            
             lastValidPath.current = location.pathname;
           }
         } else {
           if (location.pathname !== "/404") {
-            lastValidPath.current = location.pathname; 
+            lastValidPath.current = location.pathname;
             navigate("/404", { replace: true });
           }
         }
@@ -93,7 +92,7 @@ function App() {
 
     checkHealth();
 
-    const healthInterval = setInterval(checkHealth, 3000); 
+    const healthInterval = setInterval(checkHealth, 3000);
 
     const handleContextMenu = (e) => e.preventDefault();
     const handleSelectStart = (e) => {
@@ -141,14 +140,7 @@ function App() {
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/anuncios" element={<PantallaAnuncios />} />
         <Route path="/evaluar/:id" element={<EvaluacionTicket />} />
-        <Route
-          path="/cliente"
-          element={
-            <ProtectedRoute allowedRoles={["user"]}>
-              <PantallaCliente />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/cliente" element={<PantallaCliente />} />
         <Route path="/404" element={<NotFound />} />
 
         <Route

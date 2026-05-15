@@ -46,7 +46,7 @@ export default function NotFound() {
         </motion.div>
 
         {/* Contenedor del Botón */}
-        <div className="mt-10">
+        {/* <div className="mt-10">
           <motion.button
             whileHover={{
               scale: 1.05,
@@ -57,7 +57,7 @@ export default function NotFound() {
             className="bg-[#cc132c] text-white px-10 py-4 rounded-full font-black uppercase tracking-widest transition-all shadow-lg">
             Reconectar sistema
           </motion.button>
-        </div>
+        </div> */}
 
         {/* Línea de estado */}
         <div className="mt-12 flex items-center justify-center gap-2">

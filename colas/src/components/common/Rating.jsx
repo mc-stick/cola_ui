@@ -1,9 +1,19 @@
-import { AngryIcon, CircleSlashIcon, FrownIcon, LaughIcon, MehIcon, SmileIcon, StarIcon } from "lucide-react";
+import {
+  AngryIcon,
+  CircleSlashIcon,
+  FrownIcon,
+  LaughIcon,
+  MehIcon,
+  SmileIcon,
+  StarIcon,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import API from "../../services/api";
 import { useMatrixText } from "../../hooks/useMatrixEfect";
 import AnimatedBubleBackground from "../../components/common/animBubbles";
+import { useFecha, useHora } from "./clok";
+import { usePantallaCliente } from "../../hooks/UsePantallaCliente";
 
 export function StarRating({
   max = 5,
@@ -119,17 +129,38 @@ export function IconRatingButton({
   const displayedValue = hover ?? value;
 
   const icons = {
-    1: { label: "Muy malo", emoji: <AngryIcon className="w-10 h-10 text-red-500"/> },
-    2: { label: "Malo", emoji: <FrownIcon className="w-10 h-10 text-orange-500"/>  },
-    3: { label: "Bueno", emoji: <MehIcon className="w-10 h-10 text-yellow-500"/>  },
-    4: { label: "Muy bueno", emoji: <SmileIcon className="w-10 h-10 text-green-500"/>  },
-    5: { label: "Excelente", emoji: <LaughIcon className="w-10 h-10 text-blue-500"/>  },
+    1: {
+      label: "Muy malo",
+      emoji: <AngryIcon className="w-10 h-10 text-red-500" />,
+    },
+    2: {
+      label: "Malo",
+      emoji: <FrownIcon className="w-10 h-10 text-orange-500" />,
+    },
+    3: {
+      label: "Bueno",
+      emoji: <MehIcon className="w-10 h-10 text-yellow-500" />,
+    },
+    4: {
+      label: "Muy bueno",
+      emoji: <SmileIcon className="w-10 h-10 text-green-500" />,
+    },
+    5: {
+      label: "Excelente",
+      emoji: <LaughIcon className="w-10 h-10 text-blue-500" />,
+    },
   };
 
   return (
     // Columna para que la etiqueta quede abajo de la fila de iconos
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-      
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
       {/* Contenedor de iconos */}
       <div style={{ display: "flex", gap: 12 }}>
         {Object.keys(icons).map((key) => {
@@ -162,14 +193,18 @@ export function IconRatingButton({
       </div>
 
       {/* Etiqueta debajo: Solo aparece si hay un valor seleccionado o en hover */}
-      <div style={{ height: "20px" }}> {/* Altura fija para evitar saltos de layout */}
+      <div style={{ height: "20px" }}>
+        {" "}
+        {/* Altura fija para evitar saltos de layout */}
         {displayedValue > 0 && (
-          <span style={{ 
-            fontWeight: "bold", 
-            color: "#555", 
-            fontSize: "14px",
-            animation: "fadeIn 0.3s" 
-          }}>
+          <span
+            style={{
+              fontWeight: "bold",
+              color: "#555",
+              fontSize: "14px",
+              animation: "fadeIn 0.3s",
+            }}
+          >
             {icons[displayedValue].label}
           </span>
         )}
@@ -287,9 +322,7 @@ function Mensaje({ titulo, mensaje }) {
       <AnimatedBubleBackground />
       <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-6 text-center">
         <h2 className="text-2xl font-semibold mb-3">
-          <span className="flex gap-3 justify-center">
-             {titulo}
-          </span>{" "}
+          <span className="flex gap-3 justify-center">{titulo}</span>{" "}
         </h2>
 
         <p className="text-gray-600">{mensaje}</p>
@@ -309,7 +342,7 @@ export function EvaluacionTicket() {
   const [ratings, setRatings] = useState([]);
 
   const [hasZero, setHasZero] = useState(true);
-  
+
   const colors = {
     primaryBlue: "#1e2a4f",
     primaryRed: "#cc132c",
@@ -320,7 +353,7 @@ export function EvaluacionTicket() {
     monoWhite: "#ffffff",
     monoBlack: "#000000",
     monoSilver: "#b2b2b2",
-    monoGold: "#daab00"
+    monoGold: "#daab00",
   };
   // 🔹 Inicializar ratings cuando lleguen los campos
   useEffect(() => {
@@ -360,25 +393,26 @@ export function EvaluacionTicket() {
     if (hasZero) return;
 
     try {
-      const result = await API.SendEvaluation(ticketId, ratings, commentx);
+      const result = await API.SendEvaluation(
+        ticketId.split("-")[0].replace(/\s+/g, ""),
+        ratings,
+        commentx,
+      );
 
       if (result.expirado) setEstado(1);
       else if (result.yaEvaluado) setEstado(2);
       else if (result.success) setEnviado(true);
     } catch (err) {
-      console.error("Error al enviar evaluación:", err);
+      //console.error("Error al enviar evaluación:", err);
     }
 
     setCommentx("");
-    
   };
-
-  
 
   if (estado === 1) {
     setTimeout(() => {
-        window.location.href = "https://www.ucne.edu.do/";
-      }, 10000); 
+      window.location.href = "https://www.ucne.edu.do/";
+    }, 10000);
     return (
       <Mensaje
         titulo="Evaluación expirada"
@@ -389,8 +423,8 @@ export function EvaluacionTicket() {
 
   if (estado === 2) {
     setTimeout(() => {
-        window.location.href = "https://www.ucne.edu.do/";
-      }, 10000); 
+      window.location.href = "https://www.ucne.edu.do/";
+    }, 10000);
     return (
       <Mensaje
         titulo="Ticket ya evaluado"
@@ -399,90 +433,197 @@ export function EvaluacionTicket() {
     );
   }
 
+  const hora = useHora();
+  const fecha = useFecha();
+  const state = usePantallaCliente();
+  const config = state.config;
+
   // 🔹 Pantalla de evaluación con corrección de scroll y estética móvil
-return (
-  <div className="min-h-screen w-full flex items-center justify-center bg-blue-950 px-3 py-6 relative overflow-hidden">
-    <AnimatedBubleBackground />
-    
-    <div className="w-full max-w-xl z-10">
-      {enviado ? (
-        <Mensaje
-          titulo="¡Gracias por tu evaluación!"
-          mensaje="Tu opinión nos ayuda a mejorar nuestro servicio."
-        />
-      ) : (
-        <div 
-          className="w-full bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl border relative overflow-hidden flex flex-col"
-          style={{ borderColor: colors.monoSilver }}
-        >
-          {/* Línea decorativa superior: más delgada en móvil */}
-          <div className="absolute top-0 left-0 w-full h-2 md:h-3" style={{ backgroundColor: colors.primaryBlue }}></div>
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-blue-950 px-3 py-6 relative overflow-hidden">
+      <AnimatedBubleBackground />
 
-          {/* Padding reducido en móvil y desktop */}
-          <div className="p-4 md:p-6">
-            
-            {/* Header: Título que no se desborda */}
-            <div className="mb-4 md:mb-5 text-center md:text-left">
-              <h2 className="text-lg md:text-2xl lg:text-3xl font-black tracking-tighter leading-tight" style={{ color: colors.primaryBlue }}>
-                TU OPINIÓN NOS IMPORTA
-              </h2>
-              <p className="text-[9px] md:text-xs font-bold opacity-40 uppercase tracking-[0.2em] mt-0.5">
-                ¿Cómo fue tu experiencia?
-              </p>
-            </div>
+      <div className="w-full max-w-xl z-10">
+        {enviado ? (
+          <Mensaje
+            titulo="¡Gracias por tu evaluación!"
+            mensaje="Tu opinión nos ayuda a mejorar nuestro servicio."
+          />
+        ) : (
+          <div
+            className="w-full bg-white rounded-[1rem] md:rounded-[2rem] shadow-2xl border relative overflow-hidden flex flex-col"
+            style={{ borderColor: colors.monoSilver }}
+          >
+            {/* Línea decorativa superior: más delgada en móvil */}
+            <div
+              className="absolute top-0 left-0 w-full h-2 md:h-3"
+              style={{ backgroundColor: colors.primaryBlue }}
+            ></div>
 
-            {/* Lista de campos: Espaciado controlado */}
-            <div className="space-y-0.5 mb-4">
-              {campos.map((data, index) => (
-                <div key={index}>
-                  <div className="flex justify-between items-center py-2 gap-2">
-                    <p className="text-gray-800 text-xs md:text-lg font-black uppercase tracking-tight truncate pr-2">
-                      {data.nombre}
-                    </p>
+            {/* Padding reducido en móvil y desktop */}
+            <div className="p-4 md:p-6">
+              <div
+                className="
+                    rounded-2xl
+                    border
+                    relative
+                    overflow-hidden
+                    px-3
+                    py-3
+                  "
+                style={{
+                  backgroundColor: "#1e2a4f",
+                  borderColor: "#daab00",
+                }}
+              >
+                {/* Decoración */}
+                <div className="absolute top-0 right-0 w-24 md:w-32 h-full bg-[#cc132c]/10 skew-x-[-20deg] translate-x-12" />
 
-                    {/* Contenedor de estrellas que no se sale */}
-                    <div className="shrink-0 scale-75 md:scale-90 origin-right">
-                      <IconRatingButton
-                        value={ratings[index] || 0}
-                        onChange={(value) => handleRatingChange(index, value)}
-                        size={window.innerWidth < 640 ? 20 : 28} 
-                      />
+                <div
+                  className="
+                      relative
+                      z-10
+                      flex
+                      flex-col
+                      lg:flex-row
+                      lg:items-center
+                      lg:justify-between
+                      gap-2
+                    "
+                >
+                  {/* Left */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Logo */}
+                    <div className="relative flex-shrink-0">
+                      {config?.logo_url ? (
+                        <img
+                          src={config.logo_url}
+                          alt="Logo"
+                          className="
+                              w-10 h-10
+                              sm:w-12 sm:h-12
+                              md:w-14 md:h-14
+                              object-contain
+                              rounded-xl
+                              
+                              p-1.5
+                              shadow-xl
+                            "
+                        />
+                      ) : (
+                        <div
+                          className="
+                              w-10 h-10
+                              sm:w-12 sm:h-12
+                              rounded-xl
+                              flex
+                              items-center
+                              justify-center
+                              text-lg
+                              font-black
+                              shadow-xl
+                            "
+                          style={{
+                            backgroundColor: "#fad824",
+                            color: "#1e2a4f",
+                          }}
+                        >
+                          .
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Text */}
+                    <div className="min-w-0">
+                      <h1
+                        className="
+                            text-base
+                            font-black
+                            text-white
+                            leading-tight
+                            truncate
+                          "
+                      >
+                        Universidad Católica Nordestana
+                      </h1>
+
+                      <p
+                        className="
+                            mt-0.5
+                            text-[8px]
+                            sm:text-[9px]
+                            md:text-xs
+                            font-semibold
+                            uppercase
+                            tracking-wider
+                            text-[#4ec2eb]
+                            line-clamp-2
+                          "
+                      ></p>
                     </div>
                   </div>
 
-                  {index !== campos.length - 1 && (
-                    <div className="h-[1px] w-full bg-gray-100"></div>
-                  )}
+                  {/* Right */}
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* Footer: Input y Botón */}
-            <div className="space-y-2">
-              <textarea
-                value={commentx}
-                onChange={(e) => setCommentx(e.target.value)}
-                placeholder=" (Opcional) Comentario adicional..."
-                className="w-full min-h-[60px] md:min-h-[80px] p-3 text-xs rounded-lg border border-gray-200 bg-gray-50 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition-all"
-              />
+              {/* Header: Título que no se desborda */}
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mt-6 mb-4 text-center">
+                Evalúa nuestro servicio
+              </h2>
 
-              <button
-                onClick={handleSubmit}
-                disabled={hasZero}
-                className={`w-full py-3 md:py-4 rounded-lg md:rounded-lg font-black text-xs md:text-sm uppercase tracking-[0.15em] transition-all transform active:scale-95 shadow-lg
+              {/* Lista de campos: Espaciado controlado */}
+              <div className="space-y-0.5 mb-4">
+                {campos.map((data, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between items-center py-2 gap-2">
+                      <p className="text-gray-800 text-xs md:text-lg font-black uppercase tracking-tight truncate pr-2">
+                        {data.nombre}
+                      </p>
+
+                      {/* Contenedor de estrellas que no se sale */}
+                      <div className="shrink-0 scale-75 md:scale-90 origin-right">
+                        <IconRatingButton
+                          value={ratings[index] || 0}
+                          onChange={(value) => handleRatingChange(index, value)}
+                          size={window.innerWidth < 640 ? 20 : 28}
+                        />
+                      </div>
+                    </div>
+
+                    {index !== campos.length - 1 && (
+                      <div className="h-[1px] w-full bg-gray-100"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer: Input y Botón */}
+              <div className="space-y-2">
+                <textarea
+                  value={commentx}
+                  onChange={(e) => setCommentx(e.target.value)}
+                  placeholder=" (Opcional) Comentario adicional..."
+                  className="w-full min-h-[60px] md:min-h-[80px] p-3 text-xs rounded-lg border border-gray-200 bg-gray-50 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner transition-all"
+                />
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={hasZero}
+                  className={`w-full py-3 md:py-4 rounded-lg md:rounded-lg font-black text-xs md:text-sm uppercase tracking-[0.15em] transition-all transform active:scale-95 shadow-lg
                   ${
                     hasZero
                       ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                       : "bg-[#FFCC00] hover:bg-[#F5C200] text-blue-900"
                   }`}
-              >
-                Enviar Evaluación
-              </button>
+                >
+                  Enviar Evaluación
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 }

@@ -223,8 +223,8 @@ export default function PantallaCliente() {
         {/* Back */}
         {showBack && (
           <div className="flex items-center justify-between gap-3 flex-shrink-0">
-            <BackBtnCli step={() =>{ state.setPaso(state.paso - 1);state.setIdentificacion(""); }} />
-
+            <BackBtnCli step={() =>{ state.setPaso(state.paso == 2 || state.paso == 3 ?  1 : state.paso - 1);if(state.paso <= 3){ state.setIdentificacion("");} }} />
+          
             <div className="hidden md:flex flex-col items-end">
               <span className="text-[#daab00] text-base font-black">
                 {useHora()}
